@@ -16,7 +16,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "nyc ts-mocha tests/*.test.ts"
   },
   "dependencies": {
     "@stackpress/inquire": "0.2.9"
@@ -25,7 +26,13 @@
     "mysql2": "^3.11.5"
   },
   "devDependencies": {
+    "@types/chai": "4.3.20",
+    "@types/mocha": "10.0.10",
     "@types/node": "22.9.3",
+    "chai": "4.5.0",
+    "mocha": "10.8.2",
+    "nyc": "17.1.0",
+    "ts-mocha": "10.0.0",
     "mysql2": "3.11.5",
     "ts-node": "10.9.2",
     "typescript": "5.7.2"
