@@ -8,6 +8,7 @@ import sqlite from 'better-sqlite3';
 import Engine from '@stackpress/inquire/dist/Engine';
 //local
 import Connection from '../src/Connection';
+import BetterSqlite3Connection from '../src/Connection';
 
 describe('Sqlite3 Tests', () => {
   //this is the raw resource, anything you want
@@ -80,4 +81,46 @@ describe('Sqlite3 Tests', () => {
     expect(actual.values[3]).to.equal('{"foo":"bar"}');
     expect(actual.values[4]).to.equal(1);
   });
+
+
+  // Line 26
+  it('Should return the correct lastId after multiple inserts', async () => {
+  const insert1 = await engine.insert('profile').values([{ name: 'Alice', age: 28 }]);
+  expect(connection.lastId).to.equal(3);
+  const insert2 = await engine.insert('profile').values([{ name: 'Bob', age: 35 }]);
+  expect(connection.lastId).to.equal(4);
+  const insert3 = await engine.insert('profile').values([{ name: 'Charlie', age: 40 }]);
+  expect(connection.lastId).to.equal(5);
+  });
+
+  // Line 91 - 92
+  it('Should ensure no changes are committed to the database after a rollback', async () => {
+    try {
+      await connection.transaction(async (conn) => {
+        await conn.query({ query: 'INSERT INTO profile (name, age) VALUES (?, ?)', values: ['Rollback Test', 99] });
+        throw new Error('Force rollback');
+      });
+    } catch (e) {
+      expect(e.message).to.equal('Force rollback');
+    }
+    const result = await engine.select('*').from('profile').where('name = ?', ['Rollback Test']);
+    expect(result).to.be.empty;
+  });
+
+  // Line 100
+  it('Should handle a query with no values and return the expected result', () => {
+    const expectedResult = [{ id: 1, name: 'Test User' }];
+    const resource = {
+      prepare: () => ({
+        all: () => expectedResult
+      })
+    };
+    const connection = new BetterSqlite3Connection(resource as any);
+    const request = { query: 'SELECT * FROM users' };
+    const result = connection['_query'](request);
+    expect(result).to.deep.equal(expectedResult);
+  });
+
+
+
 });
