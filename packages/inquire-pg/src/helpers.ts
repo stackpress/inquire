@@ -1,5 +1,5 @@
 //stackpress
-import Engine from '@stackpress/inquire/dist/Engine';
+import Engine from '@stackpress/inquire/Engine';
 //local
 import type { Connector, Resource } from './types';
 import Connection from './Connection';

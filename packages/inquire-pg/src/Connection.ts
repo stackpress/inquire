@@ -4,9 +4,9 @@ import type {
   Connection, 
   QueryObject,
   Transaction
-} from '@stackpress/inquire/dist/types';
-import Pgsql from '@stackpress/inquire/dist/dialect/Pgsql';
-import Exception from '@stackpress/inquire/dist/Exception';
+} from '@stackpress/inquire/types';
+import Pgsql from '@stackpress/inquire/Pgsql';
+import Exception from '@stackpress/inquire/Exception';
 //local
 import type { Connector, Resource, Results } from './types';
 

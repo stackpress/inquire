@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "@stackpress/inquire",
   "version": "0.4.6",
   "license": "Apache-2.0",
@@ -18,20 +19,103 @@
     "sqlite",
     "stackpress"
   ],
-  "main": "index.js",
+  "main": "./cjs/index.js",
+  "module": "./esm/index.js",
+  "types": "./cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./cjs/index.js",
+      "import": "./esm/index.js"
+    },
+    "./helpers": {
+      "require": "./cjs/helpers.js",
+      "import": "./esm/helpers.js"
+    },
+    "./types": {
+      "require": "./cjs/types.js",
+      "import": "./esm/types.js"
+    },
+    "./Engine": {
+      "require": "./cjs/Engine.js",
+      "import": "./esm/Engine.js"
+    },
+    "./Exception": {
+      "require": "./cjs/Exception.js",
+      "import": "./esm/Exception.js"
+    },
+    "./Alter": {
+      "require": "./cjs/builder/Alter.js",
+      "import": "./esm/builder/Alter.js"
+    },
+    "./Create": {
+      "require": "./cjs/builder/Create.js",
+      "import": "./esm/builder/Create.js"
+    },
+    "./Delete": {
+      "require": "./cjs/builder/Delete.js",
+      "import": "./esm/builder/Delete.js"
+    },
+    "./Insert": {
+      "require": "./cjs/builder/Insert.js",
+      "import": "./esm/builder/Insert.js"
+    },
+    "./Select": {
+      "require": "./cjs/builder/Select.js",
+      "import": "./esm/builder/Select.js"
+    },
+    "./Update": {
+      "require": "./cjs/builder/Update.js",
+      "import": "./esm/builder/Update.js"
+    },
+    "./Mysql": {
+      "require": "./cjs/dialect/Mysql.js",
+      "import": "./esm/dialect/Mysql.js"
+    },
+    "./Pgsql": {
+      "require": "./cjs/dialect/Pgsql.js",
+      "import": "./esm/dialect/Pgsql.js"
+    },
+    "./Sqlite": {
+      "require": "./cjs/dialect/Sqlite.js",
+      "import": "./esm/dialect/Sqlite.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "index": [ "./cjs/index.d.ts"],
+      "helpers": [ "./cjs/helpers.d.ts" ],
+      "types": [ "./cjs/types.d.ts" ],
+      "Engine": [ "./cjs/Engine.d.ts" ],
+      "Exception": [ "./cjs/Exception.d.ts" ],
+      "Alter": [ "./cjs/builder/Alter.d.ts" ],
+      "Create": [ "./cjs/builder/Create.d.ts" ],
+      "Delete": [ "./cjs/builder/Delete.d.ts" ],
+      "Insert": [ "./cjs/builder/Insert.d.ts" ],
+      "Select": [ "./cjs/builder/Select.d.ts" ],
+      "Update": [ "./cjs/builder/Update.d.ts" ],
+      "Mysql": [ "./cjs/dialect/Mysql.d.ts" ],
+      "Pgsql": [ "./cjs/dialect/Pgsql.d.ts" ],
+      "Sqlite": [ "./cjs/dialect/Sqlite.d.ts" ]
+    }
+  },
   "files": [
-    "dist",
-    "index.js",
-    "index.d.ts",
+    "cjs",
+    "esm",
     "LICENSE",
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
-    "test": "ts-mocha tests/*.test.ts"
+    "build": "yarn build:tsc && yarn build:pkg",
+    "build:pkg": "yarn build:pkg:cjs && yarn build:pkg:esm",
+    "build:pkg:cjs": "echo '{\"type\": \"commonjs\"}' > cjs/package.json",
+    "build:pkg:esm": "echo '{\"type\": \"module\"}' > esm/package.json",
+    "build:tsc": "yarn build:tsc:cjs && yarn build:tsc:esm",
+    "build:tsc:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:tsc:esm": "tsc -p ./tsconfig.esm.json",
+    "test": "DATABASE_URL=test ts-mocha -p ./tsconfig.cjs.json tests/*.test.ts"
   },
   "dependencies": {
-    "@stackpress/lib": "0.4.6"
+    "@stackpress/lib": "0.4.10"
   },
   "devDependencies": {
     "@types/chai": "4.3.20",

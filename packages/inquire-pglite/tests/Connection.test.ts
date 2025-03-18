@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import path from 'path';
 import { PGlite } from '@electric-sql/pglite';
 //stackpress
-import Engine from '@stackpress/inquire/dist/Engine';
+import Engine from '@stackpress/inquire/Engine';
 //local
 import Connection from '../src/Connection';
 

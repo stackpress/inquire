@@ -1,5 +1,5 @@
 //stackpress
-import type { NestedObject } from '@stackpress/lib/dist/types';
+import type { NestedObject } from '@stackpress/lib/types';
 //builder
 import type Alter from './builder/Alter';
 import type Create from './builder/Create';

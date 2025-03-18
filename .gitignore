@@ -132,3 +132,5 @@ examples/*/build
 packages/*/tests/database
 
 yarn.lock
+cjs/
+esm/

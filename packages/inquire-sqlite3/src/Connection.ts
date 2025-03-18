@@ -4,8 +4,8 @@ import type {
   Connection, 
   QueryObject,
   Transaction
-} from '@stackpress/inquire/dist/types';
-import Sqlite from '@stackpress/inquire/dist/dialect/Sqlite';
+} from '@stackpress/inquire/types';
+import Sqlite from '@stackpress/inquire/Sqlite';
 //local
 import type { Connector, Resource, Results } from './types';
 

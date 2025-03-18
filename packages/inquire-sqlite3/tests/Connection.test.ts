@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import path from 'path';
 import sqlite from 'better-sqlite3';
 //stackpress
-import Engine from '@stackpress/inquire/dist/Engine';
+import Engine from '@stackpress/inquire/Engine';
 //local
 import Connection from '../src/Connection';
 import BetterSqlite3Connection from '../src/Connection';

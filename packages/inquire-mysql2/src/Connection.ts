@@ -6,8 +6,8 @@ import type {
   Connection, 
   QueryObject,
   Transaction
-} from '@stackpress/inquire/dist/types';
-import Mysql from '@stackpress/inquire/dist/dialect/Mysql';
+} from '@stackpress/inquire/types';
+import Mysql from '@stackpress/inquire/Mysql';
 //local
 import type { Connector, Resource, Results } from './types';
 
