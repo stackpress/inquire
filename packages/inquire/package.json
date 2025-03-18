@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@stackpress/inquire",
-  "version": "0.4.6",
+  "version": "0.4.10",
   "license": "Apache-2.0",
   "description": "Generic typed SQL",
   "author": "Chris <chris@incept.asia>",
