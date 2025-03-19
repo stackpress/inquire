@@ -10,7 +10,8 @@ async function main() {
   const create = engine.create('profile')
     .addField('id', { type: 'int', autoIncrement: true })
     .addField('name', { type: 'string', length: 255 })
-    .addField('price', { type: 'float', length: [ 10, 2 ], unsigned: true })
+    .addField('age', { type: 'int', length: 2 })
+    .addField('price', { type: 'float', length: [ 10, 2 ], unsigned: true, nullable: true })
     .addField('created', { type: 'date', default: 'CURRENT_DATE' })
     .addPrimaryKey('id')
     .addUniqueKey('name', 'name');
