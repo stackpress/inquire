@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@stackpress/inquire-pg",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "license": "Apache-2.0",
   "description": "Generic typed pg",
   "author": "Chris <chris@incept.asia>",
@@ -63,7 +63,7 @@
     "test": "DATABASE_URL=test ts-mocha -p ./tsconfig.cjs.json tests/*.test.ts"
   },
   "dependencies": {
-    "@stackpress/inquire": "0.5.7"
+    "@stackpress/inquire": "0.5.8"
   },
   "peerDependencies": {
     "pg": "^8.13.1"
