@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@stackpress/inquire-mysql2",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "license": "Apache-2.0",
   "description": "Generic typed mysql2",
   "author": "Chris <chris@incept.asia>",
@@ -62,7 +62,7 @@
     "test": "DATABASE_URL=test ts-mocha -p ./tsconfig.cjs.json tests/*.test.ts"
   },
   "dependencies": {
-    "@stackpress/inquire": "0.5.8"
+    "@stackpress/inquire": "0.5.9"
   },
   "peerDependencies": {
     "mysql2": "^3.11.5"
