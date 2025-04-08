@@ -1,3 +1,26 @@
+export type {
+  Field,
+  Relation,
+  ForeignKey,
+  AlterFields,
+  AlterKeys,
+  AlterUnqiues,
+  AlterPrimaries,
+  AlterForeignKeys,
+  StrictValue,
+  StrictOptValue,
+  FlatValue,
+  Value,
+  Resolve,
+  Reject,
+  Order,
+  Join,
+  Dialect,
+  QueryObject,
+  Transaction,
+  Connection
+} from './types';
+
 //builder
 import Alter from './builder/Alter';
 import Create from './builder/Create';
@@ -14,7 +37,6 @@ import Engine from './Engine';
 import Exception from './Exception';
 import { joins } from './helpers';
 
-export type * from './types';
 export {
   Alter,
   Create,

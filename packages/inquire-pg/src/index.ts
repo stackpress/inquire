@@ -2,7 +2,11 @@
 import PGConnection from './Connection';
 import { connect } from './helpers';
 
-export type * from './types';
+export type {
+  Results,
+  Resource,
+  Connector
+} from './types';
 
 export { PGConnection, connect };
 
