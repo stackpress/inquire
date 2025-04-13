@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@stackpress/inquire",
-  "version": "0.5.9",
+  "version": "0.5.10",
   "license": "Apache-2.0",
   "description": "Generic typed SQL",
   "author": "Chris <chris@incept.asia>",
@@ -115,7 +115,7 @@
     "test": "DATABASE_URL=test ts-mocha -p ./tsconfig.cjs.json tests/*.test.ts"
   },
   "dependencies": {
-    "@stackpress/lib": "0.5.9"
+    "@stackpress/lib": "0.5.10"
   },
   "devDependencies": {
     "@types/chai": "4.3.20",
