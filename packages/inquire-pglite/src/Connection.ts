@@ -10,7 +10,7 @@ import type {
 import Pgsql from '@stackpress/inquire/Pgsql';
 import Exception from '@stackpress/inquire/Exception';
 //local
-import type { Connector, Resource, Results } from './types';
+import type { Connector, Resource, Results } from './types.js';
 
 export default class PGLiteConnection implements Connection<Resource> {
   //sql language dialect

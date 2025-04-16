@@ -1,6 +1,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-
+//NOTE: no extensions in tests because it's excluded in tsconfig.json and
+//we are testing in a typescript environment via `ts-mocha -r tsx` (esm)
 import Alter from '../src/builder/Alter';
 import Engine from '../src/Engine';
 import Exception from '../src/Exception';
@@ -111,7 +112,7 @@ describe('Alter Builder Tests', () => {
   // Line 198 - 201
   it('Should throw an exception when no engine is provided', () => {
     const alter = new Alter('table', undefined as unknown as Engine);
-    expect(() => alter.then((res) => res)).to.throw(Exception, 'No engine provided');
+    expect(() => alter.then(res => res)).to.throw(Exception, 'No engine provided');
   });
 
   // Line 198 - 209

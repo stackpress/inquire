@@ -1,12 +1,12 @@
 //stackpress
 import type { NestedObject } from '@stackpress/lib/types';
 //builder
-import type Alter from './builder/Alter';
-import type Create from './builder/Create';
-import type Delete from './builder/Delete';
-import type Insert from './builder/Insert';
-import type Select from './builder/Select';
-import type Update from './builder/Update';
+import type Alter from './builder/Alter.js';
+import type Create from './builder/Create.js';
+import type Delete from './builder/Delete.js';
+import type Insert from './builder/Insert.js';
+import type Select from './builder/Select.js';
+import type Update from './builder/Update.js';
 
 //--------------------------------------------------------------------//
 // Schema Types

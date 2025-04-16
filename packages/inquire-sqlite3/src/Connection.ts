@@ -7,7 +7,7 @@ import type {
 } from '@stackpress/inquire/types';
 import Sqlite from '@stackpress/inquire/Sqlite';
 //local
-import type { Connector, Resource, Results } from './types';
+import type { Connector, Resource, Results } from './types.js';
 
 export default class BetterSqlite3Connection implements Connection<Resource> {
   //sql language dialect

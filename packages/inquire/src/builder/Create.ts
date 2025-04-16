@@ -6,9 +6,9 @@ import type {
   Dialect, 
   ForeignKey, 
   QueryObject 
-} from '../types';
-import Engine from '../Engine';
-import Exception from '../Exception';
+} from '../types.js';
+import Engine from '../Engine.js';
+import Exception from '../Exception.js';
 
 export default class Create<R = unknown> {
   /**
@@ -143,7 +143,7 @@ export default class Create<R = unknown> {
    * Makes class awaitable. Should get the 
    * query and values and call the action.
    */
-  public then(resolve: Resolve<R[]>, reject: Reject) {
+  public then(resolve: Resolve<R[]>, reject: Reject = () => {}) {
     if (!this._engine) {
       throw Exception.for('No engine provided');
     }

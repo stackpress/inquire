@@ -1,8 +1,8 @@
 //stackpress
 import Engine from '@stackpress/inquire/Engine';
 //local
-import type { Connector, Resource } from './types';
-import Connection from './Connection';
+import type { Connector, Resource } from './types.js';
+import Connection from './Connection.js';
 
 export function connect(resource: Connector) {
   const connection = new Connection(resource);

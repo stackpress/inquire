@@ -1,12 +1,12 @@
 //local
-import BetterSqlite3Connection from './Connection';
-import { connect } from './helpers';
+import BetterSqlite3Connection from './Connection.js';
+import { connect } from './helpers.js';
 
 export type {
   Results,
   Resource,
   Connector
-} from './types';
+} from './types.js';
 
 export { BetterSqlite3Connection, connect };
 

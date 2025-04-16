@@ -1,6 +1,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-
+//NOTE: no extensions in tests because it's excluded in tsconfig.json and
+//we are testing in a typescript environment via `ts-mocha -r tsx` (esm)
 import type { Connection, QueryObject, Transaction } from '../src/types';
 import Pgsql from '../src/dialect/Pgsql';
 import Engine from '../src/Engine';
@@ -338,6 +339,7 @@ describe('Engine Tests', () => {
 
 class MockConnection implements Connection {
   public dialect = Pgsql;
+  public resource = {} as any;
 
   /**
    * Formats the query to what the database connection understands

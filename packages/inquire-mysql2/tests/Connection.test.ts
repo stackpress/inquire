@@ -1,11 +1,10 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-
+//NOTE: no extensions in tests because it's excluded in tsconfig.json and
+//we are testing in a typescript environment via `ts-mocha -r tsx` (esm)
 import Connection from '../src/Connection';
 
-
 describe('Connection Test', () => {
-
     // Line 29
     it('Should return the correct value for lastId when _lastId is set to a positive integer', () => {
         const mockResource = {} as any;

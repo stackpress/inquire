@@ -1,10 +1,10 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-
+//NOTE: no extensions in tests because it's excluded in tsconfig.json and
+//we are testing in a typescript environment via `ts-mocha -r tsx` (esm)
 import Connection from '../src/Connection';
 
 describe('Connection Test', () => {
-
     // Line 36
     it('Should throw an exception when the query string does not contain a question mark', () => {
         const resource = { query: () => Promise.resolve({ rows: [] }) };

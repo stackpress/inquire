@@ -19,23 +19,23 @@ export type {
   QueryObject,
   Transaction,
   Connection
-} from './types';
+} from './types.js';
 
 //builder
-import Alter from './builder/Alter';
-import Create from './builder/Create';
-import Delete from './builder/Delete';
-import Insert from './builder/Insert';
-import Select from './builder/Select';
-import Update from './builder/Update';
+import Alter from './builder/Alter.js';
+import Create from './builder/Create.js';
+import Delete from './builder/Delete.js';
+import Insert from './builder/Insert.js';
+import Select from './builder/Select.js';
+import Update from './builder/Update.js';
 //dialect
-import Mysql from './dialect/Mysql';
-import Pgsql from './dialect/Pgsql';
-import Sqlite from './dialect/Sqlite';
+import Mysql from './dialect/Mysql.js';
+import Pgsql from './dialect/Pgsql.js';
+import Sqlite from './dialect/Sqlite.js';
 //local
-import Engine from './Engine';
-import Exception from './Exception';
-import { joins } from './helpers';
+import Engine from './Engine.js';
+import Exception from './Exception.js';
+import { joins } from './helpers.js';
 
 export {
   Alter,

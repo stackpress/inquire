@@ -1,17 +1,17 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-
 //modules
 import path from 'path';
 import { PGlite } from '@electric-sql/pglite';
 //stackpress
 import Engine from '@stackpress/inquire/Engine';
-//local
+//NOTE: no extensions in tests because it's excluded in tsconfig.json and
+//we are testing in a typescript environment via `ts-mocha -r tsx` (esm)
 import Connection from '../src/Connection';
 
 describe('PGConnection Tests', () => {
   //this is the raw resource
-  const resource = new PGlite(path.join(__dirname, 'database'));
+  const resource = new PGlite(path.join(import.meta.dirname, 'database'));
   //this is the connection
   const connection = new Connection(resource);
   //this is the engine

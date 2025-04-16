@@ -59,7 +59,7 @@
     "build:tsc": "yarn build:tsc:cjs && yarn build:tsc:esm",
     "build:tsc:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:tsc:esm": "tsc -p ./tsconfig.esm.json",
-    "test": "DATABASE_URL=test ts-mocha -p ./tsconfig.cjs.json tests/*.test.ts"
+    "test": "DATABASE_URL=test ts-mocha -r tsx tests/*.test.ts"
   },
   "dependencies": {
     "@stackpress/inquire": "0.5.10"
@@ -76,6 +76,7 @@
     "ts-mocha": "10.0.0",
     "mysql2": "3.11.5",
     "ts-node": "10.9.2",
+    "tsx": "4.19.3",
     "typescript": "5.7.2"
   }
 }

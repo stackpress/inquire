@@ -11,9 +11,9 @@ import type {
   AlterPrimaries,
   AlterForeignKeys,
   QueryObject
-} from '../types';
-import type Engine from '../Engine';
-import Exception from '../Exception';
+} from '../types.js';
+import type Engine from '../Engine.js';
+import Exception from '../Exception.js';
 
 export default class Alter<R = unknown> {
   /**
@@ -196,7 +196,7 @@ export default class Alter<R = unknown> {
    * Makes class awaitable. Should get the 
    * query and values and call the action.
    */
-  public then(resolve: Resolve<R[]>, reject: Reject) {
+  public then(resolve: Resolve<R[]>, reject: Reject = () => {}) {
     if (!this._engine) {
       throw Exception.for('No engine provided');
     }

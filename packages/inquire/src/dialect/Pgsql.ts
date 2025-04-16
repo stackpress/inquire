@@ -1,14 +1,20 @@
 //builder
-import type Alter from '../builder/Alter';
-import type Create from '../builder/Create';
-import type Delete from '../builder/Delete';
-import type Insert from '../builder/Insert';
-import type Select from '../builder/Select';
-import type Update from '../builder/Update';
+import type Alter from '../builder/Alter.js';
+import type Create from '../builder/Create.js';
+import type Delete from '../builder/Delete.js';
+import type Insert from '../builder/Insert.js';
+import type Select from '../builder/Select.js';
+import type Update from '../builder/Update.js';
 //common
-import type { Join, Value, FlatValue, Dialect, QueryObject } from '../types';
-import Exception from '../Exception';
-import { joins } from '../helpers';
+import type { 
+  Join, 
+  Value, 
+  FlatValue, 
+  Dialect, 
+  QueryObject 
+} from '../types.js';
+import Exception from '../Exception.js';
+import { joins } from '../helpers.js';
 
 //The character used to quote identifiers.
 export const q = '"';

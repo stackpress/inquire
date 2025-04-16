@@ -1,18 +1,18 @@
 //builder
-import Alter from './builder/Alter';
-import Create from './builder/Create';
-import Delete from './builder/Delete';
-import Insert from './builder/Insert';
-import Select from './builder/Select';
-import Update from './builder/Update';
+import Alter from './builder/Alter.js';
+import Create from './builder/Create.js';
+import Delete from './builder/Delete.js';
+import Insert from './builder/Insert.js';
+import Select from './builder/Select.js';
+import Update from './builder/Update.js';
 //local
 import type { 
   Value, 
   Connection, 
   QueryObject, 
   Transaction 
-} from './types';
-import { jsonCompare } from './helpers';
+} from './types.js';
+import { jsonCompare } from './helpers.js';
 
 export default class Engine<R = unknown> {
   //database connection

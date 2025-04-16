@@ -1,12 +1,12 @@
 //local
-import PGConnection from './Connection';
-import { connect } from './helpers';
+import PGConnection from './Connection.js';
+import { connect } from './helpers.js';
 
 export type {
   Results,
   Resource,
   Connector
-} from './types';
+} from './types.js';
 
 export { PGConnection, connect };
 

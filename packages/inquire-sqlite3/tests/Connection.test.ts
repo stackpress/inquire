@@ -6,7 +6,8 @@ import path from 'path';
 import sqlite from 'better-sqlite3';
 //stackpress
 import Engine from '@stackpress/inquire/Engine';
-//local
+//NOTE: no extensions in tests because it's excluded in tsconfig.json and
+//we are testing in a typescript environment via `ts-mocha -r tsx` (esm)
 import Connection from '../src/Connection';
 import BetterSqlite3Connection from '../src/Connection';
 
