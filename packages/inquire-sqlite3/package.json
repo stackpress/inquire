@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@stackpress/inquire-sqlite3",
-  "version": "0.5.11",
+  "version": "0.5.12",
   "license": "Apache-2.0",
   "description": "Generic typed better-sqlite3",
   "author": "Chris <chris@incept.asia>",
@@ -62,7 +62,7 @@
     "test": "DATABASE_URL=test ts-mocha -r tsx tests/*.test.ts"
   },
   "dependencies": {
-    "@stackpress/inquire": "0.5.11"
+    "@stackpress/inquire": "0.5.12"
   },
   "peerDependencies": {
     "better-sqlite3": "^11.7.0"
