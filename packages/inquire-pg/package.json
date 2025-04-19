@@ -68,7 +68,7 @@
     "@stackpress/inquire": "0.5.14"
   },
   "peerDependencies": {
-    "pg": "^8.13.1"
+    "pg": "^8"
   },
   "devDependencies": {
     "@types/chai": "4.3.20",

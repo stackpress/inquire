@@ -67,7 +67,7 @@
     "@stackpress/inquire": "0.5.14"
   },
   "peerDependencies": {
-    "mysql2": "^3.11.5"
+    "mysql2": "^3"
   },
   "devDependencies": {
     "@types/chai": "4.3.20",
