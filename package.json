@@ -11,7 +11,8 @@
     "build:pg": "yarn --cwd packages/inquire-pg build",
     "build:pglite": "yarn --cwd packages/inquire-pglite build",
     "build:sqlite3": "yarn --cwd packages/inquire-sqlite3 build",
-    "report": "nyc yarn test:inquire && nyc report -r lcov",
+    "report": "yarn report:env nyc yarn test:inquire && nyc report -r lcov",
+    "report:env": "NODE_OPTIONS=\"--disable-warning=ExperimentalWarning --experimental-loader @istanbuljs/esm-loader-hook\"",
     "test": "yarn test:inquire && yarn test:pglite && yarn test:mysql2 && yarn test:sqlite3 && yarn test:pg",
     "test:inquire": "yarn --cwd packages/inquire test",
     "test:mysql2": "yarn --cwd packages/inquire-mysql2 test",
@@ -25,6 +26,7 @@
     "test:ex:sqlite3": "yarn --cwd examples/with-sqlite3 test"
   },
   "devDependencies": {
+    "@istanbuljs/esm-loader-hook": "0.3.0",
     "nyc": "17.1.0"
   }
 }
