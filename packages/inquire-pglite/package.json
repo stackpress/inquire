@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@stackpress/inquire-pglite",
-  "version": "0.5.22",
+  "version": "0.5.23",
   "license": "Apache-2.0",
   "description": "Generic typed pglite",
   "author": "Chris <chris@incept.asia>",
@@ -65,7 +65,7 @@
     "test": "DATABASE_URL=test ts-mocha -r tsx tests/*.test.ts"
   },
   "dependencies": {
-    "@stackpress/inquire": "0.5.22"
+    "@stackpress/inquire": "0.5.23"
   },
   "peerDependencies": {
     "@electric-sql/pglite": "^0.2"
