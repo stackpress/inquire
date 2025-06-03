@@ -8,7 +8,7 @@
     "test": "ts-node ./src/index.ts"
   },
   "dependencies": {
-    "@stackpress/inquire-mysql2": "0.5.24",
+    "@stackpress/inquire-mysql2": "0.5.25",
     "mysql2": "3.11.5"
   },
   "devDependencies": {
