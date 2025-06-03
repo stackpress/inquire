@@ -72,21 +72,17 @@ export function getDefault(value: any, type: string) {
     return value ? 'TRUE' : 'FALSE';
   } else if (typeof value === 'number' || !isNaN(Number(value))) {
     return value;
-  } else if (typeof value === 'string') {
-    if (/^[A-Z_]+$/g.test(value)) {
-      return value;
-    } else if (value.endsWith('()')) {
-      if (value.toLowerCase() === 'now()') {
-        if (type === 'TIMESTAMP') {
-          return 'CURRENT_TIMESTAMP';
-        } else if (type === 'DATE') {
-          return 'CURRENT_DATE';
-        } else if (type === 'TIME') {
-          return 'CURRENT_TIME';
-        }
+  } else if (typeof value === 'string' && value.endsWith('()')) {
+    if (value.toLowerCase() === 'now()') {
+      if (type === 'TIMESTAMP') {
+        return 'CURRENT_TIMESTAMP';
+      } else if (type === 'DATE') {
+        return 'CURRENT_DATE';
+      } else if (type === 'TIME') {
+        return 'CURRENT_TIME';
       }
-      return value.toUpperCase();
     }
+    return value.toUpperCase();
   } else if (value && typeof value === 'object') {
     return JSON.stringify(value);
   }
