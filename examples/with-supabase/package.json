@@ -8,7 +8,7 @@
       "start": "ts-node ./src/index.ts"
     },
     "dependencies": {
-      "@stackpress/inquire-pg": "0.5.27",
+      "@stackpress/inquire-pg": "0.5.28",
       "@supabase/supabase-js": "^2.42.0",
       "pg": "^8.13.1",
       "dotenv": "^16.4.5"
