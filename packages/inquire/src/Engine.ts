@@ -213,7 +213,10 @@ export default class Engine<R = unknown> {
    * Usage:
    * await engine.sql`SELECT * FROM table WHERE id = ${id}`;
    */
-  public sql<R = unknown>(strings: string[], ...values: Value[]) {
+  public sql<R = unknown>(
+    strings: TemplateStringsArray|string[], 
+    ...values: Value[]
+  ) {
     const query = strings.join('?').replaceAll('`', this.dialect.q);
     return this.query<R>(query, values);
   }
