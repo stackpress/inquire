@@ -134,3 +134,6 @@ packages/*/tests/database
 yarn.lock
 cjs/
 esm/
+
+# AI
+.clinerules

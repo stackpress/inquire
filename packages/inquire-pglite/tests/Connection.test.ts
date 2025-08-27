@@ -1,7 +1,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 //modules
-import path from 'path';
+import path from 'node:path';
 import { PGlite } from '@electric-sql/pglite';
 //stackpress
 import Engine from '@stackpress/inquire/Engine';

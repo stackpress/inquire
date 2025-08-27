@@ -3,7 +3,7 @@
   "name": "@stackpress/inquire",
   "version": "0.6.1",
   "license": "Apache-2.0",
-  "description": "Generic typed SQL",
+  "description": "Super lightweight generic typed SQL query builder, SQL dialects and composite engine.",
   "author": "Chris <chris@incept.asia>",
   "homepage": "https://github.com/stackpress/inquire",
   "bugs": "https://github.com/stackpress/inquire/issues",

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Inquire",
+  "description": "Super lightweight generic typed SQL query builder, SQL dialects and composite engine.",
+  "folders": [],
+  "excludeFolders": [],
+  "excludeFiles": [ "Context.md" ],
+  "rules": [],
+  "previousVersions": []
+}
