@@ -10,7 +10,15 @@ const users = await engine.select(['id', 'name', 'email'])
   .limit(10);
 ```
 
-## Properties
+ 1. [Properties](#1-properties)
+ 2. [Methods](#2-methods)
+ 3. [Advanced Query Patterns](#3-advanced-query-patterns)
+ 4. [Database-Specific Features](#4-database-specific-features)
+ 5. [Type Safety](#5-type-safety)
+ 6. [Error Handling](#6-error-handling)
+ 7. [Complete Example](#7-complete-example)
+
+## 1. Properties
 
 The following properties are available when instantiating a Select builder.
 
@@ -19,36 +27,36 @@ The following properties are available when instantiating a Select builder.
 | `columns` | `string\|string[]` | The columns being selected |
 | `engine` | `Engine` | The database engine instance |
 
-## Methods
+## 2. Methods
 
 The following methods are available when using a Select builder.
 
-### Selecting Columns
+### 2.1. Selecting Columns
 
 The following example shows how to specify which columns to select from tables.
 
 ```typescript
-// Select all columns
-const allUsers = await engine.select('*').from('users');
+ // Select all columns
+ const allUsers = await engine.select('*').from('users');
 
-// Select specific columns
-const userNames = await engine.select(['id', 'name']).from('users');
+ // Select specific columns
+ const userNames = await engine.select(['id', 'name']).from('users');
 
-// Select with aliases
-const userInfo = await engine.select([
-  'id',
-  'name as full_name',
-  'email as email_address',
-  'created_at as registration_date'
-]).from('users');
+ // Select with aliases
+ const userInfo = await engine.select([
+   'id',
+   'name as full_name',
+   'email as email_address',
+   'created_at as registration_date'
+ ]).from('users');
 
-// Select with expressions
-const userStats = await engine.select([
-  'id',
-  'name',
-  'UPPER(email) as email_upper',
-  'YEAR(created_at) as registration_year'
-]).from('users');
+ // Select with expressions
+ const userStats = await engine.select([
+   'id',
+   'name',
+   'UPPER(email) as email_upper',
+   'YEAR(created_at) as registration_year'
+ ]).from('users');
 ```
 
 **Parameters**
@@ -61,19 +69,19 @@ const userStats = await engine.select([
 
 The Select builder instance to allow method chaining.
 
-### From Clause
+### 2.2. From Clause
 
 The following example shows how to specify the source table or tables.
 
 ```typescript
-// Basic from
-const users = await engine.select('*').from('users');
+ // Basic from
+ const users = await engine.select('*').from('users');
 
-// From with alias
-const users = await engine.select('u.*').from('users u');
+ // From with alias
+ const users = await engine.select('u.*').from('users u');
 
-// From with schema (PostgreSQL/MySQL)
-const users = await engine.select('*').from('public.users');
+ // From with schema (PostgreSQL/MySQL)
+ const users = await engine.select('*').from('public.users');
 ```
 
 **Parameters**
@@ -86,34 +94,34 @@ const users = await engine.select('*').from('public.users');
 
 The Select builder instance to allow method chaining.
 
-### Where Conditions
+### 2.3. Where Conditions
 
 The following example shows how to add WHERE conditions to filter results.
 
 ```typescript
-// Single condition
-const activeUsers = await engine.select('*')
-  .from('users')
-  .where('active = ?', [true]);
+ // Single condition
+ const activeUsers = await engine.select('*')
+   .from('users')
+   .where('active = ?', [true]);
 
-// Multiple conditions (AND)
-const filteredUsers = await engine.select('*')
-  .from('users')
-  .where('active = ?', [true])
-  .where('created_at > ?', [new Date('2024-01-01')])
-  .where('role IN (?)', [['admin', 'user']]);
+ // Multiple conditions (AND)
+ const filteredUsers = await engine.select('*')
+   .from('users')
+   .where('active = ?', [true])
+   .where('created_at > ?', [new Date('2024-01-01')])
+   .where('role IN (?)', [['admin', 'user']]);
 
-// OR conditions
-const users = await engine.select('*')
-  .from('users')
-  .where('role = ?', ['admin'])
-  .orWhere('permissions LIKE ?', ['%manage%']);
+ // OR conditions
+ const users = await engine.select('*')
+   .from('users')
+   .where('role = ?', ['admin'])
+   .orWhere('permissions LIKE ?', ['%manage%']);
 
-// Complex conditions with grouping
-const complexQuery = await engine.select('*')
-  .from('users')
-  .where('active = ?', [true])
-  .where('(role = ? OR permissions LIKE ?)', ['admin', '%manage%']);
+ // Complex conditions with grouping
+ const complexQuery = await engine.select('*')
+   .from('users')
+   .where('active = ?', [true])
+   .where('(role = ? OR permissions LIKE ?)', ['admin', '%manage%']);
 ```
 
 **Parameters**
@@ -127,57 +135,57 @@ const complexQuery = await engine.select('*')
 
 The Select builder instance to allow method chaining.
 
-### Joins
+### 2.4. Joins
 
 The following example shows how to join tables for relational queries.
 
 ```typescript
-// Inner join
-const usersWithPosts = await engine.select([
-    'u.id',
-    'u.name',
-    'p.title',
-    'p.created_at as post_date'
-  ])
-  .from('users u')
-  .innerJoin('posts p', 'u.id = p.user_id');
+ // Inner join
+ const usersWithPosts = await engine.select([
+     'u.id',
+     'u.name',
+     'p.title',
+     'p.created_at as post_date'
+   ])
+   .from('users u')
+   .innerJoin('posts p', 'u.id = p.user_id');
 
-// Left join
-const allUsersWithPosts = await engine.select([
-    'u.id',
-    'u.name',
-    'p.title'
-  ])
-  .from('users u')
-  .leftJoin('posts p', 'u.id = p.user_id');
+ // Left join
+ const allUsersWithPosts = await engine.select([
+     'u.id',
+     'u.name',
+     'p.title'
+   ])
+   .from('users u')
+   .leftJoin('posts p', 'u.id = p.user_id');
 
-// Right join
-const postsWithUsers = await engine.select([
-    'p.title',
-    'u.name'
-  ])
-  .from('posts p')
-  .rightJoin('users u', 'p.user_id = u.id');
+ // Right join
+ const postsWithUsers = await engine.select([
+     'p.title',
+     'u.name'
+   ])
+   .from('posts p')
+   .rightJoin('users u', 'p.user_id = u.id');
 
-// Multiple joins
-const complexQuery = await engine.select([
-    'u.name',
-    'p.title',
-    'c.content as comment',
-    'cat.name as category'
-  ])
-  .from('users u')
-  .innerJoin('posts p', 'u.id = p.user_id')
-  .leftJoin('comments c', 'p.id = c.post_id')
-  .innerJoin('categories cat', 'p.category_id = cat.id');
+ // Multiple joins
+ const complexQuery = await engine.select([
+     'u.name',
+     'p.title',
+     'c.content as comment',
+     'cat.name as category'
+   ])
+   .from('users u')
+   .innerJoin('posts p', 'u.id = p.user_id')
+   .leftJoin('comments c', 'p.id = c.post_id')
+   .innerJoin('categories cat', 'p.category_id = cat.id');
 
-// Join with additional conditions
-const recentPosts = await engine.select([
-    'u.name',
-    'p.title'
-  ])
-  .from('users u')
-  .innerJoin('posts p', 'u.id = p.user_id AND p.published = ?', [true]);
+ // Join with additional conditions
+ const recentPosts = await engine.select([
+     'u.name',
+     'p.title'
+   ])
+   .from('users u')
+   .innerJoin('posts p', 'u.id = p.user_id AND p.published = ?', [true]);
 ```
 
 **Parameters**
@@ -192,40 +200,40 @@ const recentPosts = await engine.select([
 
 The Select builder instance to allow method chaining.
 
-### Grouping
+### 2.5. Grouping
 
 The following example shows how to group results and use aggregate functions.
 
 ```typescript
-// Basic grouping
-const userPostCounts = await engine.select([
-    'user_id',
-    'COUNT(*) as post_count'
-  ])
-  .from('posts')
-  .groupBy('user_id');
+ // Basic grouping
+ const userPostCounts = await engine.select([
+     'user_id',
+     'COUNT(*) as post_count'
+   ])
+   .from('posts')
+   .groupBy('user_id');
 
-// Multiple grouping columns
-const categoryStats = await engine.select([
-    'category_id',
-    'YEAR(created_at) as year',
-    'COUNT(*) as post_count',
-    'AVG(views) as avg_views'
-  ])
-  .from('posts')
-  .groupBy('category_id', 'YEAR(created_at)');
+ // Multiple grouping columns
+ const categoryStats = await engine.select([
+     'category_id',
+     'YEAR(created_at) as year',
+     'COUNT(*) as post_count',
+     'AVG(views) as avg_views'
+   ])
+   .from('posts')
+   .groupBy('category_id', 'YEAR(created_at)');
 
-// Grouping with joins
-const userStats = await engine.select([
-    'u.id',
-    'u.name',
-    'COUNT(p.id) as post_count',
-    'MAX(p.created_at) as latest_post',
-    'MIN(p.created_at) as first_post'
-  ])
-  .from('users u')
-  .leftJoin('posts p', 'u.id = p.user_id')
-  .groupBy('u.id', 'u.name');
+ // Grouping with joins
+ const userStats = await engine.select([
+     'u.id',
+     'u.name',
+     'COUNT(p.id) as post_count',
+     'MAX(p.created_at) as latest_post',
+     'MIN(p.created_at) as first_post'
+   ])
+   .from('users u')
+   .leftJoin('posts p', 'u.id = p.user_id')
+   .groupBy('u.id', 'u.name');
 ```
 
 **Parameters**
@@ -238,42 +246,42 @@ const userStats = await engine.select([
 
 The Select builder instance to allow method chaining.
 
-### Having Conditions
+### 2.6. Having Conditions
 
 The following example shows how to filter grouped results with HAVING clauses.
 
 ```typescript
-// Basic having
-const activeUsers = await engine.select([
-    'user_id',
-    'COUNT(*) as post_count'
-  ])
-  .from('posts')
-  .where('published = ?', [true])
-  .groupBy('user_id')
-  .having('COUNT(*) > ?', [5]);
+ // Basic having
+ const activeUsers = await engine.select([
+     'user_id',
+     'COUNT(*) as post_count'
+   ])
+   .from('posts')
+   .where('published = ?', [true])
+   .groupBy('user_id')
+   .having('COUNT(*) > ?', [5]);
 
-// Multiple having conditions
-const userStats = await engine.select([
-    'user_id',
-    'COUNT(*) as post_count',
-    'AVG(views) as avg_views'
-  ])
-  .from('posts')
-  .groupBy('user_id')
-  .having('COUNT(*) > ?', [10])
-  .having('AVG(views) > ?', [1000]);
+ // Multiple having conditions
+ const userStats = await engine.select([
+     'user_id',
+     'COUNT(*) as post_count',
+     'AVG(views) as avg_views'
+   ])
+   .from('posts')
+   .groupBy('user_id')
+   .having('COUNT(*) > ?', [10])
+   .having('AVG(views) > ?', [1000]);
 
-// Having with OR conditions
-const popularUsers = await engine.select([
-    'user_id',
-    'COUNT(*) as post_count',
-    'SUM(views) as total_views'
-  ])
-  .from('posts')
-  .groupBy('user_id')
-  .having('COUNT(*) > ?', [20])
-  .orHaving('SUM(views) > ?', [50000]);
+ // Having with OR conditions
+ const popularUsers = await engine.select([
+     'user_id',
+     'COUNT(*) as post_count',
+     'SUM(views) as total_views'
+   ])
+   .from('posts')
+   .groupBy('user_id')
+   .having('COUNT(*) > ?', [20])
+   .orHaving('SUM(views) > ?', [50000]);
 ```
 
 **Parameters**
@@ -287,38 +295,38 @@ const popularUsers = await engine.select([
 
 The Select builder instance to allow method chaining.
 
-### Ordering
+### 2.7. Ordering
 
 The following example shows how to sort query results.
 
 ```typescript
-// Single column ordering
-const users = await engine.select('*')
-  .from('users')
-  .orderBy('name', 'ASC');
+ // Single column ordering
+ const users = await engine.select('*')
+   .from('users')
+   .orderBy('name', 'ASC');
 
-// Multiple column ordering
-const posts = await engine.select('*')
-  .from('posts')
-  .orderBy('published', 'DESC')
-  .orderBy('created_at', 'DESC')
-  .orderBy('title', 'ASC');
+ // Multiple column ordering
+ const posts = await engine.select('*')
+   .from('posts')
+   .orderBy('published', 'DESC')
+   .orderBy('created_at', 'DESC')
+   .orderBy('title', 'ASC');
 
-// Ordering by expressions
-const userStats = await engine.select([
-    'id',
-    'name',
-    'created_at'
-  ])
-  .from('users')
-  .orderBy('YEAR(created_at)', 'DESC')
-  .orderBy('MONTH(created_at)', 'DESC');
+ // Ordering by expressions
+ const userStats = await engine.select([
+     'id',
+     'name',
+     'created_at'
+   ])
+   .from('users')
+   .orderBy('YEAR(created_at)', 'DESC')
+   .orderBy('MONTH(created_at)', 'DESC');
 
-// Random ordering
-const randomUsers = await engine.select('*')
-  .from('users')
-  .orderBy('RAND()', 'ASC'); // MySQL
-  // .orderBy('RANDOM()', 'ASC'); // PostgreSQL/SQLite
+ // Random ordering
+ const randomUsers = await engine.select('*')
+   .from('users')
+   .orderBy('RAND()', 'ASC'); // MySQL
+   // .orderBy('RANDOM()', 'ASC'); // PostgreSQL/SQLite
 ```
 
 **Parameters**
@@ -332,35 +340,35 @@ const randomUsers = await engine.select('*')
 
 The Select builder instance to allow method chaining.
 
-### Limiting and Offset
+### 2.8. Limiting and Offset
 
 The following example shows how to limit results and implement pagination.
 
 ```typescript
-// Basic limit
-const topUsers = await engine.select('*')
-  .from('users')
-  .orderBy('created_at', 'DESC')
-  .limit(10);
+ // Basic limit
+ const topUsers = await engine.select('*')
+   .from('users')
+   .orderBy('created_at', 'DESC')
+   .limit(10);
 
-// Limit with offset for pagination
-const page2Users = await engine.select('*')
-  .from('users')
-  .orderBy('id', 'ASC')
-  .limit(10)
-  .offset(10);
+ // Limit with offset for pagination
+ const page2Users = await engine.select('*')
+   .from('users')
+   .orderBy('id', 'ASC')
+   .limit(10)
+   .offset(10);
 
-// Pagination helper
-const getPage = async (page: number, perPage: number = 20) => {
-  return await engine.select('*')
-    .from('users')
-    .orderBy('id', 'ASC')
-    .limit(perPage)
-    .offset((page - 1) * perPage);
-};
+ // Pagination helper
+ const getPage = async (page: number, perPage: number = 20) => {
+   return await engine.select('*')
+     .from('users')
+     .orderBy('id', 'ASC')
+     .limit(perPage)
+     .offset((page - 1) * perPage);
+ };
 
-const firstPage = await getPage(1);
-const secondPage = await getPage(2);
+ const firstPage = await getPage(1);
+ const secondPage = await getPage(2);
 ```
 
 **Parameters**
@@ -373,59 +381,59 @@ const secondPage = await getPage(2);
 
 The Select builder instance to allow method chaining.
 
-### Distinct
+### 2.9. Distinct
 
 The following example shows how to select distinct values.
 
 ```typescript
-// Distinct all columns
-const uniqueUsers = await engine.select('*')
-  .from('users')
-  .distinct();
+ // Distinct all columns
+ const uniqueUsers = await engine.select('*')
+   .from('users')
+   .distinct();
 
-// Distinct specific columns
-const uniqueEmails = await engine.select(['email'])
-  .from('users')
-  .distinct();
+ // Distinct specific columns
+ const uniqueEmails = await engine.select(['email'])
+   .from('users')
+   .distinct();
 
-// Distinct with multiple columns
-const uniqueCombinations = await engine.select(['role', 'department'])
-  .from('users')
-  .distinct();
+ // Distinct with multiple columns
+ const uniqueCombinations = await engine.select(['role', 'department'])
+   .from('users')
+   .distinct();
 ```
 
 **Returns**
 
 The Select builder instance to allow method chaining.
 
-### Subqueries
+### 2.10. Subqueries
 
 The following example shows how to use subqueries in SELECT statements.
 
 ```typescript
-// Subquery in WHERE clause
-const usersWithPosts = await engine.select('*')
-  .from('users')
-  .where('id IN (SELECT DISTINCT user_id FROM posts WHERE published = ?)', [true]);
+ // Subquery in WHERE clause
+ const usersWithPosts = await engine.select('*')
+   .from('users')
+   .where('id IN (SELECT DISTINCT user_id FROM posts WHERE published = ?)', [true]);
 
-// Subquery in SELECT clause
-const usersWithPostCount = await engine.select([
-    'id',
-    'name',
-    '(SELECT COUNT(*) FROM posts WHERE user_id = users.id) as post_count'
-  ])
-  .from('users');
+ // Subquery in SELECT clause
+ const usersWithPostCount = await engine.select([
+     'id',
+     'name',
+     '(SELECT COUNT(*) FROM posts WHERE user_id = users.id) as post_count'
+   ])
+   .from('users');
 
-// Correlated subquery
-const usersWithLatestPost = await engine.select([
-    'u.id',
-    'u.name',
-    '(SELECT title FROM posts p WHERE p.user_id = u.id ORDER BY created_at DESC LIMIT 1) as latest_post'
-  ])
-  .from('users u');
+ // Correlated subquery
+ const usersWithLatestPost = await engine.select([
+     'u.id',
+     'u.name',
+     '(SELECT title FROM posts p WHERE p.user_id = u.id ORDER BY created_at DESC LIMIT 1) as latest_post'
+   ])
+   .from('users u');
 ```
 
-### Getting Query Information
+### 2.11. Getting Query Information
 
 The following example shows how to inspect the generated SQL before execution.
 
@@ -448,154 +456,158 @@ const results = await selectBuilder;
 
 An object containing the SQL query string and parameter values.
 
-## Advanced Query Patterns
+## 3. Advanced Query Patterns
 
-### Window Functions (PostgreSQL/MySQL 8.0+)
+Advanced querying techniques for complex data retrieval scenarios.
 
-```typescript
-// Row numbering
-const rankedUsers = await engine.select([
-    'id',
-    'name',
-    'created_at',
-    'ROW_NUMBER() OVER (ORDER BY created_at) as row_num'
-  ])
-  .from('users');
-
-// Partitioned ranking
-const rankedPosts = await engine.select([
-    'id',
-    'title',
-    'user_id',
-    'views',
-    'RANK() OVER (PARTITION BY user_id ORDER BY views DESC) as rank_in_user_posts'
-  ])
-  .from('posts');
-
-// Running totals
-const runningTotals = await engine.select([
-    'id',
-    'amount',
-    'created_at',
-    'SUM(amount) OVER (ORDER BY created_at) as running_total'
-  ])
-  .from('orders')
-  .orderBy('created_at');
-```
-
-### Common Table Expressions (PostgreSQL/MySQL 8.0+)
+### 3.1. Window Functions (PostgreSQL/MySQL 8.0+)
 
 ```typescript
-// Using template strings for CTEs
-const hierarchicalData = await engine.sql<{
-  id: number;
-  name: string;
-  level: number;
-}>`
-  WITH RECURSIVE category_tree AS (
-    SELECT id, name, parent_id, 0 as level
-    FROM categories 
-    WHERE parent_id IS NULL
-    
-    UNION ALL
-    
-    SELECT c.id, c.name, c.parent_id, ct.level + 1
-    FROM categories c
-    INNER JOIN category_tree ct ON c.parent_id = ct.id
-  )
-  SELECT id, name, level
-  FROM category_tree
-  ORDER BY level, name
-`;
+ // Row numbering
+ const rankedUsers = await engine.select([
+     'id',
+     'name',
+     'created_at',
+     'ROW_NUMBER() OVER (ORDER BY created_at) as row_num'
+   ])
+   .from('users');
+
+ // Partitioned ranking
+ const rankedPosts = await engine.select([
+     'id',
+     'title',
+     'user_id',
+     'views',
+     'RANK() OVER (PARTITION BY user_id ORDER BY views DESC) as rank_in_user_posts'
+   ])
+   .from('posts');
+
+ // Running totals
+ const runningTotals = await engine.select([
+     'id',
+     'amount',
+     'created_at',
+     'SUM(amount) OVER (ORDER BY created_at) as running_total'
+   ])
+   .from('orders')
+   .orderBy('created_at');
 ```
 
-### Conditional Aggregation
+### 3.2. Common Table Expressions (PostgreSQL/MySQL 8.0+)
 
 ```typescript
-// Conditional counts
-const userStats = await engine.select([
-    'user_id',
-    'COUNT(*) as total_posts',
-    'COUNT(CASE WHEN published = 1 THEN 1 END) as published_posts',
-    'COUNT(CASE WHEN featured = 1 THEN 1 END) as featured_posts'
-  ])
-  .from('posts')
-  .groupBy('user_id');
-
-// Conditional sums
-const salesStats = await engine.select([
-    'YEAR(created_at) as year',
-    'SUM(amount) as total_sales',
-    'SUM(CASE WHEN status = "completed" THEN amount ELSE 0 END) as completed_sales',
-    'SUM(CASE WHEN status = "refunded" THEN amount ELSE 0 END) as refunded_sales'
-  ])
-  .from('orders')
-  .groupBy('YEAR(created_at)');
+ // Using template strings for CTEs
+ const hierarchicalData = await engine.sql<{
+   id: number;
+   name: string;
+   level: number;
+ }>`
+   WITH RECURSIVE category_tree AS (
+     SELECT id, name, parent_id, 0 as level
+     FROM categories 
+     WHERE parent_id IS NULL
+     
+     UNION ALL
+     
+     SELECT c.id, c.name, c.parent_id, ct.level + 1
+     FROM categories c
+     INNER JOIN category_tree ct ON c.parent_id = ct.id
+   )
+   SELECT id, name, level
+   FROM category_tree
+   ORDER BY level, name
+ `;
 ```
 
-## Database-Specific Features
-
-### MySQL Features
+### 3.3. Conditional Aggregation
 
 ```typescript
-// MySQL-specific functions
-const mysqlQuery = await engine.select([
-    'id',
-    'name',
-    'JSON_EXTRACT(metadata, "$.role") as role',
-    'MATCH(title, content) AGAINST(? IN BOOLEAN MODE) as relevance'
-  ])
-  .from('users')
-  .where('MATCH(title, content) AGAINST(? IN BOOLEAN MODE)', ['search term']);
+ // Conditional counts
+ const userStats = await engine.select([
+     'user_id',
+     'COUNT(*) as total_posts',
+     'COUNT(CASE WHEN published = 1 THEN 1 END) as published_posts',
+     'COUNT(CASE WHEN featured = 1 THEN 1 END) as featured_posts'
+   ])
+   .from('posts')
+   .groupBy('user_id');
 
-// MySQL date functions
-const dateQuery = await engine.select([
-    'id',
-    'DATE_FORMAT(created_at, "%Y-%m") as month',
-    'COUNT(*) as count'
-  ])
-  .from('posts')
-  .groupBy('DATE_FORMAT(created_at, "%Y-%m")');
+ // Conditional sums
+ const salesStats = await engine.select([
+     'YEAR(created_at) as year',
+     'SUM(amount) as total_sales',
+     'SUM(CASE WHEN status = "completed" THEN amount ELSE 0 END) as completed_sales',
+     'SUM(CASE WHEN status = "refunded" THEN amount ELSE 0 END) as refunded_sales'
+   ])
+   .from('orders')
+   .groupBy('YEAR(created_at)');
 ```
 
-### PostgreSQL Features
+## 4. Database-Specific Features
+
+Database-specific features and optimizations for SELECT operations across different SQL dialects.
+
+### 4.1. MySQL Features
 
 ```typescript
-// PostgreSQL-specific functions
-const pgQuery = await engine.select([
-    'id',
-    'name',
-    'data->>\'role\' as role',
-    'array_length(tags, 1) as tag_count'
-  ])
-  .from('users')
-  .where('data ? ?', ['role']);
+ // MySQL-specific functions
+ const mysqlQuery = await engine.select([
+     'id',
+     'name',
+     'JSON_EXTRACT(metadata, "$.role") as role',
+     'MATCH(title, content) AGAINST(? IN BOOLEAN MODE) as relevance'
+   ])
+   .from('users')
+   .where('MATCH(title, content) AGAINST(? IN BOOLEAN MODE)', ['search term']);
 
-// PostgreSQL array operations
-const arrayQuery = await engine.select([
-    'id',
-    'title',
-    'tags',
-    'array_to_string(tags, \', \') as tags_string'
-  ])
-  .from('posts')
-  .where('? = ANY(tags)', ['javascript']);
+ // MySQL date functions
+ const dateQuery = await engine.select([
+     'id',
+     'DATE_FORMAT(created_at, "%Y-%m") as month',
+     'COUNT(*) as count'
+   ])
+   .from('posts')
+   .groupBy('DATE_FORMAT(created_at, "%Y-%m")');
 ```
 
-### SQLite Features
+### 4.2. PostgreSQL Features
 
 ```typescript
-// SQLite-specific functions
-const sqliteQuery = await engine.select([
-    'id',
-    'name',
-    'substr(email, instr(email, \'@\') + 1) as domain',
-    'datetime(created_at, \'localtime\') as local_time'
-  ])
-  .from('users');
+ // PostgreSQL-specific functions
+ const pgQuery = await engine.select([
+     'id',
+     'name',
+     'data->>\'role\' as role',
+     'array_length(tags, 1) as tag_count'
+   ])
+   .from('users')
+   .where('data ? ?', ['role']);
+
+ // PostgreSQL array operations
+ const arrayQuery = await engine.select([
+     'id',
+     'title',
+     'tags',
+     'array_to_string(tags, \', \') as tags_string'
+   ])
+   .from('posts')
+   .where('? = ANY(tags)', ['javascript']);
 ```
 
-## Type Safety
+### 4.3. SQLite Features
+
+```typescript
+ // SQLite-specific functions
+ const sqliteQuery = await engine.select([
+     'id',
+     'name',
+     'substr(email, instr(email, \'@\') + 1) as domain',
+     'datetime(created_at, \'localtime\') as local_time'
+   ])
+   .from('users');
+```
+
+## 5. Type Safety
 
 The Select builder supports TypeScript generics for type-safe operations:
 
@@ -612,20 +624,20 @@ type UserWithPostCount = User & {
   post_count: number;
 };
 
-// Type-safe select
-const users: User[] = await engine.select<User>('*').from('users');
+ // Type-safe select
+ const users: User[] = await engine.select<User>('*').from('users');
 
-// Type-safe complex query
-const usersWithStats: UserWithPostCount[] = await engine.select<UserWithPostCount>([
-    'u.*',
-    'COUNT(p.id) as post_count'
-  ])
-  .from('users u')
-  .leftJoin('posts p', 'u.id = p.user_id')
-  .groupBy('u.id');
+ // Type-safe complex query
+ const usersWithStats: UserWithPostCount[] = await engine.select<UserWithPostCount>([
+     'u.*',
+     'COUNT(p.id) as post_count'
+   ])
+   .from('users u')
+   .leftJoin('posts p', 'u.id = p.user_id')
+   .groupBy('u.id');
 ```
 
-## Error Handling
+## 6. Error Handling
 
 The Select builder uses consistent error handling through the `InquireException`:
 
@@ -643,7 +655,7 @@ try {
 }
 ```
 
-## Complete Example
+## 7. Complete Example
 
 Here's a comprehensive example showing a complex SELECT query with multiple features:
 

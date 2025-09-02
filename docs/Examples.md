@@ -1,19 +1,23 @@
 # Examples
 
-This document provides comprehensive examples of using the Inquire SQL library across different scenarios and database engines.
+This document provides comprehensive examples of using the Inquire SQL library across different scenarios and database engines. These examples demonstrate practical usage patterns, best practices, and real-world implementations across various database systems.
 
-## Table of Contents
+ 1. [Basic CRUD Operations](#1-basic-crud-operations)
+ 2. [Advanced Query Building](#2-advanced-query-building)
+ 3. [Schema Management](#3-schema-management)
+ 4. [Transactions](#4-transactions)
+ 5. [Type Safety Examples](#5-type-safety-examples)
+ 6. [Database-Specific Examples](#6-database-specific-examples)
 
-- [Basic CRUD Operations](#basic-crud-operations)
-- [Advanced Query Building](#advanced-query-building)
-- [Schema Management](#schema-management)
-- [Transactions](#transactions)
-- [Type Safety Examples](#type-safety-examples)
-- [Database-Specific Examples](#database-specific-examples)
+## 1. Basic CRUD Operations
 
-## Basic CRUD Operations
+This section covers the fundamental Create, Read, Update, and Delete operations that form the foundation of most database interactions. These examples show how to perform essential data manipulation tasks using Inquire's fluent API.
 
-### Creating Tables
+### 1.1. Creating Tables
+
+The following examples demonstrate how to create database tables with various field types, constraints, and relationships.
+
+**Basic Table Creation**
 
 ```typescript
 // Basic table creation
@@ -40,7 +44,29 @@ await engine.create('posts')
   });
 ```
 
-### Inserting Data
+**Table with Foreign Keys**
+
+```typescript
+// Table with foreign keys
+await engine.create('posts')
+  .addField('id', { type: 'INTEGER', autoIncrement: true })
+  .addField('user_id', { type: 'INTEGER' })
+  .addField('title', { type: 'VARCHAR', length: 255 })
+  .addField('content', { type: 'TEXT' })
+  .addField('published', { type: 'BOOLEAN', default: false })
+  .addPrimaryKey('id')
+  .addForeignKey('fk_user', { 
+    local: ['user_id'], 
+    foreign: { table: 'users', columns: ['id'] },
+    onDelete: 'CASCADE'
+  });
+```
+
+### 1.2. Inserting Data
+
+The following examples show how to insert single records, multiple records, and use advanced insertion features like the RETURNING clause.
+
+**Single Record Insertion**
 
 ```typescript
 // Insert single record
@@ -64,7 +90,32 @@ const newUsers = await engine.insert('users')
   .returning('*');
 ```
 
-### Selecting Data
+**Multiple Records Insertion**
+
+```typescript
+// Insert multiple records
+await engine.insert('users')
+  .values([
+    { name: 'Alice Smith', email: 'alice@example.com' },
+    { name: 'Bob Johnson', email: 'bob@example.com' },
+    { name: 'Carol Williams', email: 'carol@example.com' }
+  ]);
+```
+
+**Insert with RETURNING Clause**
+
+```typescript
+// Insert with returning (PostgreSQL/SQLite)
+const newUsers = await engine.insert('users')
+  .values({ name: 'Jane Doe', email: 'jane@example.com' })
+  .returning('*');
+```
+
+### 1.3. Selecting Data
+
+The following examples demonstrate various ways to query data from tables, including basic selection, filtering, ordering, and joining tables.
+
+**Basic Data Selection**
 
 ```typescript
 // Basic select
@@ -99,7 +150,27 @@ const usersWithPosts = await engine.select([
   .where('u.active = ?', [true]);
 ```
 
-### Updating Data
+**Advanced Selection with Joins**
+
+```typescript
+// Select with joins
+const usersWithPosts = await engine.select([
+    'u.id',
+    'u.name',
+    'u.email',
+    'p.title',
+    'p.content'
+  ])
+  .from('users u')
+  .leftJoin('posts p', 'u.id = p.user_id')
+  .where('u.active = ?', [true]);
+```
+
+### 1.4. Updating Data
+
+The following examples show how to update existing records with various conditions and field modifications.
+
+**Single Record Update**
 
 ```typescript
 // Update single record
@@ -123,7 +194,21 @@ await engine.update('posts')
   .where('created_at > ?', [new Date('2024-01-01')]);
 ```
 
-### Deleting Data
+**Conditional Updates**
+
+```typescript
+// Update with conditions
+await engine.update('posts')
+  .set({ published: true })
+  .where('user_id = ?', [1])
+  .where('created_at > ?', [new Date('2024-01-01')]);
+```
+
+### 1.5. Deleting Data
+
+The following examples demonstrate how to safely delete records from tables with proper conditions and safeguards.
+
+**Specific Record Deletion**
 
 ```typescript
 // Delete specific record
@@ -139,9 +224,27 @@ await engine.delete('posts')
 await engine.delete('temp_data');
 ```
 
-## Advanced Query Building
+**Conditional Deletion**
 
-### Complex Joins
+```typescript
+// Delete with multiple conditions
+await engine.delete('posts')
+  .where('published = ?', [false])
+  .where('created_at < ?', [new Date('2023-01-01')]);
+
+// Delete all records (use with caution)
+await engine.delete('temp_data');
+```
+
+## 2. Advanced Query Building
+
+This section covers sophisticated query construction techniques including complex joins, subqueries, aggregations, and database-specific features. These patterns are essential for building robust applications with complex data requirements.
+
+### 2.1. Complex Joins
+
+The following examples demonstrate how to construct complex multi-table queries with various join types and aliases.
+
+**Multiple Joins with Aliases**
 
 ```typescript
 // Multiple joins with aliases
@@ -161,7 +264,11 @@ const complexQuery = await engine.select([
   .orderBy('p.created_at', 'DESC');
 ```
 
-### Subqueries
+### 2.2. Subqueries
+
+The following examples show how to use subqueries for complex data retrieval and analysis.
+
+**Template String Subqueries**
 
 ```typescript
 // Using template strings for subqueries
@@ -180,7 +287,11 @@ const usersWithPostCount = await engine.sql<{
 `;
 ```
 
-### Aggregations
+### 2.3. Aggregations
+
+The following examples demonstrate how to use aggregation functions with grouping and filtering.
+
+**Group By with Aggregations**
 
 ```typescript
 // Group by with aggregations
@@ -197,7 +308,11 @@ const userStats = await engine.select([
   .orderBy('post_count', 'DESC');
 ```
 
-### Window Functions (PostgreSQL)
+### 2.4. Window Functions
+
+The following examples show how to use advanced window functions for analytical queries (PostgreSQL-specific).
+
+**Row Numbering and Ranking**
 
 ```typescript
 const rankedPosts = await engine.sql<{
@@ -216,9 +331,15 @@ const rankedPosts = await engine.sql<{
 `;
 ```
 
-## Schema Management
+## 3. Schema Management
 
-### Table Alterations
+This section covers database schema operations including table alterations, migrations, and schema comparison. These operations are crucial for maintaining and evolving database structures over time.
+
+### 3.1. Table Alterations
+
+The following examples demonstrate how to modify existing table structures by adding, changing, or removing fields and indexes.
+
+**Adding New Columns**
 
 ```typescript
 // Add new columns
@@ -241,7 +362,25 @@ await engine.alter('users')
   .removeIndex('old_index');
 ```
 
-### Schema Comparison and Migration
+**Index Management**
+
+```typescript
+// Add indexes
+await engine.alter('users')
+  .addIndex('idx_phone', ['phone'])
+  .addIndex('idx_name_email', ['name', 'email']);
+
+// Drop columns and indexes
+await engine.alter('users')
+  .removeField('old_column')
+  .removeIndex('old_index');
+```
+
+### 3.2. Schema Comparison and Migration
+
+The following examples show how to compare schemas and generate migrations for database evolution.
+
+**Schema Definition and Migration**
 
 ```typescript
 // Define old schema
@@ -264,7 +403,11 @@ const migration = engine.diff(oldSchema, newSchema);
 await migration;
 ```
 
-### Table Management
+### 3.3. Table Management
+
+The following examples demonstrate various table management operations including dropping, renaming, and truncating tables.
+
+**Table Operations**
 
 ```typescript
 // Drop table
@@ -280,9 +423,15 @@ await engine.truncate('temp_data');
 await engine.truncate('parent_table', true);
 ```
 
-## Transactions
+## 4. Transactions
 
-### Basic Transactions
+This section covers transaction management for ensuring data consistency and integrity across multiple database operations. Transactions are essential for maintaining ACID properties in complex operations.
+
+### 4.1. Basic Transactions
+
+The following examples demonstrate how to group multiple database operations within a single transaction for data consistency.
+
+**Multi-Operation Transaction**
 
 ```typescript
 const result = await engine.transaction(async (trx) => {
@@ -317,7 +466,11 @@ const result = await engine.transaction(async (trx) => {
 });
 ```
 
-### Error Handling in Transactions
+### 4.2. Error Handling in Transactions
+
+The following examples show how to properly handle errors within transactions and ensure proper rollback behavior.
+
+**Transaction Error Handling**
 
 ```typescript
 try {
@@ -335,9 +488,15 @@ try {
 }
 ```
 
-## Type Safety Examples
+## 5. Type Safety Examples
 
-### Defining Types
+This section demonstrates how to leverage TypeScript's type system with Inquire for compile-time safety and better development experience. Type safety helps prevent runtime errors and improves code maintainability.
+
+### 5.1. Defining Types
+
+The following examples show how to define TypeScript types for your database entities and use them throughout your application.
+
+**Entity Type Definitions**
 
 ```typescript
 // Define your data types
@@ -363,7 +522,11 @@ type UserWithPosts = User & {
 };
 ```
 
-### Type-Safe Queries
+### 5.2. Type-Safe Queries
+
+The following examples demonstrate how to use TypeScript generics with Inquire for compile-time type checking of database operations.
+
+**Generic Query Operations**
 
 ```typescript
 // Type-safe select
@@ -406,9 +569,15 @@ const userStats: Array<{
 `;
 ```
 
-## Database-Specific Examples
+## 6. Database-Specific Examples
 
-### MySQL Examples
+This section provides examples tailored to specific database engines, showcasing unique features and optimizations available in each system. Understanding these differences helps you leverage the full power of your chosen database.
+
+### 6.1. MySQL Examples
+
+The following examples demonstrate MySQL-specific features and optimizations using the mysql2 connection adapter.
+
+**MySQL Connection and Features**
 
 ```typescript
 import mysql from 'mysql2/promise';
@@ -438,7 +607,11 @@ await engine.insert('users').values({ name: 'John' });
 console.log('Last inserted ID:', engine.connection.lastId);
 ```
 
-### PostgreSQL Examples
+### 6.2. PostgreSQL Examples
+
+The following examples showcase PostgreSQL-specific features and advanced capabilities using the pg connection adapter.
+
+**PostgreSQL Connection and Advanced Features**
 
 ```typescript
 import { Pool } from 'pg';
@@ -483,7 +656,11 @@ const usersWithJsonData = await engine.sql<{
 `;
 ```
 
-### SQLite Examples
+### 6.3. SQLite Examples
+
+The following examples demonstrate SQLite-specific features and considerations using the better-sqlite3 adapter.
+
+**SQLite Connection and Features**
 
 ```typescript
 import Database from 'better-sqlite3';
@@ -513,7 +690,11 @@ await engine.insert('users').values({ name: 'Carol' });
 console.log('Last inserted row ID:', engine.connection.lastId);
 ```
 
-### PGLite Examples
+### 6.4. PGLite Examples
+
+The following examples show how to use PGLite for in-memory PostgreSQL-compatible databases.
+
+**PGLite In-Memory Database**
 
 ```typescript
 import { PGlite } from '@electric-sql/pglite';
@@ -538,7 +719,15 @@ const users = await engine.sql<User>`
 `;
 ```
 
-## Real-World Use Cases
+## 7. Real-World Use Cases
+
+This section provides complete examples of common application patterns and use cases, demonstrating how to combine various Inquire features to build real-world applications.
+
+### 7.1. Blog Application
+
+The following example demonstrates how to build a complete blog application schema with categories, posts, and relationships.
+
+**Blog Schema Creation**
 
 ### Blog Application
 
@@ -587,7 +776,11 @@ const publishedPosts = await engine.select([
   .limit(10);
 ```
 
-### E-commerce Product Catalog
+### 7.2. E-commerce Product Catalog
+
+The following example shows how to implement a product catalog system with search and filtering capabilities.
+
+**Product Catalog Implementation**
 
 ```typescript
 // Create product schema

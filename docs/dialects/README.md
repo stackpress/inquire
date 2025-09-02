@@ -2,7 +2,20 @@
 
 This directory contains comprehensive API documentation for Inquire's SQL dialect implementations. Each dialect converts query builders to database-specific SQL statements with proper syntax, data types, and optimizations.
 
-## Overview
+ 1. [Overview](#1-overview)
+ 2. [Available Dialects](#2-available-dialects)
+ 3. [Dialect Comparison](#3-dialect-comparison)
+ 4. [Data Type Mapping](#4-data-type-mapping)
+ 5. [Advanced Features by Dialect](#5-advanced-features-by-dialect)
+ 6. [Performance Optimizations](#6-performance-optimizations)
+ 7. [Error Handling](#7-error-handling)
+ 8. [Cross-Database Migrations](#8-cross-database-migrations)
+ 9. [Best Practices](#9-best-practices)
+ 10. [Testing Across Dialects](#10-testing-across-dialects)
+
+## 1. Overview
+
+This section provides an introduction to SQL dialects in Inquire and explains how they enable cross-database compatibility while leveraging database-specific features.
 
 SQL dialects are the translation layer between Inquire's universal query builders and database-specific SQL syntax. They handle the nuances of different database engines, ensuring optimal SQL generation while maintaining a consistent API across all supported databases.
 
@@ -18,12 +31,16 @@ const sqliteEngine = new Engine(connection, Sqlite);
 const { query, values } = engine.select().from('users').query(Mysql);
 ```
 
-## Available Dialects
+## 2. Available Dialects
 
-### [MySQL](./MySQL.md)
+This section provides detailed information about each SQL dialect supported by Inquire, including their key features and supported database versions.
+
+### 2.1. [MySQL](./MySQL.md)
+
 MySQL-specific SQL dialect implementation with comprehensive support for MySQL features and optimizations.
 
 **Key Features:**
+
 - Backtick identifier quoting (`)
 - MySQL-specific data type mapping (JSON, SET, ENUM)
 - Integer type optimization (TINYINT, INT, BIGINT)
@@ -44,10 +61,12 @@ MySQL-specific SQL dialect implementation with comprehensive support for MySQL f
 - Systems requiring full-text search
 - Multi-user applications with high concurrency
 
-### [PostgreSQL](./PostgreSQL.md)
+### 2.2. [PostgreSQL](./PostgreSQL.md)
+
 PostgreSQL-specific SQL dialect implementation with support for advanced PostgreSQL features.
 
 **Key Features:**
+
 - Double quote identifier quoting (")
 - Advanced data type support (JSONB, arrays, custom types)
 - SERIAL and auto-increment handling
@@ -60,20 +79,24 @@ PostgreSQL-specific SQL dialect implementation with support for advanced Postgre
 - Advanced constraint handling
 
 **Supported PostgreSQL Versions:**
+
 - PostgreSQL 12+
 - PostgreSQL 13+ (with enhanced features)
 - PostgreSQL 14+ (with latest optimizations)
 
 **Common Use Cases:**
+
 - Complex analytical applications
 - Applications requiring advanced data types
 - Systems with complex relationships
 - Data warehousing and reporting
 
-### [SQLite](./SQLite.md)
+### 2.3. [SQLite](./SQLite.md)
+
 SQLite-specific SQL dialect implementation optimized for SQLite's unique characteristics and limitations.
 
 **Key Features:**
+
 - Backtick identifier quoting (`)
 - Dynamic typing with intelligent type mapping
 - Boolean handling as INTEGER (0/1)
@@ -86,18 +109,22 @@ SQLite-specific SQL dialect implementation optimized for SQLite's unique charact
 - Window functions (SQLite 3.25+)
 
 **Supported SQLite Versions:**
+
 - SQLite 3.25+ (for window functions)
 - SQLite 3.35+ (for enhanced ALTER TABLE)
 - SQLite 3.38+ (for JSON functions)
 
 **Common Use Cases:**
+
 - Mobile applications
 - Desktop applications
 - Embedded systems
 - Development and testing
 - Small to medium-sized applications
 
-## Dialect Comparison
+## 3. Dialect Comparison
+
+This section provides a comprehensive comparison of features across different SQL dialects to help you understand the capabilities and limitations of each database system.
 
 | Feature | MySQL | PostgreSQL | SQLite |
 |---------|-------|------------|--------|
@@ -112,11 +139,15 @@ SQLite-specific SQL dialect implementation optimized for SQLite's unique charact
 | **CTEs** | Yes (8.0+) | Yes | Yes |
 | **Partitioning** | Yes | Yes | No |
 
-## Data Type Mapping
+## 4. Data Type Mapping
+
+This section explains how Inquire maps generic data types to database-specific types and provides examples of type-specific optimizations.
 
 Each dialect provides intelligent data type mapping from generic types to database-specific types:
 
-### Generic to Database-Specific Types
+### 4.1. Generic to Database-Specific Types
+
+The following table shows how generic types are mapped to database-specific types across different dialects.
 
 | Generic Type | MySQL | PostgreSQL | SQLite |
 |--------------|-------|------------|--------|
@@ -130,7 +161,9 @@ Each dialect provides intelligent data type mapping from generic types to databa
 | `date` | DATE | DATE | INTEGER |
 | `datetime` | DATETIME | TIMESTAMP | INTEGER |
 
-### Type-Specific Optimizations
+### 4.2. Type-Specific Optimizations
+
+The following examples demonstrate how each dialect optimizes data types for better performance and storage efficiency.
 
 ```typescript
 // MySQL: Automatic integer type selection
@@ -149,9 +182,13 @@ engine.create('users')
   .field('active', { type: 'boolean', default: true })   // INTEGER DEFAULT 1
 ```
 
-## Advanced Features by Dialect
+## 5. Advanced Features by Dialect
 
-### MySQL Advanced Features
+This section showcases advanced database-specific features available in each dialect, demonstrating how to leverage unique capabilities of different database systems.
+
+### 5.1. MySQL Advanced Features
+
+The following examples demonstrate MySQL-specific features and optimizations available through the MySQL dialect.
 
 ```typescript
 // JSON operations
@@ -177,7 +214,9 @@ await engine.sql`
 `;
 ```
 
-### PostgreSQL Advanced Features
+### 5.2. PostgreSQL Advanced Features
+
+The following examples showcase PostgreSQL-specific features and advanced capabilities available through the PostgreSQL dialect.
 
 ```typescript
 // JSONB operations
@@ -213,7 +252,9 @@ await engine.sql`
 `;
 ```
 
-### SQLite Advanced Features
+### 5.3. SQLite Advanced Features
+
+The following examples demonstrate SQLite-specific features and optimizations available through the SQLite dialect.
 
 ```typescript
 // JSON functions (SQLite 3.38+)
@@ -233,34 +274,50 @@ await engine.sql`PRAGMA foreign_keys = ON`;
 await engine.sql`PRAGMA journal_mode = WAL`;
 ```
 
-## Performance Optimizations
+## 6. Performance Optimizations
 
-### MySQL Optimizations
+This section outlines performance optimization strategies specific to each database dialect and how to leverage them effectively.
 
-- Automatic integer type selection based on length
-- InnoDB engine optimization for transactions
-- Query cache utilization
-- Index hint support through raw SQL
+### 6.1. MySQL Optimizations
 
-### PostgreSQL Optimizations
+The following optimizations are automatically applied by the MySQL dialect for better performance.
 
-- JSONB binary format for faster JSON operations
-- Efficient array operations
-- Advanced indexing strategies (GIN, GiST)
-- Connection pooling optimization
+ - Automatic integer type selection based on length
+ - InnoDB engine optimization for transactions
+ - Query cache utilization
+ - Index hint support through raw SQL
 
-### SQLite Optimizations
 
-- WAL mode for better concurrency
-- Pragma optimizations for specific use cases
-- Efficient bulk operations with transactions
-- Memory-mapped I/O for large databases
+### 6.2. PostgreSQL Optimizations
 
-## Error Handling
+The following optimizations are automatically applied by the PostgreSQL dialect for better performance.
+
+ - JSONB binary format for faster JSON operations
+ - Efficient array operations
+ - Advanced indexing strategies (GIN, GiST)
+ - Connection pooling optimization
+
+
+### 6.3. SQLite Optimizations
+
+The following optimizations are automatically applied by the SQLite dialect for better performance.
+
+ - WAL mode for better concurrency
+ - Pragma optimizations for specific use cases
+ - Efficient bulk operations with transactions
+ - Memory-mapped I/O for large databases
+
+
+## 7. Error Handling
+
+This section explains how each dialect handles database-specific error codes and provides examples of proper error handling patterns.
 
 Each dialect provides specific error handling for database-specific error codes:
 
-### MySQL Error Codes
+### 7.1. MySQL Error Codes
+
+The following examples show how to handle MySQL-specific error codes and exceptions.
+
 ```typescript
 try {
   await engine.insert('users').values({ email: 'duplicate@example.com' });
@@ -273,7 +330,10 @@ try {
 }
 ```
 
-### PostgreSQL Error Codes
+### 7.2. PostgreSQL Error Codes
+
+The following examples show how to handle PostgreSQL-specific error codes and exceptions.
+
 ```typescript
 try {
   await engine.insert('users').values({ email: 'duplicate@example.com' });
@@ -286,7 +346,10 @@ try {
 }
 ```
 
-### SQLite Error Codes
+### 7.3. SQLite Error Codes
+
+The following examples show how to handle SQLite-specific error codes and exceptions.
+
 ```typescript
 try {
   await engine.insert('users').values({ email: 'duplicate@example.com' });
@@ -299,9 +362,8 @@ try {
 }
 ```
 
-## Migration Considerations
+## 8. Cross-Database Migrations
 
-### Cross-Database Migrations
 
 When migrating between databases, consider dialect-specific differences:
 
@@ -324,26 +386,41 @@ if (engine.dialect === Mysql) {
 }
 ```
 
-## Best Practices
+## 9. Best Practices
 
-### Dialect Selection
-1. **MySQL**: Choose for web applications requiring high performance and concurrent access
-2. **PostgreSQL**: Choose for complex applications requiring advanced data types and analytics
-3. **SQLite**: Choose for embedded applications, mobile apps, or development/testing
+This section outlines recommended practices for working with SQL dialects and choosing the right database for your application.
 
-### Cross-Dialect Compatibility
-1. Use generic data types when possible
-2. Avoid dialect-specific features in shared code
-3. Use raw SQL for database-specific optimizations
-4. Test migrations across all target databases
+### 9.1. Dialect Selection
 
-### Performance Optimization
-1. Leverage dialect-specific indexing strategies
-2. Use appropriate data types for each database
-3. Optimize queries based on database capabilities
-4. Monitor and tune database-specific settings
+The following guidelines help you choose the appropriate database dialect for your application requirements.
 
-## Testing Across Dialects
+ 1. **MySQL**: Choose for web applications requiring high performance and concurrent access
+ 2. **PostgreSQL**: Choose for complex applications requiring advanced data types and analytics
+ 3. **SQLite**: Choose for embedded applications, mobile apps, or development/testing
+
+### 9.2. Cross-Dialect Compatibility
+
+The following practices help maintain compatibility across different database dialects.
+
+ 1. Use generic data types when possible
+ 2. Avoid dialect-specific features in shared code
+ 3. Use raw SQL for database-specific optimizations
+ 4. Test migrations across all target databases
+
+### 9.3. Performance Optimization
+
+The following practices help optimize performance across different database dialects.
+
+ 1. Leverage dialect-specific indexing strategies
+ 2. Use appropriate data types for each database
+ 3. Optimize queries based on database capabilities
+ 4. Monitor and tune database-specific settings
+
+## 10. Testing Across Dialects
+
+This section demonstrates how to create comprehensive test suites that work across all supported database dialects.
+
+**Cross-Dialect Test Suite**
 
 ```typescript
 // Test suite that runs across all dialects

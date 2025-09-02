@@ -9,7 +9,29 @@ import connect from '@stackpress/inquire-mysql2';
 const engine = connect(connection);
 ```
 
-## Properties
+## Table of Contents
+
+ 1. [Overview](#1-overview)
+ 2. [Properties](#2-properties)
+ 3. [Query Builder Methods](#3-query-builder-methods)
+ 4. [Raw Query Methods](#4-raw-query-methods)
+ 5. [Transaction Management](#5-transaction-management)
+ 6. [Schema Operations](#6-schema-operations)
+ 7. [Type Safety](#7-type-safety)
+ 8. [Error Handling](#8-error-handling)
+
+## 1. Overview
+
+The Engine class acts as the primary interface for database operations in the Inquire library. It provides a fluent API for building SQL queries while maintaining compatibility across different database engines through dialect-specific implementations.
+
+The Engine abstracts the complexity of different SQL dialects and provides a consistent interface for:
+
+ - Building and executing SELECT, INSERT, UPDATE, and DELETE queries
+ - Managing database schema with CREATE, ALTER, and DROP operations
+ - Handling transactions with automatic rollback on errors
+ - Providing type-safe query execution with TypeScript generics
+
+## 2. Properties
 
 The following properties are available when instantiating an Engine.
 
@@ -18,11 +40,11 @@ The following properties are available when instantiating an Engine.
 | `connection` | `Connection<R>` | The database connection used by the engine |
 | `dialect` | `Dialect` | Returns the SQL dialect associated with the connection |
 
-## Methods
+## 3. Query Builder Methods
 
-The following methods are available when instantiating an Engine.
+The following methods provide fluent query building capabilities for common database operations.
 
-### Creating Tables
+### 3.1. Creating Tables
 
 The following example shows how to create a new table using the create query builder.
 
@@ -46,7 +68,7 @@ await create;
 
 A `Create<R>` query builder instance for creating tables.
 
-### Altering Tables
+### 3.2. Altering Tables
 
 The following example shows how to modify an existing table using the alter query builder.
 
@@ -68,7 +90,7 @@ await alter;
 
 An `Alter<R>` query builder instance for modifying tables.
 
-### Selecting Data
+### 3.3. Selecting Data
 
 The following example shows how to query data using the select query builder.
 
@@ -90,7 +112,7 @@ const users = await engine.select('*')
 
 A `Select<R>` query builder instance for querying data.
 
-### Inserting Data
+### 3.4. Inserting Data
 
 The following example shows how to insert data using the insert query builder.
 
@@ -117,7 +139,7 @@ await engine.insert('users')
 
 An `Insert<R>` query builder instance for inserting data.
 
-### Updating Data
+### 3.5. Updating Data
 
 The following example shows how to update existing data using the update query builder.
 
@@ -137,7 +159,7 @@ await engine.update('users')
 
 An `Update<R>` query builder instance for updating data.
 
-### Deleting Data
+### 3.6. Deleting Data
 
 The following example shows how to delete data using the delete query builder.
 
@@ -156,7 +178,11 @@ await engine.delete('users')
 
 A `Delete<R>` query builder instance for deleting data.
 
-### Executing Raw Queries
+## 4. Raw Query Methods
+
+The following methods provide direct SQL execution capabilities for complex queries and database-specific operations.
+
+### 4.1. Executing Raw Queries
 
 The following example shows how to execute raw SQL queries.
 
@@ -185,7 +211,7 @@ const results = await engine.query<User>({
 
 A promise that resolves to an array of results typed as `R[]`.
 
-### Template String Queries
+### 4.2. Template String Queries
 
 The following example shows how to use template string queries with type safety.
 
@@ -216,7 +242,7 @@ const results = await engine.sql<User>`
 
 A promise that resolves to an array of results typed as `R[]`.
 
-### Managing Transactions
+## 5. Managing Transactions
 
 The following example shows how to execute multiple queries in a transaction.
 
@@ -244,7 +270,11 @@ const result = await engine.transaction(async (trx) => {
 
 A promise that resolves to the return value of the callback function.
 
-### Dropping Tables
+## 6. Schema Operations
+
+The following methods provide database schema management capabilities for table and structure operations.
+
+### 6.1. Dropping Tables
 
 The following example shows how to drop a table.
 
@@ -262,7 +292,7 @@ await engine.drop('old_table');
 
 A promise that resolves when the table is dropped.
 
-### Renaming Tables
+### 6.2. Renaming Tables
 
 The following example shows how to rename a table.
 
@@ -281,7 +311,7 @@ await engine.rename('old_table', 'new_table');
 
 A promise that resolves when the table is renamed.
 
-### Truncating Tables
+### 6.3. Truncating Tables
 
 The following example shows how to truncate a table.
 
@@ -304,7 +334,7 @@ await engine.truncate('users', true);
 
 A promise that resolves when the table is truncated.
 
-### Comparing Table Schemas
+### 6.4. Comparing Table Schemas
 
 The following example shows how to compare two table schemas and generate an alter query.
 
@@ -333,9 +363,9 @@ await alterQuery;
 
 An `Alter` query builder that contains the necessary changes to transform the first schema into the second.
 
-## Type Safety
+## 7. Type Safety
 
-The Engine class is designed with TypeScript generics to provide type safety:
+The Engine class is designed with TypeScript generics to provide comprehensive type safety across all database operations.
 
 ```typescript
 type User = {
@@ -359,9 +389,9 @@ const result = await engine.insert<User>('users')
 // result is typed as User[]
 ```
 
-## Error Handling
+## 8. Error Handling
 
-The Engine class uses the `InquireException` for error handling:
+The Engine class uses the `InquireException` for consistent error handling across all database operations.
 
 ```typescript
 import { InquireException } from '@stackpress/inquire';
@@ -373,4 +403,3 @@ try {
     console.log('Inquire error:', error.message);
   }
 }
-```

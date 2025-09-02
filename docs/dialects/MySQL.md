@@ -13,7 +13,15 @@ const engine = new Engine(connection, Mysql);
 const { query, values } = engine.select().from('users').query(Mysql);
 ```
 
-## Properties
+ 1. [Properties](#1-properties)
+ 2. [Static Properties](#2-static-properties)
+ 3. [Methods](#3-methods)
+ 4. [MySQL-Specific Features](#4-mysql-specific-features)
+ 5. [Advanced MySQL Features](#5-advanced-mysql-features)
+ 6. [Error Handling](#6-error-handling)
+ 7. [Performance Considerations](#7-performance-considerations)
+
+## 1. Properties
 
 The following properties are available in the MySQL dialect.
 
@@ -21,7 +29,7 @@ The following properties are available in the MySQL dialect.
 |----------|------|-------------|
 | `q` | `string` | Quote character for identifiers (backtick: `) |
 
-## Static Properties
+## 2. Static Properties
 
 The following properties can be accessed directly from the MySQL dialect.
 
@@ -30,11 +38,11 @@ The following properties can be accessed directly from the MySQL dialect.
 | `q` | `string` | Quote character for MySQL identifiers (`) |
 | `typemap` | `Record<string, string>` | Mapping of generic types to MySQL-specific types |
 
-## Methods
+## 3. Methods
 
 The following methods are available in the MySQL dialect for converting query builders to SQL.
 
-### Converting ALTER Queries
+### 3.1. Converting ALTER Queries
 
 The following example shows how the MySQL dialect converts ALTER table operations.
 
@@ -58,7 +66,7 @@ const queries = Mysql.alter(alterBuilder);
 
 An array of query objects with MySQL ALTER TABLE syntax.
 
-### Converting CREATE Queries
+### 3.2. Converting CREATE Queries
 
 The following example shows how the MySQL dialect converts CREATE table operations.
 
@@ -84,7 +92,7 @@ const queries = Mysql.create(createBuilder);
 
 An array of query objects with MySQL CREATE TABLE syntax.
 
-### Converting DELETE Queries
+### 3.3. Converting DELETE Queries
 
 The following example shows how the MySQL dialect converts DELETE operations.
 
@@ -107,7 +115,7 @@ const { query, values } = Mysql.delete(deleteBuilder);
 
 A query object with MySQL DELETE syntax and parameter values.
 
-### Converting INSERT Queries
+### 3.4. Converting INSERT Queries
 
 The following example shows how the MySQL dialect converts INSERT operations.
 
@@ -131,7 +139,7 @@ const { query, values } = Mysql.insert(insertBuilder);
 
 A query object with MySQL INSERT syntax and parameter values.
 
-### Converting SELECT Queries
+### 3.5. Converting SELECT Queries
 
 The following example shows how the MySQL dialect converts SELECT operations.
 
@@ -157,7 +165,7 @@ const { query, values } = Mysql.select(selectBuilder);
 
 A query object with MySQL SELECT syntax and parameter values.
 
-### Converting UPDATE Queries
+### 3.6. Converting UPDATE Queries
 
 The following example shows how the MySQL dialect converts UPDATE operations.
 
@@ -180,7 +188,7 @@ const { query, values } = Mysql.update(updateBuilder);
 
 A query object with MySQL UPDATE syntax and parameter values.
 
-### Dropping Tables
+### 3.7. Dropping Tables
 
 The following example shows how to generate DROP TABLE statements.
 
@@ -199,7 +207,7 @@ const { query, values } = Mysql.drop('users');
 
 A query object with MySQL DROP TABLE syntax.
 
-### Renaming Tables
+### 3.8. Renaming Tables
 
 The following example shows how to generate RENAME TABLE statements.
 
@@ -219,7 +227,7 @@ const { query, values } = Mysql.rename('old_users', 'users');
 
 A query object with MySQL RENAME TABLE syntax.
 
-### Truncating Tables
+### 3.9. Truncating Tables
 
 The following example shows how to generate TRUNCATE TABLE statements.
 
@@ -242,219 +250,223 @@ const { query, values } = Mysql.truncate('users', true);
 
 A query object with MySQL TRUNCATE TABLE syntax.
 
-## MySQL-Specific Features
+## 4. MySQL-Specific Features
 
-### Data Type Mapping
+MySQL-specific features and optimizations for enhanced database operations.
+
+### 4.1. Data Type Mapping
 
 The MySQL dialect provides comprehensive type mapping for common data types.
 
 ```typescript
-// Type mapping examples
-const typemap = {
-  object: 'JSON',        // Objects stored as JSON
-  hash: 'JSON',          // Hash objects as JSON
-  json: 'JSON',          // Explicit JSON type
-  char: 'CHAR',          // Fixed-length strings
-  string: 'VARCHAR',     // Variable-length strings
-  varchar: 'VARCHAR',    // Explicit VARCHAR
-  text: 'TEXT',          // Large text fields
-  bool: 'BOOLEAN',       // Boolean values
-  boolean: 'BOOLEAN',    // Explicit boolean
-  number: 'INT',         // Numeric values
-  int: 'INT',            // Integers
-  integer: 'INT',        // Explicit integer
-  float: 'FLOAT',        // Floating point numbers
-  date: 'DATE',          // Date values
-  datetime: 'DATETIME',  // Date and time values
-  time: 'TIME'           // Time values
-};
+ // Type mapping examples
+ const typemap = {
+   object: 'JSON',        // Objects stored as JSON
+   hash: 'JSON',          // Hash objects as JSON
+   json: 'JSON',          // Explicit JSON type
+   char: 'CHAR',          // Fixed-length strings
+   string: 'VARCHAR',     // Variable-length strings
+   varchar: 'VARCHAR',    // Explicit VARCHAR
+   text: 'TEXT',          // Large text fields
+   bool: 'BOOLEAN',       // Boolean values
+   boolean: 'BOOLEAN',    // Explicit boolean
+   number: 'INT',         // Numeric values
+   int: 'INT',            // Integers
+   integer: 'INT',        // Explicit integer
+   float: 'FLOAT',        // Floating point numbers
+   date: 'DATE',          // Date values
+   datetime: 'DATETIME',  // Date and time values
+   time: 'TIME'           // Time values
+ };
 
-// Automatic type inference
-engine.create('users')
-  .field('id', { type: 'int', length: 11 })        // Becomes INT(11)
-  .field('name', { type: 'varchar', length: 255 }) // Becomes VARCHAR(255)
-  .field('active', { type: 'boolean' })            // Becomes BOOLEAN
-  .field('data', { type: 'json' });                // Becomes JSON
+ // Automatic type inference
+ engine.create('users')
+   .field('id', { type: 'int', length: 11 })        // Becomes INT(11)
+   .field('name', { type: 'varchar', length: 255 }) // Becomes VARCHAR(255)
+   .field('active', { type: 'boolean' })            // Becomes BOOLEAN
+   .field('data', { type: 'json' });                // Becomes JSON
 ```
 
-### Integer Type Optimization
+### 4.2. Integer Type Optimization
 
 The MySQL dialect automatically optimizes integer types based on length.
 
 ```typescript
-// Automatic integer type selection
-engine.create('users')
-  .field('flag', { type: 'int', length: 1 })    // Becomes TINYINT
-  .field('id', { type: 'int', length: 11 })     // Becomes INT
-  .field('big_id', { type: 'int', length: 20 }) // Becomes BIGINT
-  .field('count', { type: 'int' });             // Becomes INT(11) - default
+ // Automatic integer type selection
+ engine.create('users')
+   .field('flag', { type: 'int', length: 1 })    // Becomes TINYINT
+   .field('id', { type: 'int', length: 11 })     // Becomes INT
+   .field('big_id', { type: 'int', length: 20 }) // Becomes BIGINT
+   .field('count', { type: 'int' });             // Becomes INT(11) - default
 ```
 
-### Field Attributes
+### 4.3. Field Attributes
 
 MySQL dialect supports various field attributes and constraints.
 
 ```typescript
-engine.create('users')
-  .field('id', { 
-    type: 'int', 
-    length: 11, 
-    autoIncrement: true,
-    nullable: false 
-  })
-  .field('score', { 
-    type: 'int', 
-    unsigned: true,
-    default: 0 
-  })
-  .field('name', { 
-    type: 'varchar', 
-    length: 255,
-    nullable: false,
-    attribute: 'CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
-  })
-  .field('created_at', { 
-    type: 'datetime',
-    default: 'NOW()'
-  });
+ engine.create('users')
+   .field('id', { 
+     type: 'int', 
+     length: 11, 
+     autoIncrement: true,
+     nullable: false 
+   })
+   .field('score', { 
+     type: 'int', 
+     unsigned: true,
+     default: 0 
+   })
+   .field('name', { 
+     type: 'varchar', 
+     length: 255,
+     nullable: false,
+     attribute: 'CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
+   })
+   .field('created_at', { 
+     type: 'datetime',
+     default: 'NOW()'
+   });
 ```
 
-### Index and Constraint Support
+### 4.4. Index and Constraint Support
 
 MySQL dialect provides comprehensive support for indexes and constraints.
 
 ```typescript
-engine.create('users')
-  .field('id', { type: 'int', autoIncrement: true })
-  .field('email', { type: 'varchar', length: 255 })
-  .field('username', { type: 'varchar', length: 50 })
-  .field('category_id', { type: 'int' })
-  .primary('id')                                    // PRIMARY KEY
-  .unique('email_unique', ['email'])                // UNIQUE KEY
-  .key('username_idx', ['username'])                // INDEX
-  .foreign('fk_category', 'category_id', 'categories', 'id', {
-    delete: 'CASCADE',
-    update: 'RESTRICT'
-  });
+ engine.create('users')
+   .field('id', { type: 'int', autoIncrement: true })
+   .field('email', { type: 'varchar', length: 255 })
+   .field('username', { type: 'varchar', length: 50 })
+   .field('category_id', { type: 'int' })
+   .primary('id')                                    // PRIMARY KEY
+   .unique('email_unique', ['email'])                // UNIQUE KEY
+   .key('username_idx', ['username'])                // INDEX
+   .foreign('fk_category', 'category_id', 'categories', 'id', {
+     delete: 'CASCADE',
+     update: 'RESTRICT'
+   });
 ```
 
-### JOIN Support
+### 4.5. JOIN Support
 
 MySQL dialect supports all standard JOIN types with proper syntax.
 
 ```typescript
-const { query } = engine.select('u.*', 'p.title')
-  .from('users', 'u')
-  .innerJoin('posts', 'p', 'u.id', 'p.author_id')
-  .leftJoin('categories', 'c', 'p.category_id', 'c.id')
-  .rightJoin('tags', 't', 'p.id', 't.post_id')
-  .query(Mysql);
+ const { query } = engine.select('u.*', 'p.title')
+   .from('users', 'u')
+   .innerJoin('posts', 'p', 'u.id', 'p.author_id')
+   .leftJoin('categories', 'c', 'p.category_id', 'c.id')
+   .rightJoin('tags', 't', 'p.id', 't.post_id')
+   .query(Mysql);
 
-// Generates:
-// SELECT u.*, p.title 
-// FROM `users` AS `u`
-// INNER JOIN `posts` AS `p` ON (`u`.`id` = `p`.`author_id`)
-// LEFT JOIN `categories` AS `c` ON (`p`.`category_id` = `c`.`id`)
-// RIGHT JOIN `tags` AS `t` ON (`p`.`id` = `t`.`post_id`)
+ // Generates:
+ // SELECT u.*, p.title 
+ // FROM `users` AS `u`
+ // INNER JOIN `posts` AS `p` ON (`u`.`id` = `p`.`author_id`)
+ // LEFT JOIN `categories` AS `c` ON (`p`.`category_id` = `c`.`id`)
+ // RIGHT JOIN `tags` AS `t` ON (`p`.`id` = `t`.`post_id`)
 ```
 
-### Identifier Quoting
+### 4.6. Identifier Quoting
 
 MySQL dialect uses backticks for identifier quoting to handle reserved words and special characters.
 
 ```typescript
-// All identifiers are properly quoted
-const { query } = engine.select('order', 'group', 'select')
-  .from('user-table')
-  .where('`order` = ?', [1])
-  .query(Mysql);
+ // All identifiers are properly quoted
+ const { query } = engine.select('order', 'group', 'select')
+   .from('user-table')
+   .where('`order` = ?', [1])
+   .query(Mysql);
 
-// Generates: SELECT `order`, `group`, `select` FROM `user-table` WHERE `order` = ?
+ // Generates: SELECT `order`, `group`, `select` FROM `user-table` WHERE `order` = ?
 ```
 
-## Advanced MySQL Features
+## 5. Advanced MySQL Features
 
-### Multi-Table Operations
+Advanced MySQL features and capabilities for complex database operations.
+
+### 5.1. Multi-Table Operations
 
 MySQL supports advanced multi-table operations that can be used with raw SQL.
 
 ```typescript
-// Multi-table DELETE
-await engine.sql`
-  DELETE u, p 
-  FROM users u 
-  LEFT JOIN posts p ON u.id = p.author_id 
-  WHERE u.active = ${[false]}
-`;
+ // Multi-table DELETE
+ await engine.sql`
+   DELETE u, p 
+   FROM users u 
+   LEFT JOIN posts p ON u.id = p.author_id 
+   WHERE u.active = ${[false]}
+ `;
 
-// Multi-table UPDATE
-await engine.sql`
-  UPDATE users u 
-  JOIN posts p ON u.id = p.author_id 
-  SET u.post_count = u.post_count + 1, p.updated_at = NOW()
-  WHERE p.status = ${'published'}
-`;
+ // Multi-table UPDATE
+ await engine.sql`
+   UPDATE users u 
+   JOIN posts p ON u.id = p.author_id 
+   SET u.post_count = u.post_count + 1, p.updated_at = NOW()
+   WHERE p.status = ${'published'}
+ `;
 ```
 
-### MySQL-Specific Functions
+### 5.2. MySQL-Specific Functions
 
 Leverage MySQL-specific functions and features.
 
 ```typescript
-// JSON functions
-await engine.sql`
-  SELECT JSON_EXTRACT(data, '$.name') as name
-  FROM users 
-  WHERE JSON_CONTAINS(data, ${'{"active": true}'})
-`;
+ // JSON functions
+ await engine.sql`
+   SELECT JSON_EXTRACT(data, '$.name') as name
+   FROM users 
+   WHERE JSON_CONTAINS(data, ${'{"active": true}'})
+ `;
 
-// Full-text search
-await engine.sql`
-  SELECT *, MATCH(title, content) AGAINST(${['search term']} IN NATURAL LANGUAGE MODE) as relevance
-  FROM posts 
-  WHERE MATCH(title, content) AGAINST(${['search term']} IN NATURAL LANGUAGE MODE)
-  ORDER BY relevance DESC
-`;
+ // Full-text search
+ await engine.sql`
+   SELECT *, MATCH(title, content) AGAINST(${['search term']} IN NATURAL LANGUAGE MODE) as relevance
+   FROM posts 
+   WHERE MATCH(title, content) AGAINST(${['search term']} IN NATURAL LANGUAGE MODE)
+   ORDER BY relevance DESC
+ `;
 
-// Window functions (MySQL 8.0+)
-await engine.sql`
-  SELECT 
-    name,
-    salary,
-    ROW_NUMBER() OVER (ORDER BY salary DESC) as rank
-  FROM employees
-`;
+ // Window functions (MySQL 8.0+)
+ await engine.sql`
+   SELECT 
+     name,
+     salary,
+     ROW_NUMBER() OVER (ORDER BY salary DESC) as rank
+   FROM employees
+ `;
 ```
 
-### Storage Engine Options
+### 5.3. Storage Engine Options
 
 MySQL dialect can be extended for storage engine specific features.
 
 ```typescript
-// Using raw SQL for storage engine options
-await engine.sql`
-  CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255)
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-`;
+ // Using raw SQL for storage engine options
+ await engine.sql`
+   CREATE TABLE users (
+     id INT AUTO_INCREMENT PRIMARY KEY,
+     name VARCHAR(255)
+   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+ `;
 
-// Partitioning (MySQL specific)
-await engine.sql`
-  CREATE TABLE logs (
-    id INT AUTO_INCREMENT,
-    created_at DATE,
-    message TEXT,
-    PRIMARY KEY (id, created_at)
-  ) PARTITION BY RANGE (YEAR(created_at)) (
-    PARTITION p2022 VALUES LESS THAN (2023),
-    PARTITION p2023 VALUES LESS THAN (2024),
-    PARTITION p2024 VALUES LESS THAN (2025)
-  )
-`;
+ // Partitioning (MySQL specific)
+ await engine.sql`
+   CREATE TABLE logs (
+     id INT AUTO_INCREMENT,
+     created_at DATE,
+     message TEXT,
+     PRIMARY KEY (id, created_at)
+   ) PARTITION BY RANGE (YEAR(created_at)) (
+     PARTITION p2022 VALUES LESS THAN (2023),
+     PARTITION p2023 VALUES LESS THAN (2024),
+     PARTITION p2024 VALUES LESS THAN (2025)
+   )
+ `;
 ```
 
-## Error Handling
+## 6. Error Handling
 
 MySQL dialect handles MySQL-specific error conditions and constraints.
 
@@ -472,51 +484,53 @@ try {
 }
 ```
 
-## Performance Considerations
+## 7. Performance Considerations
 
-### Query Optimization
+Performance optimization techniques for MySQL operations.
+
+### 7.1. Query Optimization
 
 MySQL dialect generates optimized queries for better performance.
 
 ```typescript
-// Efficient use of indexes
-await engine.select()
-  .from('users')
-  .where('status = ?', ['active'])    // Use indexed column first
-  .where('created_at > ?', ['2023-01-01'])
-  .orderBy('created_at', 'DESC')      // Order by indexed column
-  .limit(100);
+ // Efficient use of indexes
+ await engine.select()
+   .from('users')
+   .where('status = ?', ['active'])    // Use indexed column first
+   .where('created_at > ?', ['2023-01-01'])
+   .orderBy('created_at', 'DESC')      // Order by indexed column
+   .limit(100);
 
-// Avoid SELECT * when possible
-await engine.select('id', 'name', 'email')  // Specify needed columns
-  .from('users')
-  .where('active = ?', [true]);
+ // Avoid SELECT * when possible
+ await engine.select('id', 'name', 'email')  // Specify needed columns
+   .from('users')
+   .where('active = ?', [true]);
 ```
 
-### Bulk Operations
+### 7.2. Bulk Operations
 
 Use MySQL-specific bulk operation patterns for better performance.
 
 ```typescript
-// Bulk INSERT with ON DUPLICATE KEY UPDATE
-await engine.sql`
-  INSERT INTO user_stats (user_id, login_count, last_login)
-  VALUES ${users.map(u => `(${u.id}, 1, NOW())`).join(', ')}
-  ON DUPLICATE KEY UPDATE 
-    login_count = login_count + 1,
-    last_login = NOW()
-`;
+ // Bulk INSERT with ON DUPLICATE KEY UPDATE
+ await engine.sql`
+   INSERT INTO user_stats (user_id, login_count, last_login)
+   VALUES ${users.map(u => `(${u.id}, 1, NOW())`).join(', ')}
+   ON DUPLICATE KEY UPDATE 
+     login_count = login_count + 1,
+     last_login = NOW()
+ `;
 
-// Bulk UPDATE with CASE statements
-await engine.sql`
-  UPDATE users 
-  SET status = CASE 
-    WHEN id IN (${activeIds.join(',')}) THEN 'active'
-    WHEN id IN (${inactiveIds.join(',')}) THEN 'inactive'
-    ELSE status
-  END
-  WHERE id IN (${[...activeIds, ...inactiveIds].join(',')})
-`;
+ // Bulk UPDATE with CASE statements
+ await engine.sql`
+   UPDATE users 
+   SET status = CASE 
+     WHEN id IN (${activeIds.join(',')}) THEN 'active'
+     WHEN id IN (${inactiveIds.join(',')}) THEN 'inactive'
+     ELSE status
+   END
+   WHERE id IN (${[...activeIds, ...inactiveIds].join(',')})
+ `;
 ```
 
 The MySQL dialect provides comprehensive support for MySQL-specific features while maintaining compatibility with the Inquire query builder system, ensuring optimal performance and proper SQL generation for MySQL databases.

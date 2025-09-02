@@ -12,7 +12,31 @@ const create = engine.create('users')
 await create;
 ```
 
-## Properties
+ 1. [Overview](#1-overview)
+ 2. [Properties](#2-properties)
+ 3. [Field Management](#3-field-management)
+ 4. [Key Operations](#4-key-operations)
+ 5. [Index Management](#5-index-management)
+ 6. [Table Configuration](#6-table-configuration)
+ 7. [Getting Query Information](#7-getting-query-information)
+ 8. [Common Data Types](#8-common-data-types)
+ 9. [Database-Specific Features](#9-database-specific-features)
+ 10. [Type Safety](#10-type-safety)
+ 11. [Error Handling](#11-error-handling)
+
+## 1. Overview
+
+The Create builder provides comprehensive functionality for defining new database table structures. It supports various data types, constraints, indexes, and relationships while maintaining compatibility across different database engines.
+
+Key capabilities include:
+
+ - Defining table fields with various data types and constraints
+ - Setting up primary keys, unique keys, and foreign key relationships
+ - Creating indexes for improved query performance
+ - Database-specific optimizations and features
+ - Type-safe table schema definitions
+
+## 2. Properties
 
 The following properties are available when instantiating a Create builder.
 
@@ -21,11 +45,11 @@ The following properties are available when instantiating a Create builder.
 | `table` | `string` | The name of the table being created |
 | `engine` | `Engine` | The database engine instance |
 
-## Methods
+## 3. Field Management
 
-The following methods are available when using a Create builder.
+The following methods provide comprehensive field definition capabilities for table creation.
 
-### Adding Fields
+### 3.1. Adding Fields
 
 The following example shows how to add fields with various data types and options.
 
@@ -88,7 +112,11 @@ await engine.create('products')
 
 The Create builder instance to allow method chaining.
 
-### Adding Primary Keys
+## 4. Key Operations
+
+The following methods provide primary key, unique key, and foreign key management for table creation.
+
+### 4.1. Adding Primary Keys
 
 The following example shows how to add primary keys to tables.
 
@@ -115,7 +143,7 @@ await engine.create('user_roles')
 
 The Create builder instance to allow method chaining.
 
-### Adding Unique Keys
+### 4.2. Adding Unique Keys
 
 The following example shows how to add unique constraints to tables.
 
@@ -138,32 +166,7 @@ await engine.create('users')
 
 The Create builder instance to allow method chaining.
 
-### Adding Indexes
-
-The following example shows how to add indexes to tables for improved query performance.
-
-```typescript
-await engine.create('posts')
-  .addField('title', { type: 'VARCHAR', length: 255 })
-  .addField('content', { type: 'TEXT' })
-  .addField('published', { type: 'BOOLEAN' })
-  .addField('created_at', { type: 'TIMESTAMP' })
-  .addIndex('idx_title', ['title'])
-  .addIndex('idx_published_created', ['published', 'created_at']);
-```
-
-**Parameters**
-
-| Parameter | Type | Description |
-|----------|------|-------------|
-| `name` | `string` | Name of the index |
-| `columns` | `string[]` | Column names for the index |
-
-**Returns**
-
-The Create builder instance to allow method chaining.
-
-### Adding Foreign Keys
+### 4.3. Adding Foreign Keys
 
 The following example shows how to add foreign key constraints to establish relationships between tables.
 
@@ -208,7 +211,40 @@ await engine.create('posts')
 
 The Create builder instance to allow method chaining.
 
-### Setting Table Engine (MySQL)
+## 5. Index Management
+
+The following methods provide index creation capabilities for improved query performance.
+
+### 5.1. Adding Indexes
+
+The following example shows how to add indexes to tables for improved query performance.
+
+```typescript
+await engine.create('posts')
+  .addField('title', { type: 'VARCHAR', length: 255 })
+  .addField('content', { type: 'TEXT' })
+  .addField('published', { type: 'BOOLEAN' })
+  .addField('created_at', { type: 'TIMESTAMP' })
+  .addIndex('idx_title', ['title'])
+  .addIndex('idx_published_created', ['published', 'created_at']);
+```
+
+**Parameters**
+
+| Parameter | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Name of the index |
+| `columns` | `string[]` | Column names for the index |
+
+**Returns**
+
+The Create builder instance to allow method chaining.
+
+## 6. Table Configuration
+
+The following methods provide table-level configuration options for database-specific features.
+
+### 6.1. Setting Table Engine (MySQL)
 
 The following example shows how to set the storage engine for MySQL tables.
 
@@ -230,7 +266,7 @@ await engine.create('users')
 
 The Create builder instance to allow method chaining.
 
-### Setting Table Charset (MySQL)
+### 6.2. Setting Table Charset (MySQL)
 
 The following example shows how to set the character set for MySQL tables.
 
@@ -253,7 +289,7 @@ await engine.create('users')
 
 The Create builder instance to allow method chaining.
 
-### Setting Table Collation (MySQL)
+### 6.3. Setting Table Collation (MySQL)
 
 The following example shows how to set the collation for MySQL tables.
 
@@ -274,7 +310,7 @@ await engine.create('posts')
 
 The Create builder instance to allow method chaining.
 
-### Getting Query Information
+## 7. Getting Query Information
 
 The following example shows how to inspect the generated SQL before execution.
 
@@ -296,11 +332,13 @@ await createBuilder;
 
 An object containing the SQL query string and parameter values.
 
-## Common Data Types
+## 8. Common Data Types
 
 The Create builder supports various SQL data types that work across different database engines:
 
-### Numeric Types
+### 8.1. Numeric Types
+
+**Usage**
 
 ```typescript
 .addField('id', { type: 'INTEGER', autoIncrement: true })
@@ -310,7 +348,9 @@ The Create builder supports various SQL data types that work across different da
 .addField('score', { type: 'DOUBLE' })
 ```
 
-### String Types
+### 8.2. String Types
+
+**Usage**
 
 ```typescript
 .addField('name', { type: 'VARCHAR', length: 255 })
@@ -319,7 +359,9 @@ The Create builder supports various SQL data types that work across different da
 .addField('content', { type: 'LONGTEXT' }) // MySQL
 ```
 
-### Date and Time Types
+### 8.3. Date and Time Types
+
+**Usage**
 
 ```typescript
 .addField('birth_date', { type: 'DATE' })
@@ -328,7 +370,9 @@ The Create builder supports various SQL data types that work across different da
 .addField('updated_at', { type: 'TIMESTAMP', default: 'CURRENT_TIMESTAMP' })
 ```
 
-### Boolean and Binary Types
+### 8.4. Boolean and Binary Types
+
+**Usage**
 
 ```typescript
 .addField('active', { type: 'BOOLEAN', default: true })
@@ -337,9 +381,13 @@ The Create builder supports various SQL data types that work across different da
 .addField('metadata', { type: 'JSONB' }) // PostgreSQL
 ```
 
-## Database-Specific Features
+## 9. Database-Specific Features
 
-### MySQL Features
+The following features demonstrate database-specific capabilities and optimizations.
+
+### 9.1. MySQL Features
+
+**Usage**
 
 ```typescript
 await engine.create('users')
@@ -352,7 +400,9 @@ await engine.create('users')
   .collation('utf8mb4_unicode_ci');
 ```
 
-### PostgreSQL Features
+### 9.2. PostgreSQL Features
+
+**Usage**
 
 ```typescript
 await engine.create('users')
@@ -362,7 +412,9 @@ await engine.create('users')
   .addField('tags', { type: 'TEXT[]' }); // Array type
 ```
 
-### SQLite Features
+### 9.3. SQLite Features
+
+**Usage**
 
 ```typescript
 await engine.create('users')
@@ -372,7 +424,7 @@ await engine.create('users')
   .addField('created_at', { type: 'DATETIME', default: 'CURRENT_TIMESTAMP' });
 ```
 
-## Type Safety
+## 10. Type Safety
 
 The Create builder supports TypeScript generics for type-safe operations:
 
@@ -396,7 +448,7 @@ const createBuilder = engine.create<User>('users')
 await createBuilder;
 ```
 
-## Error Handling
+## 11. Error Handling
 
 The Create builder uses consistent error handling through the `InquireException`:
 
@@ -414,7 +466,7 @@ try {
 }
 ```
 
-## Complete Example
+**Complete Example**
 
 Here's a comprehensive example showing how to create a complex table with all features:
 
@@ -492,4 +544,3 @@ await engine.create('blog_posts')
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL'
   });
-```

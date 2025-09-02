@@ -8,7 +8,16 @@ await engine.update('users')
   .where('id = ?', [1]);
 ```
 
-## Properties
+ 1. [Properties](#1-properties)
+ 2. [Methods](#2-methods)
+ 3. [Common Update Patterns](#3-common-update-patterns)
+ 4. [Database-Specific Features](#4-database-specific-features)
+ 5. [Type Safety](#5-type-safety)
+ 6. [Error Handling](#6-error-handling)
+ 7. [Performance Considerations](#7-performance-considerations)
+ 8. [Complete Example](#8-complete-example)
+
+## 1. Properties
 
 The following properties are available when instantiating an Update builder.
 
@@ -17,46 +26,46 @@ The following properties are available when instantiating an Update builder.
 | `table` | `string` | The name of the table to update |
 | `engine` | `Engine` | The database engine instance |
 
-## Methods
+## 2. Methods
 
 The following methods are available when using an Update builder.
 
-### Setting Values
+### 2.1. Setting Values
 
 The following example shows how to set field values for updates.
 
 ```typescript
-// Update single field
-await engine.update('users')
-  .set({ last_login: new Date() })
-  .where('id = ?', [userId]);
+ // Update single field
+ await engine.update('users')
+   .set({ last_login: new Date() })
+   .where('id = ?', [userId]);
 
-// Update multiple fields
-await engine.update('products')
-  .set({
-    price: 899.99,
-    stock_quantity: 25,
-    updated_at: new Date(),
-    description: 'Updated product description'
-  })
-  .where('id = ?', [productId]);
+ // Update multiple fields
+ await engine.update('products')
+   .set({
+     price: 899.99,
+     stock_quantity: 25,
+     updated_at: new Date(),
+     description: 'Updated product description'
+   })
+   .where('id = ?', [productId]);
 
-// Update with expressions
-await engine.update('posts')
-  .set({
-    view_count: 'view_count + 1',
-    last_viewed: new Date()
-  })
-  .where('id = ?', [postId]);
+ // Update with expressions
+ await engine.update('posts')
+   .set({
+     view_count: 'view_count + 1',
+     last_viewed: new Date()
+   })
+   .where('id = ?', [postId]);
 
-// Update with NULL values
-await engine.update('users')
-  .set({
-    phone: null,
-    address: null,
-    updated_at: new Date()
-  })
-  .where('active = ?', [false]);
+ // Update with NULL values
+ await engine.update('users')
+   .set({
+     phone: null,
+     address: null,
+     updated_at: new Date()
+   })
+   .where('active = ?', [false]);
 ```
 
 **Parameters**
@@ -69,39 +78,39 @@ await engine.update('users')
 
 The Update builder instance to allow method chaining.
 
-### Where Conditions
+### 2.2. Where Conditions
 
 The following example shows how to add WHERE conditions to specify which records to update.
 
 ```typescript
-// Update specific record
-await engine.update('users')
-  .set({ active: false })
-  .where('id = ?', [userId]);
+ // Update specific record
+ await engine.update('users')
+   .set({ active: false })
+   .where('id = ?', [userId]);
 
-// Update with multiple conditions
-await engine.update('posts')
-  .set({ published: true, published_at: new Date() })
-  .where('status = ?', ['draft'])
-  .where('user_id = ?', [authorId])
-  .where('created_at > ?', [new Date('2024-01-01')]);
+ // Update with multiple conditions
+ await engine.update('posts')
+   .set({ published: true, published_at: new Date() })
+   .where('status = ?', ['draft'])
+   .where('user_id = ?', [authorId])
+   .where('created_at > ?', [new Date('2024-01-01')]);
 
-// Update with OR conditions
-await engine.update('users')
-  .set({ notification_enabled: false })
-  .where('last_login < ?', [new Date('2023-01-01')])
-  .orWhere('active = ?', [false]);
+ // Update with OR conditions
+ await engine.update('users')
+   .set({ notification_enabled: false })
+   .where('last_login < ?', [new Date('2023-01-01')])
+   .orWhere('active = ?', [false]);
 
-// Update with complex conditions
-await engine.update('orders')
-  .set({ status: 'cancelled' })
-  .where('status IN (?)', [['pending', 'processing']])
-  .where('created_at < ?', [new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)]); // 30 days ago
+ // Update with complex conditions
+ await engine.update('orders')
+   .set({ status: 'cancelled' })
+   .where('status IN (?)', [['pending', 'processing']])
+   .where('created_at < ?', [new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)]); // 30 days ago
 
-// Update with LIKE conditions
-await engine.update('users')
-  .set({ role: 'user' })
-  .where('email LIKE ?', ['%@temp.com']);
+ // Update with LIKE conditions
+ await engine.update('users')
+   .set({ role: 'user' })
+   .where('email LIKE ?', ['%@temp.com']);
 ```
 
 **Parameters**
@@ -115,40 +124,40 @@ await engine.update('users')
 
 The Update builder instance to allow method chaining.
 
-### Joins (MySQL/PostgreSQL)
+### 2.3. Joins (MySQL/PostgreSQL)
 
 The following example shows how to update records using JOIN operations.
 
 ```typescript
-// Update with INNER JOIN
-await engine.update('posts p')
-  .innerJoin('users u', 'p.user_id = u.id')
-  .set({ 'p.featured': true })
-  .where('u.role = ?', ['premium']);
+ // Update with INNER JOIN
+ await engine.update('posts p')
+   .innerJoin('users u', 'p.user_id = u.id')
+   .set({ 'p.featured': true })
+   .where('u.role = ?', ['premium']);
 
-// Update with LEFT JOIN
-await engine.update('orders o')
-  .leftJoin('customers c', 'o.customer_id = c.id')
-  .set({ 
-    'o.status': 'verified',
-    'o.verified_at': new Date()
-  })
-  .where('c.verified = ?', [true])
-  .where('o.status = ?', ['pending']);
+ // Update with LEFT JOIN
+ await engine.update('orders o')
+   .leftJoin('customers c', 'o.customer_id = c.id')
+   .set({ 
+     'o.status': 'verified',
+     'o.verified_at': new Date()
+   })
+   .where('c.verified = ?', [true])
+   .where('o.status = ?', ['pending']);
 
-// Update with multiple joins
-await engine.update('order_items oi')
-  .innerJoin('orders o', 'oi.order_id = o.id')
-  .innerJoin('products p', 'oi.product_id = p.id')
-  .set({ 'oi.discount_applied': true })
-  .where('o.customer_type = ?', ['vip'])
-  .where('p.category = ?', ['electronics']);
+ // Update with multiple joins
+ await engine.update('order_items oi')
+   .innerJoin('orders o', 'oi.order_id = o.id')
+   .innerJoin('products p', 'oi.product_id = p.id')
+   .set({ 'oi.discount_applied': true })
+   .where('o.customer_type = ?', ['vip'])
+   .where('p.category = ?', ['electronics']);
 
-// Update with subquery in JOIN
-await engine.update('users u')
-  .innerJoin('(SELECT user_id, COUNT(*) as post_count FROM posts GROUP BY user_id) pc', 'u.id = pc.user_id')
-  .set({ 'u.badge': 'prolific_writer' })
-  .where('pc.post_count > ?', [100]);
+ // Update with subquery in JOIN
+ await engine.update('users u')
+   .innerJoin('(SELECT user_id, COUNT(*) as post_count FROM posts GROUP BY user_id) pc', 'u.id = pc.user_id')
+   .set({ 'u.badge': 'prolific_writer' })
+   .where('pc.post_count > ?', [100]);
 ```
 
 **Parameters**
@@ -163,30 +172,30 @@ await engine.update('users u')
 
 The Update builder instance to allow method chaining.
 
-### Returning Updated Values (PostgreSQL)
+### 2.4. Returning Updated Values (PostgreSQL)
 
 The following example shows how to return updated values.
 
 ```typescript
-// Return all columns of updated records
-const updatedUsers = await engine.update('users')
-  .set({ active: false, deactivated_at: new Date() })
-  .where('last_login < ?', [cutoffDate])
-  .returning('*');
+ // Return all columns of updated records
+ const updatedUsers = await engine.update('users')
+   .set({ active: false, deactivated_at: new Date() })
+   .where('last_login < ?', [cutoffDate])
+   .returning('*');
 
-console.log(`Deactivated ${updatedUsers.length} users`);
+ console.log(`Deactivated ${updatedUsers.length} users`);
 
-// Return specific columns
-const updatedPosts = await engine.update('posts')
-  .set({ published: true, published_at: new Date() })
-  .where('status = ?', ['approved'])
-  .returning(['id', 'title', 'published_at']);
+ // Return specific columns
+ const updatedPosts = await engine.update('posts')
+   .set({ published: true, published_at: new Date() })
+   .where('status = ?', ['approved'])
+   .returning(['id', 'title', 'published_at']);
 
-// Return computed values
-const priceUpdates = await engine.update('products')
-  .set({ price: 'price * 1.1' }) // 10% price increase
-  .where('category = ?', ['electronics'])
-  .returning(['id', 'name', 'price', 'price * 0.9 as discounted_price']);
+ // Return computed values
+ const priceUpdates = await engine.update('products')
+   .set({ price: 'price * 1.1' }) // 10% price increase
+   .where('category = ?', ['electronics'])
+   .returning(['id', 'name', 'price', 'price * 0.9 as discounted_price']);
 ```
 
 **Parameters**
@@ -199,24 +208,24 @@ const priceUpdates = await engine.update('products')
 
 The Update builder instance to allow method chaining.
 
-### Limiting Updates (MySQL)
+### 2.5. Limiting Updates (MySQL)
 
 The following example shows how to limit the number of updated records.
 
 ```typescript
-// Update only first 10 matching records
-await engine.update('users')
-  .set({ processed: true })
-  .where('status = ?', ['pending'])
-  .orderBy('created_at', 'ASC')
-  .limit(10);
+ // Update only first 10 matching records
+ await engine.update('users')
+   .set({ processed: true })
+   .where('status = ?', ['pending'])
+   .orderBy('created_at', 'ASC')
+   .limit(10);
 
-// Update with ORDER BY and LIMIT
-await engine.update('posts')
-  .set({ featured: false })
-  .where('featured = ?', [true])
-  .orderBy('created_at', 'ASC')
-  .limit(5); // Unfeature oldest 5 featured posts
+ // Update with ORDER BY and LIMIT
+ await engine.update('posts')
+   .set({ featured: false })
+   .where('featured = ?', [true])
+   .orderBy('created_at', 'ASC')
+   .limit(5); // Unfeature oldest 5 featured posts
 ```
 
 **Parameters**
@@ -229,7 +238,7 @@ await engine.update('posts')
 
 The Update builder instance to allow method chaining.
 
-### Getting Query Information
+### 2.6. Getting Query Information
 
 The following example shows how to inspect the generated SQL before execution.
 
@@ -250,202 +259,206 @@ await updateBuilder;
 
 An object containing the SQL query string and parameter values.
 
-## Common Update Patterns
+## 3. Common Update Patterns
 
-### Conditional Updates
+Common patterns and techniques for UPDATE operations.
 
-```typescript
-// Update based on current values
-await engine.update('users')
-  .set({
-    status: 'inactive',
-    deactivated_at: new Date()
-  })
-  .where('last_login < ?', [new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)])
-  .where('status = ?', ['active']);
-
-// Update with CASE statements
-await engine.update('products')
-  .set({
-    status: `CASE 
-      WHEN stock_quantity = 0 THEN 'out_of_stock'
-      WHEN stock_quantity < 10 THEN 'low_stock'
-      ELSE 'in_stock'
-    END`,
-    updated_at: new Date()
-  })
-  .where('category = ?', ['electronics']);
-```
-
-### Bulk Updates
+### 3.1. Conditional Updates
 
 ```typescript
-// Update multiple records with same values
-await engine.update('posts')
-  .set({
-    published: true,
-    published_at: new Date(),
-    updated_at: new Date()
-  })
-  .where('status = ?', ['approved'])
-  .where('scheduled_for <= ?', [new Date()]);
+ // Update based on current values
+ await engine.update('users')
+   .set({
+     status: 'inactive',
+     deactivated_at: new Date()
+   })
+   .where('last_login < ?', [new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)])
+   .where('status = ?', ['active']);
 
-// Update with calculated values
-await engine.update('order_items')
-  .set({
-    total_price: 'quantity * unit_price',
-    updated_at: new Date()
-  })
-  .where('total_price IS NULL');
+ // Update with CASE statements
+ await engine.update('products')
+   .set({
+     status: `CASE 
+       WHEN stock_quantity = 0 THEN 'out_of_stock'
+       WHEN stock_quantity < 10 THEN 'low_stock'
+       ELSE 'in_stock'
+     END`,
+     updated_at: new Date()
+   })
+   .where('category = ?', ['electronics']);
 ```
 
-### Incremental Updates
+### 3.2. Bulk Updates
 
 ```typescript
-// Increment counters
-await engine.update('posts')
-  .set({
-    view_count: 'view_count + 1',
-    last_viewed: new Date()
-  })
-  .where('id = ?', [postId]);
+ // Update multiple records with same values
+ await engine.update('posts')
+   .set({
+     published: true,
+     published_at: new Date(),
+     updated_at: new Date()
+   })
+   .where('status = ?', ['approved'])
+   .where('scheduled_for <= ?', [new Date()]);
 
-// Decrement inventory
-await engine.update('products')
-  .set({
-    stock_quantity: 'stock_quantity - ?',
-    updated_at: new Date()
-  }, [quantityOrdered])
-  .where('id = ?', [productId])
-  .where('stock_quantity >= ?', [quantityOrdered]);
-
-// Update with mathematical operations
-await engine.update('user_stats')
-  .set({
-    total_points: 'total_points + ?',
-    level: 'FLOOR(total_points / 1000) + 1',
-    updated_at: new Date()
-  }, [pointsEarned])
-  .where('user_id = ?', [userId]);
+ // Update with calculated values
+ await engine.update('order_items')
+   .set({
+     total_price: 'quantity * unit_price',
+     updated_at: new Date()
+   })
+   .where('total_price IS NULL');
 ```
 
-### Status Transitions
+### 3.3. Incremental Updates
 
 ```typescript
-// State machine updates
-await engine.update('orders')
-  .set({
-    status: 'shipped',
-    shipped_at: new Date(),
-    tracking_number: 'TRK123456789',
-    updated_at: new Date()
-  })
-  .where('status = ?', ['processing'])
-  .where('payment_status = ?', ['completed']);
+ // Increment counters
+ await engine.update('posts')
+   .set({
+     view_count: 'view_count + 1',
+     last_viewed: new Date()
+   })
+   .where('id = ?', [postId]);
 
-// Workflow updates
-await engine.update('documents')
-  .set({
-    status: 'approved',
-    approved_by: userId,
-    approved_at: new Date(),
-    next_review_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
-  })
-  .where('status = ?', ['pending_approval'])
-  .where('submitted_at <= ?', [new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)]); // 7 days ago
+ // Decrement inventory
+ await engine.update('products')
+   .set({
+     stock_quantity: 'stock_quantity - ?',
+     updated_at: new Date()
+   }, [quantityOrdered])
+   .where('id = ?', [productId])
+   .where('stock_quantity >= ?', [quantityOrdered]);
+
+ // Update with mathematical operations
+ await engine.update('user_stats')
+   .set({
+     total_points: 'total_points + ?',
+     level: 'FLOOR(total_points / 1000) + 1',
+     updated_at: new Date()
+   }, [pointsEarned])
+   .where('user_id = ?', [userId]);
 ```
 
-## Database-Specific Features
-
-### MySQL Features
+### 3.4. Status Transitions
 
 ```typescript
-// MySQL-specific functions
-await engine.update('users')
-  .set({
-    full_name: 'CONCAT(first_name, " ", last_name)',
-    updated_at: 'NOW()',
-    metadata: 'JSON_SET(metadata, "$.last_update", NOW())'
-  })
-  .where('full_name IS NULL');
+ // State machine updates
+ await engine.update('orders')
+   .set({
+     status: 'shipped',
+     shipped_at: new Date(),
+     tracking_number: 'TRK123456789',
+     updated_at: new Date()
+   })
+   .where('status = ?', ['processing'])
+   .where('payment_status = ?', ['completed']);
 
-// Update with MySQL date functions
-await engine.update('subscriptions')
-  .set({
-    expires_at: 'DATE_ADD(created_at, INTERVAL 1 YEAR)',
-    status: 'active'
-  })
-  .where('status = ?', ['pending']);
-
-// Update with LIMIT (MySQL)
-await engine.update('queue_jobs')
-  .set({
-    status: 'processing',
-    started_at: new Date(),
-    worker_id: workerId
-  })
-  .where('status = ?', ['pending'])
-  .orderBy('priority', 'DESC')
-  .orderBy('created_at', 'ASC')
-  .limit(5);
+ // Workflow updates
+ await engine.update('documents')
+   .set({
+     status: 'approved',
+     approved_by: userId,
+     approved_at: new Date(),
+     next_review_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
+   })
+   .where('status = ?', ['pending_approval'])
+   .where('submitted_at <= ?', [new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)]); // 7 days ago
 ```
 
-### PostgreSQL Features
+## 4. Database-Specific Features
+
+Database-specific features and optimizations for UPDATE operations across different SQL dialects.
+
+### 4.1. MySQL Features
 
 ```typescript
-// PostgreSQL-specific functions
-await engine.update('users')
-  .set({
-    full_name: 'first_name || \' \' || last_name',
-    updated_at: 'NOW()',
-    metadata: 'metadata || \'{"last_update": "now"}\'::jsonb'
-  })
-  .where('full_name IS NULL')
-  .returning('*');
+ // MySQL-specific functions
+ await engine.update('users')
+   .set({
+     full_name: 'CONCAT(first_name, " ", last_name)',
+     updated_at: 'NOW()',
+     metadata: 'JSON_SET(metadata, "$.last_update", NOW())'
+   })
+   .where('full_name IS NULL');
 
-// Update with PostgreSQL array operations
-await engine.update('posts')
-  .set({
-    tags: 'array_append(tags, ?)',
-    updated_at: 'NOW()'
-  }, ['featured'])
-  .where('featured = ?', [true])
-  .where('NOT ? = ANY(tags)', ['featured']);
+ // Update with MySQL date functions
+ await engine.update('subscriptions')
+   .set({
+     expires_at: 'DATE_ADD(created_at, INTERVAL 1 YEAR)',
+     status: 'active'
+   })
+   .where('status = ?', ['pending']);
 
-// Update with window functions
-await engine.update('employees')
-  .set({
-    rank: `(
-      SELECT ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC)
-      FROM employees e2 
-      WHERE e2.id = employees.id
-    )`
-  })
-  .where('department IS NOT NULL');
+ // Update with LIMIT (MySQL)
+ await engine.update('queue_jobs')
+   .set({
+     status: 'processing',
+     started_at: new Date(),
+     worker_id: workerId
+   })
+   .where('status = ?', ['pending'])
+   .orderBy('priority', 'DESC')
+   .orderBy('created_at', 'ASC')
+   .limit(5);
 ```
 
-### SQLite Features
+### 4.2. PostgreSQL Features
 
 ```typescript
-// SQLite-specific considerations
-await engine.update('users')
-  .set({
-    active: 1, // Boolean as INTEGER
-    full_name: 'first_name || " " || last_name',
-    updated_at: 'datetime("now")'
-  })
-  .where('active = ?', [0]);
+ // PostgreSQL-specific functions
+ await engine.update('users')
+   .set({
+     full_name: 'first_name || \' \' || last_name',
+     updated_at: 'NOW()',
+     metadata: 'metadata || \'{"last_update": "now"}\'::jsonb'
+   })
+   .where('full_name IS NULL')
+   .returning('*');
 
-// Update with SQLite date functions
-await engine.update('sessions')
-  .set({
-    expires_at: 'datetime(created_at, "+30 days")',
-    updated_at: 'datetime("now")'
-  })
-  .where('expires_at IS NULL');
+ // Update with PostgreSQL array operations
+ await engine.update('posts')
+   .set({
+     tags: 'array_append(tags, ?)',
+     updated_at: 'NOW()'
+   }, ['featured'])
+   .where('featured = ?', [true])
+   .where('NOT ? = ANY(tags)', ['featured']);
+
+ // Update with window functions
+ await engine.update('employees')
+   .set({
+     rank: `(
+       SELECT ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC)
+       FROM employees e2 
+       WHERE e2.id = employees.id
+     )`
+   })
+   .where('department IS NOT NULL');
 ```
 
-## Type Safety
+### 4.3. SQLite Features
+
+```typescript
+ // SQLite-specific considerations
+ await engine.update('users')
+   .set({
+     active: 1, // Boolean as INTEGER
+     full_name: 'first_name || " " || last_name',
+     updated_at: 'datetime("now")'
+   })
+   .where('active = ?', [0]);
+
+ // Update with SQLite date functions
+ await engine.update('sessions')
+   .set({
+     expires_at: 'datetime(created_at, "+30 days")',
+     updated_at: 'datetime("now")'
+   })
+   .where('expires_at IS NULL');
+```
+
+## 5. Type Safety
 
 The Update builder supports TypeScript generics for type-safe operations:
 
@@ -461,29 +474,29 @@ type User = {
 
 type UserUpdate = Partial<Omit<User, 'id'>>; // Exclude ID from updates
 
-// Type-safe update
-const updateData: UserUpdate = {
-  active: false,
-  updated_at: new Date()
-};
+ // Type-safe update
+ const updateData: UserUpdate = {
+   active: false,
+   updated_at: new Date()
+ };
 
-const updatedUsers: User[] = await engine.update<User>('users')
-  .set(updateData)
-  .where('last_login < ?', [cutoffDate])
-  .returning('*');
+ const updatedUsers: User[] = await engine.update<User>('users')
+   .set(updateData)
+   .where('last_login < ?', [cutoffDate])
+   .returning('*');
 
-// Type-safe with specific fields
-const emailUpdate: Pick<User, 'email' | 'updated_at'> = {
-  email: 'newemail@example.com',
-  updated_at: new Date()
-};
+ // Type-safe with specific fields
+ const emailUpdate: Pick<User, 'email' | 'updated_at'> = {
+   email: 'newemail@example.com',
+   updated_at: new Date()
+ };
 
-await engine.update<User>('users')
-  .set(emailUpdate)
-  .where('id = ?', [userId]);
+ await engine.update<User>('users')
+   .set(emailUpdate)
+   .where('id = ?', [userId]);
 ```
 
-## Error Handling
+## 6. Error Handling
 
 The Update builder uses consistent error handling through the `InquireException`:
 
@@ -508,65 +521,67 @@ try {
 }
 ```
 
-## Performance Considerations
+## 7. Performance Considerations
 
-### Index Usage
+Performance optimization techniques for UPDATE operations.
 
-```typescript
-// Ensure WHERE conditions use indexed columns
-await engine.update('users')
-  .set({ last_seen: new Date() })
-  .where('id = ?', [userId]); // ID is typically indexed
-
-// Use compound indexes effectively
-await engine.update('posts')
-  .set({ featured: true })
-  .where('user_id = ?', [authorId])
-  .where('status = ?', ['published']); // If there's an index on (user_id, status)
-```
-
-### Batch Updates
+### 7.1. Index Usage
 
 ```typescript
-// Update in batches for large datasets
-const updateInBatches = async (userIds: number[], batchSize = 1000) => {
-  for (let i = 0; i < userIds.length; i += batchSize) {
-    const batch = userIds.slice(i, i + batchSize);
-    await engine.update('users')
-      .set({ processed: true, updated_at: new Date() })
-      .where('id IN (?)', [batch]);
-  }
-};
+ // Ensure WHERE conditions use indexed columns
+ await engine.update('users')
+   .set({ last_seen: new Date() })
+   .where('id = ?', [userId]); // ID is typically indexed
 
-await updateInBatches(largeUserIdArray);
+ // Use compound indexes effectively
+ await engine.update('posts')
+   .set({ featured: true })
+   .where('user_id = ?', [authorId])
+   .where('status = ?', ['published']); // If there's an index on (user_id, status)
 ```
 
-### Transaction Usage
+### 7.2. Batch Updates
 
 ```typescript
-// Use transactions for related updates
-await engine.transaction(async (trx) => {
-  // Update order status
-  await trx.update('orders')
-    .set({ 
-      status: 'completed',
-      completed_at: new Date()
-    })
-    .where('id = ?', [orderId]);
-  
-  // Update inventory
-  await trx.update('products')
-    .set({ stock_quantity: 'stock_quantity - ?' }, [quantity])
-    .where('id = ?', [productId]);
-  
-  // Update user points
-  await trx.update('users')
-    .set({ points: 'points + ?' }, [earnedPoints])
-    .where('id = ?', [userId]);
-});
+ // Update in batches for large datasets
+ const updateInBatches = async (userIds: number[], batchSize = 1000) => {
+   for (let i = 0; i < userIds.length; i += batchSize) {
+     const batch = userIds.slice(i, i + batchSize);
+     await engine.update('users')
+       .set({ processed: true, updated_at: new Date() })
+       .where('id IN (?)', [batch]);
+   }
+ };
+
+ await updateInBatches(largeUserIdArray);
 ```
 
-## Complete Example
+### 7.3. Transaction Usage
+
+```typescript
+ // Use transactions for related updates
+ await engine.transaction(async (trx) => {
+   // Update order status
+   await trx.update('orders')
+     .set({ 
+       status: 'completed',
+       completed_at: new Date()
+     })
+     .where('id = ?', [orderId]);
+   
+   // Update inventory
+   await trx.update('products')
+     .set({ stock_quantity: 'stock_quantity - ?' }, [quantity])
+     .where('id = ?', [productId]);
+   
+   // Update user points
+   await trx.update('users')
+     .set({ points: 'points + ?' }, [earnedPoints])
+     .where('id = ?', [userId]);
+ });
+```
+
+## 8. Complete Example
 
 Here's a comprehensive example showing various update patterns:
 
@@ -647,7 +662,7 @@ const processOrders = async () => {
   });
 };
 
-// Usage
-const result = await processOrders();
-console.log(`Processed ${result.processedCount} orders`);
+ // Usage
+ const result = await processOrders();
+ console.log(`Processed ${result.processedCount} orders`);
 ```

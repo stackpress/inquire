@@ -19,7 +19,15 @@ const deletedUsers = await engine.delete<User>('users')
   .where('active = ?', [false]);
 ```
 
-## Properties
+ 1. [Properties](#1-properties)
+ 2. [Methods](#2-methods)
+ 3. [Database-Specific Features](#3-database-specific-features)
+ 4. [Type Safety](#4-type-safety)
+ 5. [Advanced Patterns](#5-advanced-patterns)
+ 6. [Error Handling](#6-error-handling)
+ 7. [Performance Considerations](#7-performance-considerations)
+
+## 1. Properties
 
 The following properties are available when instantiating a Delete builder.
 
@@ -27,11 +35,11 @@ The following properties are available when instantiating a Delete builder.
 |----------|------|-------------|
 | `engine` | `Engine` | Database engine instance for query execution |
 
-## Methods
+## 2. Methods
 
 The following methods are available when instantiating a Delete builder.
 
-### Setting WHERE Conditions
+### 2.1. Setting WHERE Conditions
 
 The following example shows how to add WHERE conditions to filter records for deletion.
 
@@ -66,7 +74,7 @@ await engine.delete('user_sessions')
 
 The Delete instance to allow method chaining.
 
-### Building Query Object
+### 2.2. Building Query Object
 
 The following example shows how to build the query object without executing it.
 
@@ -85,7 +93,7 @@ console.log(queryData);
 
 An object containing the table name and filter conditions.
 
-### Getting Query String
+### 2.3. Getting Query String
 
 The following example shows how to get the SQL query string and parameters.
 
@@ -107,7 +115,7 @@ console.log(values); // [123]
 
 An object with `query` (SQL string) and `values` (parameter array).
 
-### Executing the Delete
+### 2.4. Executing the Delete
 
 The following example shows how to execute the delete operation.
 
@@ -126,93 +134,101 @@ const deletedUsers = await engine.delete<User>('users')
 
 A promise that resolves to an array representing the affected rows.
 
-## Database-Specific Features
+## 3. Database-Specific Features
 
-### MySQL
+Database-specific features and optimizations for DELETE operations across different SQL dialects.
+
+### 3.1. MySQL
+
+MySQL DELETE operations support additional features and optimizations.
 
 MySQL DELETE operations support additional features and optimizations.
 
 ```typescript
-// Delete with LIMIT (MySQL specific)
-const { query } = engine.delete('logs')
-  .where('created_at < ?', ['2023-01-01'])
-  .query(engine.dialect);
-// Note: LIMIT in DELETE requires raw SQL for MySQL
+ // Delete with LIMIT (MySQL specific)
+ const { query } = engine.delete('logs')
+   .where('created_at < ?', ['2023-01-01'])
+   .query(engine.dialect);
+ // Note: LIMIT in DELETE requires raw SQL for MySQL
 
-// Delete with ORDER BY (MySQL specific)
-await engine.sql`
-  DELETE FROM logs 
-  WHERE created_at < ${['2023-01-01']}
-  ORDER BY created_at ASC 
-  LIMIT 1000
-`;
+ // Delete with ORDER BY (MySQL specific)
+ await engine.sql`
+   DELETE FROM logs 
+   WHERE created_at < ${['2023-01-01']}
+   ORDER BY created_at ASC 
+   LIMIT 1000
+ `;
 
-// Multi-table delete (MySQL specific)
-await engine.sql`
-  DELETE u, p 
-  FROM users u 
-  LEFT JOIN profiles p ON u.id = p.user_id 
-  WHERE u.active = ${[false]}
-`;
+ // Multi-table delete (MySQL specific)
+ await engine.sql`
+   DELETE u, p 
+   FROM users u 
+   LEFT JOIN profiles p ON u.id = p.user_id 
+   WHERE u.active = ${[false]}
+ `;
 ```
 
-### PostgreSQL
+### 3.2. PostgreSQL
+
+PostgreSQL DELETE operations with RETURNING clause and advanced features.
 
 PostgreSQL DELETE operations with RETURNING clause and advanced features.
 
 ```typescript
-// Delete with RETURNING (PostgreSQL specific)
-const deletedUsers = await engine.sql<User>`
-  DELETE FROM users 
-  WHERE active = ${[false]}
-  RETURNING *
-`;
+ // Delete with RETURNING (PostgreSQL specific)
+ const deletedUsers = await engine.sql<User>`
+   DELETE FROM users 
+   WHERE active = ${[false]}
+   RETURNING *
+ `;
 
-// Delete with CTE (Common Table Expression)
-const result = await engine.sql`
-  WITH inactive_users AS (
-    SELECT id FROM users WHERE last_login < ${['2023-01-01']}
-  )
-  DELETE FROM user_sessions 
-  WHERE user_id IN (SELECT id FROM inactive_users)
-`;
+ // Delete with CTE (Common Table Expression)
+ const result = await engine.sql`
+   WITH inactive_users AS (
+     SELECT id FROM users WHERE last_login < ${['2023-01-01']}
+   )
+   DELETE FROM user_sessions 
+   WHERE user_id IN (SELECT id FROM inactive_users)
+ `;
 
-// Conditional delete with EXISTS
-await engine.delete('posts')
-  .where(`EXISTS (
-    SELECT 1 FROM users 
-    WHERE users.id = posts.author_id 
-    AND users.active = ?
-  )`, [false]);
+ // Conditional delete with EXISTS
+ await engine.delete('posts')
+   .where(`EXISTS (
+     SELECT 1 FROM users 
+     WHERE users.id = posts.author_id 
+     AND users.active = ?
+   )`, [false]);
 ```
 
-### SQLite
+### 3.3. SQLite
+
+SQLite DELETE operations with specific considerations.
 
 SQLite DELETE operations with specific considerations.
 
 ```typescript
-// Basic delete (SQLite)
-await engine.delete('users').where('id = ?', [123]);
+ // Basic delete (SQLite)
+ await engine.delete('users').where('id = ?', [123]);
 
-// Delete with foreign key constraints
-await engine.sql`PRAGMA foreign_keys = ON`;
-await engine.delete('users').where('id = ?', [123]);
-// Will cascade delete related records if FK constraints are set
+ // Delete with foreign key constraints
+ await engine.sql`PRAGMA foreign_keys = ON`;
+ await engine.delete('users').where('id = ?', [123]);
+ // Will cascade delete related records if FK constraints are set
 
-// Bulk delete with transaction
-const transaction = await engine.transaction();
-try {
-  await transaction.delete('user_sessions').where('user_id = ?', [123]);
-  await transaction.delete('user_profiles').where('user_id = ?', [123]);
-  await transaction.delete('users').where('id = ?', [123]);
-  await transaction.commit();
-} catch (error) {
-  await transaction.rollback();
-  throw error;
-}
+ // Bulk delete with transaction
+ const transaction = await engine.transaction();
+ try {
+   await transaction.delete('user_sessions').where('user_id = ?', [123]);
+   await transaction.delete('user_profiles').where('user_id = ?', [123]);
+   await transaction.delete('users').where('id = ?', [123]);
+   await transaction.commit();
+ } catch (error) {
+   await transaction.rollback();
+   throw error;
+ }
 ```
 
-## Type Safety
+## 4. Type Safety
 
 The Delete builder supports TypeScript generics for type-safe operations.
 
@@ -232,22 +248,24 @@ type Post = {
   status: 'draft' | 'published' | 'archived';
 };
 
-// Type-safe delete operations
-const deletedUsers = await engine.delete<User>('users')
-  .where('active = ?', [false]);
+ // Type-safe delete operations
+ const deletedUsers = await engine.delete<User>('users')
+   .where('active = ?', [false]);
 
-const deletedPosts = await engine.delete<Post>('posts')
-  .where('status = ?', ['draft'])
-  .where('created_at < ?', ['2023-01-01']);
+ const deletedPosts = await engine.delete<Post>('posts')
+   .where('status = ?', ['draft'])
+   .where('created_at < ?', ['2023-01-01']);
 
-// Type checking ensures correct usage
-// deletedUsers is typed as User[]
-// deletedPosts is typed as Post[]
+ // Type checking ensures correct usage
+ // deletedUsers is typed as User[]
+ // deletedPosts is typed as Post[]
 ```
 
-## Advanced Patterns
+## 5. Advanced Patterns
 
-### Conditional Deletion
+Advanced patterns and techniques for complex DELETE operations.
+
+### 5.1. Conditional Deletion
 
 The following example shows how to build conditional delete queries.
 
@@ -274,11 +292,11 @@ function deleteUsers(filters: {
   return deleteQuery;
 }
 
-// Usage
-await deleteUsers({ inactive: true, oldAccounts: '2022-01-01' });
+ // Usage
+ await deleteUsers({ inactive: true, oldAccounts: '2022-01-01' });
 ```
 
-### Batch Deletion
+### 5.2. Batch Deletion
 
 The following example shows how to perform batch deletions safely.
 
@@ -312,16 +330,16 @@ async function batchDelete<T>(
   return totalDeleted;
 }
 
-// Usage
-const deletedCount = await batchDelete(
-  'logs',
-  'created_at < ?',
-  ['2023-01-01'],
-  5000
-);
+ // Usage
+ const deletedCount = await batchDelete(
+   'logs',
+   'created_at < ?',
+   ['2023-01-01'],
+   5000
+ );
 ```
 
-### Safe Deletion with Validation
+### 5.3. Safe Deletion with Validation
 
 The following example shows how to implement safe deletion with validation.
 
@@ -350,16 +368,16 @@ async function safeDelete(table: string, id: number, userId: number) {
   return result;
 }
 
-// Usage
-try {
-  await safeDelete('posts', 123, 456);
-  console.log('Post deleted successfully');
-} catch (error) {
-  console.error('Deletion failed:', error.message);
-}
+ // Usage
+ try {
+   await safeDelete('posts', 123, 456);
+   console.log('Post deleted successfully');
+ } catch (error) {
+   console.error('Deletion failed:', error.message);
+ }
 ```
 
-## Error Handling
+## 6. Error Handling
 
 The Delete builder provides comprehensive error handling for various scenarios.
 
@@ -411,9 +429,11 @@ async function validateAndDelete(table: string, id: number) {
 }
 ```
 
-## Performance Considerations
+## 7. Performance Considerations
 
-### Indexing for Deletions
+Performance optimization techniques for DELETE operations.
+
+### 7.1. Indexing for Deletions
 
 Ensure proper indexing for efficient delete operations.
 
@@ -423,13 +443,13 @@ await engine.sql`CREATE INDEX idx_users_active ON users(active)`;
 await engine.sql`CREATE INDEX idx_posts_status ON posts(status)`;
 await engine.sql`CREATE INDEX idx_logs_created_at ON logs(created_at)`;
 
-// Efficient deletions using indexed columns
-await engine.delete('users').where('active = ?', [false]);
-await engine.delete('posts').where('status = ?', ['draft']);
-await engine.delete('logs').where('created_at < ?', ['2023-01-01']);
+ // Efficient deletions using indexed columns
+ await engine.delete('users').where('active = ?', [false]);
+ await engine.delete('posts').where('status = ?', ['draft']);
+ await engine.delete('logs').where('created_at < ?', ['2023-01-01']);
 ```
 
-### Transaction Usage
+### 7.2. Transaction Usage
 
 Use transactions for related deletions to ensure data consistency.
 
@@ -454,7 +474,7 @@ async function deleteUserAndRelatedData(userId: number) {
 }
 ```
 
-### Monitoring Delete Operations
+### 7.3. Monitoring Delete Operations
 
 Monitor and log delete operations for audit trails.
 

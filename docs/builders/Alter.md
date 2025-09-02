@@ -11,7 +11,33 @@ const alter = engine.alter('users')
 await alter;
 ```
 
-## Properties
+
+ 1. [Overview](#1-overview)
+ 2. [Properties](#2-properties)
+ 3. [Field Operations](#3-field-operations)
+ 4. [Key Operations](#4-key-operations)
+ 5. [Index Operations](#5-index-operations)
+ 6. [Foreign Key Operations](#6-foreign-key-operations)
+ 7. [Query Information](#7-query-information)
+ 8. [Common Patterns](#8-common-patterns)
+ 9. [Database-Specific Features](#9-database-specific-features)
+ 10. [Migration Strategies](#10-migration-strategies)
+ 11. [Type Safety](#11-type-safety)
+ 12. [Error Handling](#12-error-handling)
+
+## 1. Overview
+
+The Alter builder provides comprehensive functionality for modifying existing database table structures. It supports adding, removing, and changing fields, as well as managing indexes, constraints, and foreign keys across different database engines.
+
+Key capabilities include:
+
+ - Adding and removing table fields with various data types
+ - Modifying existing field definitions and constraints
+ - Managing primary keys, unique keys, and indexes
+ - Creating and removing foreign key relationships
+ - Database-specific optimizations and features
+
+## 2. Properties
 
 The following properties are available when instantiating an Alter builder.
 
@@ -20,11 +46,11 @@ The following properties are available when instantiating an Alter builder.
 | `table` | `string` | The name of the table being altered |
 | `engine` | `Engine` | The database engine instance |
 
-## Methods
+## 3. Field Operations
 
-The following methods are available when using an Alter builder.
+The following methods provide comprehensive field management capabilities for table alterations.
 
-### Adding Fields
+### 3.1. Adding Fields
 
 The following example shows how to add new fields to an existing table.
 
@@ -74,7 +100,7 @@ await engine.alter('users')
 
 The Alter builder instance to allow method chaining.
 
-### Removing Fields
+### 3.2. Removing Fields
 
 The following example shows how to remove fields from an existing table.
 
@@ -95,7 +121,7 @@ await engine.alter('users')
 
 The Alter builder instance to allow method chaining.
 
-### Changing Fields
+### 3.3. Changing Fields
 
 The following example shows how to modify existing field definitions.
 
@@ -127,7 +153,11 @@ await engine.alter('users')
 
 The Alter builder instance to allow method chaining.
 
-### Adding Primary Keys
+## 4. Key Operations
+
+The following methods provide primary key and unique key management for table alterations.
+
+### 4.1. Adding Primary Keys
 
 The following example shows how to add primary key constraints to existing tables.
 
@@ -151,7 +181,7 @@ await engine.alter('user_permissions')
 
 The Alter builder instance to allow method chaining.
 
-### Removing Primary Keys
+### 4.2. Removing Primary Keys
 
 The following example shows how to remove primary key constraints.
 
@@ -170,7 +200,7 @@ await engine.alter('users')
 
 The Alter builder instance to allow method chaining.
 
-### Adding Unique Keys
+### 4.3. Adding Unique Keys
 
 The following example shows how to add unique constraints to existing tables.
 
@@ -192,7 +222,7 @@ await engine.alter('users')
 
 The Alter builder instance to allow method chaining.
 
-### Removing Unique Keys
+### 4.4. Removing Unique Keys
 
 The following example shows how to remove unique constraints.
 
@@ -212,7 +242,11 @@ await engine.alter('users')
 
 The Alter builder instance to allow method chaining.
 
-### Adding Indexes
+## 5. Index Operations
+
+The following methods provide index management capabilities for improved query performance.
+
+### 5.1. Adding Indexes
 
 The following example shows how to add indexes to existing tables for improved query performance.
 
@@ -235,7 +269,7 @@ await engine.alter('posts')
 
 The Alter builder instance to allow method chaining.
 
-### Removing Indexes
+### 5.2. Removing Indexes
 
 The following example shows how to remove indexes from tables.
 
@@ -256,7 +290,11 @@ await engine.alter('posts')
 
 The Alter builder instance to allow method chaining.
 
-### Adding Foreign Keys
+## 6. Foreign Key Operations
+
+The following methods provide foreign key relationship management for maintaining data integrity.
+
+### 6.1. Adding Foreign Keys
 
 The following example shows how to add foreign key constraints to establish relationships.
 
@@ -296,7 +334,7 @@ await engine.alter('posts')
 
 The Alter builder instance to allow method chaining.
 
-### Removing Foreign Keys
+### 6.2. Removing Foreign Keys
 
 The following example shows how to remove foreign key constraints.
 
@@ -316,7 +354,7 @@ await engine.alter('posts')
 
 The Alter builder instance to allow method chaining.
 
-### Getting Query Information
+## 7. Getting Query Information
 
 The following example shows how to inspect the generated SQL before execution.
 
@@ -339,9 +377,13 @@ await alterBuilder;
 
 An array of objects containing SQL query strings and parameter values, as ALTER operations may generate multiple SQL statements.
 
-## Common Alteration Patterns
+## 8. Common Patterns
 
-### Adding New Features
+The following patterns demonstrate typical use cases for table alterations in real-world applications.
+
+### 8.1. Adding New Features
+
+**Usage**
 
 ```typescript
 // Add user profile fields
@@ -353,7 +395,9 @@ await engine.alter('users')
   .addIndex('idx_location', ['location']);
 ```
 
-### Improving Performance
+### 8.2. Improving Performance
+
+**Usage**
 
 ```typescript
 // Add indexes for better query performance
@@ -363,7 +407,9 @@ await engine.alter('orders')
   .addIndex('idx_total_amount', ['total_amount']);
 ```
 
-### Data Type Migrations
+### 8.3. Data Type Migrations
+
+**Usage**
 
 ```typescript
 // Upgrade field types for better data handling
@@ -383,7 +429,9 @@ await engine.alter('products')
   });
 ```
 
-### Adding Relationships
+### 8.4. Adding Relationships
+
+**Usage**
 
 ```typescript
 // Add foreign key relationships
@@ -398,9 +446,13 @@ await engine.alter('order_items')
   .addIndex('idx_product_variant', ['product_variant_id']);
 ```
 
-## Database-Specific Features
+## 9. Database-Specific Features
 
-### MySQL Features
+The following features demonstrate database-specific capabilities and optimizations.
+
+### 9.1. MySQL Features
+
+**Usage**
 
 ```typescript
 await engine.alter('users')
@@ -409,7 +461,9 @@ await engine.alter('users')
   .changeField('id', { type: 'BIGINT', unsigned: true, autoIncrement: true });
 ```
 
-### PostgreSQL Features
+### 9.2. PostgreSQL Features
+
+**Usage**
 
 ```typescript
 await engine.alter('users')
@@ -418,7 +472,9 @@ await engine.alter('users')
   .addField('coordinates', { type: 'POINT' });
 ```
 
-### SQLite Features
+### 9.3. SQLite Features
+
+**Usage**
 
 ```typescript
 // Note: SQLite has limited ALTER TABLE support
@@ -427,9 +483,13 @@ await engine.alter('users')
   .addField('active', { type: 'INTEGER', default: 1 }); // Boolean as INTEGER
 ```
 
-## Migration Strategies
+## 10. Migration Strategies
 
-### Safe Column Addition
+The following strategies provide safe and effective approaches to database schema changes.
+
+### 10.1. Safe Column Addition
+
+**Usage**
 
 ```typescript
 // Add columns with default values to avoid NULL issues
@@ -446,7 +506,9 @@ await engine.alter('users')
   });
 ```
 
-### Gradual Schema Changes
+### 10.2. Gradual Schema Changes
+
+**Usage**
 
 ```typescript
 // Step 1: Add new column
@@ -466,7 +528,7 @@ await engine.alter('users')
   .removeField('email');
 ```
 
-## Type Safety
+## 11. Type Safety
 
 The Alter builder supports TypeScript generics for type-safe operations:
 
@@ -488,7 +550,7 @@ const alterBuilder = engine.alter<User>('users')
 await alterBuilder;
 ```
 
-## Error Handling
+## 12. Error Handling
 
 The Alter builder uses consistent error handling through the `InquireException`:
 
@@ -506,7 +568,7 @@ try {
 }
 ```
 
-## Complete Example
+**Complete Example**
 
 Here's a comprehensive example showing how to perform a complex table alteration:
 
@@ -570,4 +632,3 @@ await engine.alter('blog_posts')
     onDelete: 'SET NULL'
   })
   .addIndex('idx_featured_image', ['featured_image_id']);
-```
