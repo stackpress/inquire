@@ -12,7 +12,7 @@ async function main() {
     .addField('name', { type: 'string', length: 255 })
     .addField('age', { type: 'int', length: 2 })
     .addField('price', { type: 'float', length: [ 10, 2 ], unsigned: true, nullable: true })
-    .addField('created', { type: 'date', default: 'CURRENT_DATE' })
+    .addField('created', { type: 'date', default: 'now()' })
     .addPrimaryKey('id')
     .addUniqueKey('name', 'name');
   console.log(create.query());

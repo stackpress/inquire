@@ -9,12 +9,12 @@
   },
   "dependencies": {
     "@stackpress/inquire-sqlite3": "0.6.2",
-    "better-sqlite3": "11.7.0"
+    "better-sqlite3": "12.5.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "7.6.12",
-    "@types/node": "22.9.3",
+    "@types/better-sqlite3": "7.6.13",
+    "@types/node": "25.0.3",
     "ts-node": "10.9.2",
-    "typescript": "5.7.2"
+    "typescript": "5.9.3"
   }
 }
