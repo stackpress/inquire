@@ -8,7 +8,7 @@
     "test": "dotenv -e .env -- yarn ts-node ./src/index.ts"
   },
   "dependencies": {
-    "@stackpress/inquire-pg": "0.6.4",
+    "@stackpress/inquire-pg": "0.6.5",
     "pg": "8.16.3"
   },
   "devDependencies": {
