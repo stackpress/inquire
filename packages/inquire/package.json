@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@stackpress/inquire",
-  "version": "0.6.8",
+  "version": "0.6.9",
   "license": "Apache-2.0",
   "description": "Super lightweight generic typed SQL query builder, SQL dialects and composite engine.",
   "author": "Chris <chris@incept.asia>",
@@ -117,7 +117,7 @@
     "test": "DATABASE_URL=test ts-mocha -r tsx tests/*.test.ts"
   },
   "dependencies": {
-    "@stackpress/lib": "0.6.8"
+    "@stackpress/lib": "0.6.9"
   },
   "devDependencies": {
     "@types/chai": "4.3.20",
