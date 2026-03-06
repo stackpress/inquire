@@ -17,6 +17,13 @@ export default class PGConnection implements Connection<Resource> {
   protected _resource: Connector;
 
   /**
+   * Get the last inserted id
+   */
+  public get lastId() {
+    return undefined;
+  }
+
+  /**
    * Set the connection
    */
   public constructor(resource: Connector) {
