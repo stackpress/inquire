@@ -57,9 +57,9 @@ export function getType(key: string, length?: number | [ number, number ]) {
 };
 
 const Sqlite: Dialect = {
-  /**
-   * Recommended quote character
-   */
+  //The name of the dialect, used for logging and error messages.
+  name: 'sqlite',
+  //Recommended quote character
   q, 
 
   /**
@@ -116,7 +116,7 @@ const Sqlite: Dialect = {
         column.push(type);
       }
       field.attribute && column.push(field.attribute);
-      field.nullable && column.push('NOT NULL');
+      !field.nullable && column.push('NOT NULL');
       field.autoIncrement && column.push('AUTOINCREMENT');
       if (field.default) {
         if (typeof field.default === 'boolean') {
@@ -252,7 +252,7 @@ const Sqlite: Dialect = {
         column.push(type);
       }
       field.attribute && column.push(field.attribute);
-      field.nullable && column.push('NOT NULL');
+      !field.nullable && column.push('NOT NULL');
       if (field.default) {
         if (typeof field.default === 'boolean') {
           column.push(`DEFAULT ${field.default ? '1' : '0'}`);

@@ -67,9 +67,9 @@ export function getType(key: string, length?: number | [ number, number ]) {
 };
 
 const Mysql: Dialect = {
-  /**
-   * Recommended quote character
-   */
+  //The name of the dialect, used for logging and error messages.
+  name: 'mysql',
+  //Recommended quote character
   q, 
 
   /**
@@ -107,7 +107,7 @@ const Mysql: Dialect = {
       }
       field.attribute && column.push(field.attribute);
       field.unsigned && column.push('UNSIGNED');
-      field.nullable && column.push('NOT NULL');
+      !field.nullable && column.push('NOT NULL');
       field.autoIncrement && column.push('AUTO_INCREMENT');
       if (field.default) {
         if (typeof field.default === 'boolean') {
@@ -306,7 +306,7 @@ const Mysql: Dialect = {
       }
       field.attribute && column.push(field.attribute);
       field.unsigned && column.push('UNSIGNED');
-      field.nullable && column.push('NOT NULL');
+      !field.nullable && column.push('NOT NULL');
       field.autoIncrement && column.push('AUTO_INCREMENT');
       if (field.default) {
         if (typeof field.default === 'boolean') {

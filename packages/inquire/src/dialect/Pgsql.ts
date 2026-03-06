@@ -90,9 +90,9 @@ export function getDefault(value: any, type: string) {
 };
 
 const Pgsql: Dialect = {
-  /**
-   * Recommended quote character
-   */
+  //The name of the dialect, used for logging and error messages.
+  name: 'pgsql',
+  //Recommended quote character
   q, 
   
   /**

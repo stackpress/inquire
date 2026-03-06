@@ -94,6 +94,7 @@ export type Join = 'inner'
 // Dialect Types
 
 export type Dialect = {
+  name: string,
   q: string,
   alter(builder: Alter): QueryObject[];
   create(builder: Create): QueryObject[];
@@ -116,6 +117,11 @@ export type Transaction<R = unknown> = (tx: Connection) => Promise<R>;
 export interface Connection<R = unknown> {
   //sql language dialect
   dialect: Dialect;
+
+  /**
+   * Get the last inserted id
+   */
+  lastId: string | number | undefined;
 
   /**
    * Formats the query to what the database connection understands
