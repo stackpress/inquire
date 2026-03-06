@@ -69,12 +69,8 @@ export default class Select<R = unknown> {
    * Set select, quote and action
    */
   public constructor(select: string|string[] = '*', engine?: Engine) {
-    if (Array.isArray(select)) {
-      this._columns = select;
-    } else {
-      this._columns = [ select ];
-    }
     this._engine = engine;
+    this.select(select);
   }
 
   /**
@@ -141,6 +137,15 @@ export default class Select<R = unknown> {
       throw Exception.for('No dialect provided');
     }
     return dialect.select(this);
+  }
+
+  public select(columns: string|string[]) {
+    if (Array.isArray(columns)) {
+      this._columns = columns;
+    } else {
+      this._columns = [ columns ];
+    }
+    return this;
   }
 
   /**
