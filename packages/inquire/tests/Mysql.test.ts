@@ -81,19 +81,16 @@ describe('Mysql Dialect Tests', () => {
     expect(query[0].query).to.equal(
       "ALTER TABLE `table` ("
         + "DROP `price`, "
-        + "ADD COLUMN `id` INT(11) AUTO_INCREMENT, "
-        + "ADD COLUMN `profileId` INT(11) AUTO_INCREMENT, "
-        + "ADD COLUMN `name` VARCHAR(255) NOT NULL DEFAULT 'foobar', "
-        + "ADD COLUMN `price` FLOAT(11, 2) UNSIGNED NOT NULL DEFAULT 1.1, "
-        + "ADD COLUMN `active` BOOLEAN NOT NULL DEFAULT TRUE, "
-        + "ADD COLUMN `date` DATETIME NOT NULL DEFAULT NOW(), "
+        + "ADD COLUMN `id` INT(11) NOT NULL AUTO_INCREMENT, "
+        + "ADD COLUMN `profileId` INT(11) NOT NULL AUTO_INCREMENT, "
+        + "ADD COLUMN `name` VARCHAR(255) DEFAULT 'foobar', "
+        + "ADD COLUMN `price` FLOAT(11, 2) UNSIGNED DEFAULT 1.1, "
+        + "ADD COLUMN `active` BOOLEAN DEFAULT TRUE, "
+        + "ADD COLUMN `date` DATETIME DEFAULT NOW(), "
         + "CHANGE COLUMN `name` VARCHAR(255) NOT NULL DEFAULT 'foobar', "
-        + "DROP PRIMARY KEY `id`, "
-        + "ADD PRIMARY KEY (`id`), "
-        + "DROP UNIQUE `name`, "
-        + "ADD UNIQUE `name` (`name`), "
-        + "DROP INDEX `price`, "
-        + "ADD INDEX `price` (`name`), "
+        + "DROP PRIMARY KEY `id`, ADD PRIMARY KEY (`id`), "
+        + "DROP UNIQUE `name`, ADD UNIQUE `name` (`name`), "
+        + "DROP INDEX `price`, ADD INDEX `price` (`name`), "
         + "DROP FOREIGN KEY `profileId`, "
         + "ADD CONSTRAINT `profileId` FOREIGN KEY (`profileId`) "
         + "REFERENCES `profile`(`id`) "
@@ -160,11 +157,12 @@ describe('Mysql Dialect Tests', () => {
     const query = Mysql.create(create);
     expect(query[0].query).to.equal(
       "CREATE TABLE IF NOT EXISTS `table` ("
-        + "`id` INT(11) AUTO_INCREMENT, "
-        + "`profileId` INT(11) AUTO_INCREMENT, `name` VARCHAR(255) NOT NULL DEFAULT 'foobar', "
-        + "`price` FLOAT(11, 2) UNSIGNED NOT NULL DEFAULT 1.1, "
-        + "`active` BOOLEAN NOT NULL DEFAULT TRUE, "
-        + "`date` DATETIME NOT NULL DEFAULT NOW() , "
+        + "`id` INT(11) NOT NULL AUTO_INCREMENT, "
+        + "`profileId` INT(11) NOT NULL AUTO_INCREMENT, "
+        + "`name` VARCHAR(255) DEFAULT 'foobar', "
+        + "`price` FLOAT(11, 2) UNSIGNED DEFAULT 1.1, "
+        + "`active` BOOLEAN DEFAULT TRUE, "
+        + "`date` DATETIME DEFAULT NOW() , "
         + "PRIMARY KEY (`id`) , "
         + "UNIQUE KEY `name` (`name`) , "
         + "KEY `price` (`name`) , "
@@ -284,7 +282,7 @@ describe('Mysql Dialect Tests', () => {
       Mysql.alter(alter);
       throw new Error('Expected exception not thrown');
     } catch (error) {
-      expect(error.message).to.equal('No alterations made.');
+      expect((error as Error).message).to.equal('No alterations made.');
     }
   });
 
@@ -370,7 +368,7 @@ describe('Mysql Dialect Tests', () => {
     const query = Mysql.create(create);
     expect(query[0].query).to.equal(
       'CREATE TABLE IF NOT EXISTS `table` ('
-        + '`name` VARCHAR(255) NOT NULL DEFAULT NULL , '
+        + '`name` VARCHAR(255) DEFAULT NULL , '
         + 'UNIQUE KEY `foo` (`bar`, `zoo`), '
         + 'UNIQUE KEY `bar` (`zoo`, `foo`) , '
         + 'KEY `foo` (`bar`, `zoo`), '
@@ -379,7 +377,7 @@ describe('Mysql Dialect Tests', () => {
         + 'ON DELETE CASCADE ON UPDATE RESTRICT, '
         + 'CONSTRAINT `bar` FOREIGN KEY (`zoo`) REFERENCES `bar`(`foo`) '
         + 'ON DELETE CASCADE ON UPDATE RESTRICT'
-      +')'
+      + ')'
     );
 
     expect(query[0].values).to.be.empty;

@@ -23,7 +23,7 @@ describe('Sqlite3 Tests', () => {
     const a1 = await engine.create('profile')
       .addField('id', { type: 'int', autoIncrement: true })
       .addField('name', { type: 'string', length: 255 })
-      .addField('price', { type: 'float', length: [ 10, 2 ], unsigned: true })
+      .addField('price', { type: 'float', length: [ 10, 2 ], unsigned: true, nullable: true })
       .addField('age', { type: 'int', unsigned: true })
       .addField('created', { type: 'date', default: 'now()' })
       .addPrimaryKey('id')
@@ -102,7 +102,7 @@ describe('Sqlite3 Tests', () => {
         throw new Error('Force rollback');
       });
     } catch (e) {
-      expect(e.message).to.equal('Force rollback');
+      expect((e as Error).message).to.equal('Force rollback');
     }
     const result = await engine.select('*').from('profile').where('name = ?', ['Rollback Test']);
     expect(result).to.be.empty;

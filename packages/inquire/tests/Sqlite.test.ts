@@ -81,22 +81,22 @@ describe('Sqlite Dialect Tests', () => {
     expect(query[0].query).to.equal('ALTER TABLE `table` DROP COLUMN `price`');
     expect(query[0].values).to.be.empty;
 
-    expect(query[1].query).to.equal('ALTER TABLE `table` ADD COLUMN `id` INTEGER AUTOINCREMENT');
+    expect(query[1].query).to.equal('ALTER TABLE `table` ADD COLUMN `id` INTEGER NOT NULL AUTOINCREMENT');
     expect(query[1].values).to.be.empty;
 
-    expect(query[2].query).to.equal('ALTER TABLE `table` ADD COLUMN `profileId` INTEGER');
+    expect(query[2].query).to.equal('ALTER TABLE `table` ADD COLUMN `profileId` INTEGER NOT NULL');
     expect(query[2].values).to.be.empty;
 
-    expect(query[3].query).to.equal('ALTER TABLE `table` ADD COLUMN `name` VARCHAR(255) NOT NULL DEFAULT \'foobar\'');
+    expect(query[3].query).to.equal('ALTER TABLE `table` ADD COLUMN `name` VARCHAR(255) DEFAULT \'foobar\'');
     expect(query[3].values).to.be.empty;
 
-    expect(query[4].query).to.equal('ALTER TABLE `table` ADD COLUMN `price` REAL NOT NULL DEFAULT 1.1');
+    expect(query[4].query).to.equal('ALTER TABLE `table` ADD COLUMN `price` REAL DEFAULT 1.1');
     expect(query[4].values).to.be.empty;
 
-    expect(query[5].query).to.equal('ALTER TABLE `table` ADD COLUMN `active` INTEGER NOT NULL DEFAULT 1');
+    expect(query[5].query).to.equal('ALTER TABLE `table` ADD COLUMN `active` INTEGER DEFAULT 1');
     expect(query[5].values).to.be.empty;
 
-    expect(query[6].query).to.equal('ALTER TABLE `table` ADD COLUMN `date` INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP');
+    expect(query[6].query).to.equal('ALTER TABLE `table` ADD COLUMN `date` INTEGER DEFAULT CURRENT_TIMESTAMP');
     expect(query[6].values).to.be.empty;
 
     expect(query[7].query).to.equal('ALTER TABLE `table` ALTER COLUMN `name` SET DATA TYPE VARCHAR(255)');
@@ -171,15 +171,15 @@ describe('Sqlite Dialect Tests', () => {
     const query = Sqlite.create(create);
     expect(query[0].query).to.equal(
       "CREATE TABLE IF NOT EXISTS `table` ("
-      + "`id` INTEGER PRIMARY KEY AUTOINCREMENT, "
-      + "`profileId` INTEGER, "
-      + "`name` VARCHAR(255) NOT NULL DEFAULT 'foobar', "
-      + "`price` REAL NOT NULL DEFAULT 1.1, "
-      + "`active` INTEGER NOT NULL DEFAULT 1, "
-      + "`date` INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-      + "FOREIGN KEY (`profileId`) "
-      + "REFERENCES `profile`(`id`) "
-      + "ON DELETE CASCADE ON UPDATE RESTRICT"
+        + "`id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+        + "`profileId` INTEGER NOT NULL, "
+        + "`name` VARCHAR(255) DEFAULT 'foobar', "
+        + "`price` REAL DEFAULT 1.1, "
+        + "`active` INTEGER DEFAULT 1, "
+        + "`date` INTEGER DEFAULT CURRENT_TIMESTAMP, "
+        + "FOREIGN KEY (`profileId`) "
+        + "REFERENCES `profile`(`id`) "
+        + "ON DELETE CASCADE ON UPDATE RESTRICT"
       + ")"
     );
     expect(query[0].values).to.be.empty;
@@ -262,7 +262,7 @@ describe('Sqlite Dialect Tests', () => {
       comment: 'Nullable field without default'
     });
     const query = Sqlite.alter(alter);
-    expect(query[0].query).to.equal('ALTER TABLE `table` ADD COLUMN `description` VARCHAR(255) NOT NULL DEFAULT NULL');
+    expect(query[0].query).to.equal('ALTER TABLE `table` ADD COLUMN `description` VARCHAR(255) DEFAULT NULL');
     expect(query[0].values).to.be.empty;
   });
 
@@ -273,7 +273,7 @@ describe('Sqlite Dialect Tests', () => {
       Sqlite.alter(alter);
       throw new Error('Expected exception not thrown');
     } catch (error) {
-      expect(error.message).to.equal('No alterations made.');
+      expect((error as Error).message).to.equal('No alterations made.');
     }
   });
 
@@ -290,7 +290,7 @@ describe('Sqlite Dialect Tests', () => {
     const query = Sqlite.create(create);
     expect(query[0].query).to.equal(
       "CREATE TABLE IF NOT EXISTS `table` ("
-      + "`name` VARCHAR(255) NOT NULL DEFAULT NULL"
+      + "`name` VARCHAR(255) DEFAULT NULL"
       + ")"
     );
     expect(query[0].values).to.be.empty;
@@ -364,7 +364,7 @@ describe('Sqlite Dialect Tests', () => {
     try {
       Sqlite.update(update);
     } catch (error) {
-      expect(error.message).to.equal('No data provided');
+      expect((error as Error).message).to.equal('No data provided');
     }
   });
 
@@ -374,7 +374,7 @@ describe('Sqlite Dialect Tests', () => {
       Sqlite.truncate('', false);
     } catch (error) {
       expect(error).to.be.instanceOf(Exception);
-      expect(error.message).to.equal('No table specified');
+      expect((error as Error).message).to.equal('No table specified');
     }
   });
 
@@ -386,7 +386,7 @@ describe('Sqlite Dialect Tests', () => {
       nullable: true
     });
     const query = Sqlite.create(create);
-    expect(query[0].query).to.include('`createdAt` INTEGER NOT NULL DEFAULT CUSTOMFUNCTION()');
+    expect(query[0].query).to.include('`createdAt` INTEGER DEFAULT CUSTOMFUNCTION()');
     expect(query[0].values).to.be.empty;
   });
 
@@ -396,7 +396,7 @@ describe('Sqlite Dialect Tests', () => {
     try {
       Sqlite.create(create);
     } catch (error) {
-      expect(error.message).to.equal('No fields provided');
+      expect((error as Error).message).to.equal('No fields provided');
     }
   });
 
@@ -410,7 +410,7 @@ describe('Sqlite Dialect Tests', () => {
       default: 'customDefault'
     });
     const query = Sqlite.alter(alter);
-    expect(query[0].query).to.equal('ALTER TABLE `custom_table` ADD COLUMN `customField` CUSTOMTYPE(50) NOT NULL DEFAULT \'customDefault\'');
+    expect(query[0].query).to.equal('ALTER TABLE `custom_table` ADD COLUMN `customField` CUSTOMTYPE(50) DEFAULT \'customDefault\'');
     expect(query[0].values).to.be.empty;
   });
 
@@ -422,7 +422,7 @@ describe('Sqlite Dialect Tests', () => {
       nullable: false
     });
     const query = Sqlite.alter(alter);
-    expect(query[0].query).to.equal('ALTER TABLE `table` ADD COLUMN `negativeLengthField` VARCHAR(-10)');
+    expect(query[0].query).to.equal('ALTER TABLE `table` ADD COLUMN `negativeLengthField` VARCHAR(-10) NOT NULL');
     expect(query[0].values).to.be.empty;
   });
 
@@ -435,7 +435,7 @@ describe('Sqlite Dialect Tests', () => {
       attribute: 'CUSTOM_ATTRIBUTE'
     });
     const query = Sqlite.alter(alter);
-    expect(query[0].query).to.equal('ALTER TABLE `custom_table` ADD COLUMN `customField` VARCHAR(50) CUSTOM_ATTRIBUTE');
+    expect(query[0].query).to.equal('ALTER TABLE `custom_table` ADD COLUMN `customField` VARCHAR(50) CUSTOM_ATTRIBUTE NOT NULL');
     expect(query[0].values).to.be.empty;
   });
 
@@ -485,7 +485,7 @@ describe('Sqlite Dialect Tests', () => {
     const query = Sqlite.create(create);
     expect(query[0].query).to.equal(
       'CREATE TABLE IF NOT EXISTS `table` ('
-        + '`name` VARCHAR(255) NOT NULL DEFAULT NULL, '
+        + '`name` VARCHAR(255) DEFAULT NULL, '
         + 'FOREIGN KEY (`bar`) REFERENCES `foo`(`zoo`) ' 
         + 'ON DELETE CASCADE ON UPDATE RESTRICT, '
         + 'FOREIGN KEY (`zoo`) REFERENCES `bar`(`foo`) '
