@@ -62,7 +62,9 @@
     "build:tsc": "yarn build:tsc:cjs && yarn build:tsc:esm",
     "build:tsc:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:tsc:esm": "tsc -p ./tsconfig.esm.json",
-    "test": "DATABASE_URL=test ts-mocha -r tsx tests/*.test.ts"
+    "test": "yarn test:execute && yarn test:teardown",
+    "test:execute": "DATABASE_URL=test ts-mocha -r tsx tests/*.test.ts",
+    "test:teardown": "rm -rf tests/database"
   },
   "dependencies": {
     "@stackpress/inquire": "0.6.11"
