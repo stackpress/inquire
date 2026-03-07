@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@stackpress/inquire-pglite",
-  "version": "0.6.12",
+  "version": "0.6.14",
   "license": "Apache-2.0",
   "description": "Generic typed pglite",
   "author": "Chris <chris@incept.asia>",
@@ -67,7 +67,7 @@
     "test:teardown": "rm -rf tests/database"
   },
   "dependencies": {
-    "@stackpress/inquire": "0.6.12"
+    "@stackpress/inquire": "0.6.14"
   },
   "peerDependencies": {
     "@electric-sql/pglite": "^0.3"

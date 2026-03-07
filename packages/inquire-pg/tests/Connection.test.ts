@@ -91,7 +91,7 @@ describe('Connection Test', () => {
         try {
             await connection.transaction(callback);
         } catch (e) {
-            expect(e.message).to.equal('Transaction error');
+            expect((e as Error).message).to.equal('Transaction error');
         }
         expect(mockResource.rollbackCalled).to.be.true;
     });
