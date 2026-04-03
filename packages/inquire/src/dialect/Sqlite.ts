@@ -504,6 +504,22 @@ const Sqlite: Dialect = {
 
     return { query: query.join(' '), values };
   },
+
+  /**
+   * Converts to proper JSON selector
+   */
+  json(column: string, path: string, separator = '.') {
+    if (path.length === 0) {
+      return `json_extract(${q}${column}${q}, '$')`;
+    }
+    const selector = path
+      .split(separator)
+      .filter(Boolean)
+      .map(path => /^\d+$/.test(path) ? `[${path}]` : `.${path}`)
+      .join('');
+
+    return `json_extract(${q}${column}${q}, '$${selector}')`;
+  }
 };
 
 export default Sqlite;

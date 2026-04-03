@@ -557,6 +557,30 @@ const Mysql: Dialect = {
 
     return { query: query.join(' '), values };
   },
+
+  /**
+   * Converts to proper JSON selector
+   */
+  json(column: string, path: string, separator = '.') {
+    if (path.length === 0) {
+      return `JSON_UNQUOTE(JSON_EXTRACT(${q}${column}${q}, '$'))`;
+    }
+    //path examples to consider:
+    // - 0: array root: JSON_EXTRACT(column, '$[0]')
+    // - id: object key: JSON_EXTRACT(column, '$.id')
+    // - 0.id: array of objects: JSON_EXTRACT(column, '$[0].id')
+    // - ids.0: object with array value: JSON_EXTRACT(column, '$.ids[0]')
+    const selector = path
+      .split(separator)
+      .filter(Boolean)
+      .map(path => (
+        /^\d+$/.test(path)
+          ? `[${path}]`
+          : `."${path.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+      ))
+      .join('');
+    return `JSON_UNQUOTE(JSON_EXTRACT(${q}${column}${q}, '$${selector}'))`;
+  }
 };
 
 export default Mysql;

@@ -593,6 +593,27 @@ const Pgsql: Dialect = {
 
     return { query: query.join(' '), values };
   },
+
+  /**
+   * Converts to proper JSON selector
+   */
+  json(column: string, path: string, separator = '.') {
+    if (path.length === 0) {
+      return `${q}${column}${q}::text`;
+    }
+    //path examples to consider:
+    // - 0: array root: column->0
+    // - id: object key: column->'id'
+    // - 0.id: array of objects: column->0->'id'
+    // - ids.0: object with array value: column->'ids'->0
+    const paths = path.split(separator).filter(Boolean);
+    const last = paths.pop()!;
+    const selector = paths.map(
+      part => /^\d+$/.test(part) ? `->${part}` : `->$$${part}$$`
+    );
+    selector.push(/^\d+$/.test(last) ? `->>${last}` : `->>$$${last}$$`)
+    return `${q}${column}${q}${selector.join('')}`;
+  }
 };
 
 export default Pgsql;

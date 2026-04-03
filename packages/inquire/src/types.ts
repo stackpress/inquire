@@ -105,6 +105,7 @@ export type Dialect = {
   select(builder: Select): QueryObject;
   truncate(table: string, cascade?: boolean): QueryObject;
   update(builder: Update): QueryObject;
+  json(column: string, path: string, separator?: string): string;
 };
 
 //--------------------------------------------------------------------//
