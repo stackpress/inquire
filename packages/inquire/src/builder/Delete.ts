@@ -4,12 +4,13 @@ import type {
   Resolve, 
   Dialect, 
   FlatValue,
-  JSONScalarValue 
+  JSONScalarValue,
+  WhereBuilder
 } from '../types.js';
 import Engine from '../Engine.js';
 import Exception from '../Exception.js';
 
-export default class Delete<R = unknown> {
+export default class Delete<R = unknown> implements WhereBuilder {
   /**
    * Database engine
    */

@@ -6,12 +6,13 @@ import type {
   Dialect,
   Relation, 
   FlatValue,
-  JSONScalarValue
+  JSONScalarValue,
+  WhereBuilder
 } from '../types.js';
 import Engine from '../Engine.js';
 import Exception from '../Exception.js';
 
-export default class Select<R = unknown> {
+export default class Select<R = unknown> implements WhereBuilder {
   /**
    * The columns to select.
    */

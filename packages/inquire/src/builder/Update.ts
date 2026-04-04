@@ -5,12 +5,13 @@ import type {
   Resolve,
   Dialect,
   FlatValue,
+  WhereBuilder,
   JSONScalarValue
 } from '../types.js';
 import Engine from '../Engine.js';
 import Exception from '../Exception.js';
 
-export default class Update<R = unknown> {
+export default class Update<R = unknown> implements WhereBuilder{
   /**
    * The data to update.
    */
