@@ -116,14 +116,14 @@ export default class Select<R = unknown> {
    */
   public build() {
     return {
-      selector: this._selector,
-      separator: this._separator,
       columns: this._columns,
       filters: this._filters,
       json: this._json,
       limit: this._limit,
       offset: this._offset,
       relations: this._relations,
+      selector: this._selector,
+      separator: this._separator,
       sort: this._sort,
       table: this._table
     }

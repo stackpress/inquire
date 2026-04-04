@@ -115,6 +115,11 @@ export type OrQueryObject<V = Value> = { query: string[], values: V[] };
 export type QueryObject = { query: string, values?: Value[] };
 
 export type Transaction<R = unknown> = (tx: Connection) => Promise<R>;
+export interface WhereBuilder {
+  where(query: string, values?: FlatValue[]): this;
+  whereJsonEquals(selector: string, value: JSONScalarValue | JSONScalarValue[]): this;
+  whereJsonContains(selector: string, value: JSONScalarValue | JSONScalarValue[]): this;
+};
 
 export interface Connection<R = unknown> {
   //sql language dialect
