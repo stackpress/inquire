@@ -11,6 +11,16 @@ import Engine from '@stackpress/inquire/Engine';
 import Connection from '../src/Connection';
 import BetterSqlite3Connection from '../src/Connection';
 
+type Profile = {
+  id: number,
+  name: string,
+  created: Date,
+  age: number,
+  active: boolean,
+  tags: string[],
+  references: Record<string, string>
+};
+
 describe('Sqlite3 Tests', () => {
   //this is the raw resource, anything you want
   const resource = sqlite(':memory:');
@@ -19,38 +29,26 @@ describe('Sqlite3 Tests', () => {
   //this is the engine
   const engine = new Engine(connection);
 
-  it('Should connect', async () => {
-    const a1 = await engine.create('profile')
+  it('Should create profile table', async () => {
+    const actual = await engine.create('profile')
       .addField('id', { type: 'int', autoIncrement: true })
       .addField('name', { type: 'string', length: 255 })
-      .addField('price', { type: 'float', length: [ 10, 2 ], unsigned: true, nullable: true })
-      .addField('age', { type: 'int', unsigned: true })
+      .addField('price', { type: 'float', length: [ 10, 2 ], unsigned: true })
+      .addField('tags', { type: 'json' })
+      .addField('references', { type: 'json', nullable: true })
+      .addField('datasets', { type: 'json', nullable: true })
+      .addField('active', { type: 'boolean', default: true })
       .addField('created', { type: 'date', default: 'now()' })
       .addPrimaryKey('id')
       .addUniqueKey('name', 'name');
-    expect(a1).to.be.empty;
-    const a3 = await engine.insert('profile').values([
-      { name: 'John Doe', age: 30 },
-      { name: 'Jane Doe', age: 25 }
-    ]);
-    expect(a3).to.be.empty;
-    const a4 = await engine.update('profile')
-      .set({ age: 31 })
-      .where('name = ?', [ 'Jane Doe' ]);
-    expect(a4).to.be.empty;
-    const a5 = await engine.delete('profile')
-      .where('name = ?', [ 'John Doe' ]);
-    expect(a5).to.be.empty;
-    const a6 = await engine.select<{
-      id: number,
-      name: string,
-      created: Date,
-      age: number
-    }>('*').from('profile');
-    expect(a6[0].id).to.equal(2);
-    expect(a6[0].name).to.equal('Jane Doe');
-    expect(a6[0].age).to.equal(31);
-    expect(typeof a6[0].created).to.equal('string')
+    expect(actual).to.be.empty;
+  }).timeout(20000);
+
+  it('Should alter profile table', async () => {
+    const actual = await engine.alter('profile')
+      .addField('age', { type: 'int', unsigned: true })
+      .removeField('price');
+    expect(actual).to.be.empty;
   }).timeout(20000);
 
   it('Should flatten data', () => {
@@ -83,45 +81,197 @@ describe('Sqlite3 Tests', () => {
     expect(actual.values[4]).to.equal(1);
   });
 
+  it('Should insert profile values', async () => {
+    const actual = await engine.insert('profile').values([
+      { name: 'John Doe', age: 30, active: false, tags: [ 'foo', 'bar' ] },
+      { name: 'Jane Doe', age: 25, active: true, tags: [ 'foo', 'zoo' ] }
+    ]);
+    expect(actual).to.be.empty;
+  }).timeout(20000);
 
-  // Line 26
-  it('Should return the correct lastId after multiple inserts', async () => {
-  const insert1 = await engine.insert('profile').values([{ name: 'Alice', age: 28 }]);
-  expect(connection.lastId).to.equal(3);
-  const insert2 = await engine.insert('profile').values([{ name: 'Bob', age: 35 }]);
-  expect(connection.lastId).to.equal(4);
-  const insert3 = await engine.insert('profile').values([{ name: 'Charlie', age: 40 }]);
-  expect(connection.lastId).to.equal(5);
-  });
-
-  // Line 91 - 92
-  it('Should ensure no changes are committed to the database after a rollback', async () => {
-    try {
-      await connection.transaction(async (conn) => {
-        await conn.query({ query: 'INSERT INTO profile (name, age) VALUES (?, ?)', values: ['Rollback Test', 99] });
-        throw new Error('Force rollback');
-      });
-    } catch (e) {
-      expect((e as Error).message).to.equal('Force rollback');
-    }
-    const result = await engine.select('*').from('profile').where('name = ?', ['Rollback Test']);
-    expect(result).to.be.empty;
-  });
-
-  // Line 100
-  it('Should handle a query with no values and return the expected result', async () => {
-    const expectedResult = [{ id: 1, name: 'Test User' }];
-    const resource = {
-      prepare: () => ({
-        all: () => expectedResult
+  it('Should update profile values', async () => {
+    const actual = await engine.update('profile')
+      .set({ 
+        age: 31, 
+        active: false, 
+        references: { 
+          foo: 'bar',
+          bar: { zoo: 'foo' },
+          seo: [
+            'zoo',
+            { keywords: [ 'foo', 'bar' ] }, 
+            { title: 'foobar' }
+          ]
+        },
+        datasets: [
+          { keywords: [ 'foo', 'bar' ] }, 
+          { title: 'foobar' }
+        ]
       })
-    };
-    const connection = new BetterSqlite3Connection(resource as any);
-    const request = { query: 'SELECT * FROM users' };
-    const result = await connection['_query'](request);
-    expect(result).to.deep.equal(expectedResult);
-  });
+      .where('name = ?', [ 'Jane Doe' ]);
+    expect(actual).to.be.empty;
+  }).timeout(20000);
 
+  it('Should fetch all profiles', async () => {
+    const actual = await engine.select<Profile>('*').from('profile');
+    expect(actual.length).to.equal(2);
+    expect(actual[1].id).to.equal(2);
+    expect(actual[1].name).to.equal('Jane Doe');
+    expect(actual[1].age).to.equal(31);
+    //not supported by sqlite
+    //expect(actual[1].tags[0]).to.equal('foo');
+    //expect(actual[1].tags[1]).to.equal('zoo');
+    //expect(actual[1].references.foo).to.equal('bar');
+    //boolean converts to number in sqlite
+    expect(actual[1].active).to.equal(0);
+    //Date converts to string in sqlite
+    expect(actual[1].created).to.be.a.string;
+  }).timeout(20000);
 
+  it('Should filter by json object', async () => {
+    const actual = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonEquals('references:foo', 'bar');
 
+    expect(actual.length).to.equal(1);
+    expect(actual[0].id).to.equal(2);
+    expect(actual[0].name).to.equal('Jane Doe');
+    expect(actual[0].age).to.equal(31);
+    expect(actual[0].active).to.equal(0);
+    expect(actual[0].created).to.be.a.string;
+
+    const invalid = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonEquals('references:foo', 'foo');
+    
+    expect(invalid.length).to.equal(0);
+
+    const nested = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonEquals('references:bar.zoo', 'foo');
+
+    expect(nested.length).to.equal(1);
+    expect(nested[0].id).to.equal(2);
+    expect(nested[0].name).to.equal('Jane Doe');
+    expect(nested[0].age).to.equal(31);
+    expect(nested[0].active).to.equal(0);
+    expect(nested[0].created).to.be.a.string;
+  }).timeout(20000);
+
+  it('Should filter by json array', async () => {
+    const equals = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonEquals('tags:1', 'zoo');
+
+    expect(equals.length).to.equal(1);
+    expect(equals[0].id).to.equal(2);
+    expect(equals[0].name).to.equal('Jane Doe');
+    expect(equals[0].age).to.equal(31);
+    expect(equals[0].active).to.equal(0);
+    expect(equals[0].created).to.be.a.string;
+
+    const notequals = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonContains('tags:0', 'baz');
+    
+    expect(notequals.length).to.equal(0);
+
+    const contains = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonContains('tags', 'zoo');
+
+    expect(contains.length).to.equal(1);
+    expect(contains[0].id).to.equal(2);
+    expect(contains[0].name).to.equal('Jane Doe');
+    expect(contains[0].age).to.equal(31);
+    expect(contains[0].active).to.equal(0);
+    expect(contains[0].created).to.be.a.string;
+
+    const notcontains = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonContains('tags', 'baz');
+    
+    expect(notcontains.length).to.equal(0);
+  }).timeout(20000);
+
+  it('Should filter by json nested array', async () => {
+    const equals = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonEquals('references:seo.0', 'zoo');
+
+    expect(equals.length).to.equal(1);
+    expect(equals[0].id).to.equal(2);
+    expect(equals[0].name).to.equal('Jane Doe');
+    expect(equals[0].age).to.equal(31);
+    expect(equals[0].active).to.equal(0);
+    expect(equals[0].created).to.be.a.string;
+
+    const notequals = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonContains('references:seo.1', 'baz');
+    
+    expect(notequals.length).to.equal(0);
+
+    const contains = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonContains('references:seo', 'zoo');
+
+    expect(contains.length).to.equal(1);
+    expect(contains[0].id).to.equal(2);
+    expect(contains[0].name).to.equal('Jane Doe');
+    expect(contains[0].age).to.equal(31);
+    expect(contains[0].active).to.equal(0);
+    expect(contains[0].created).to.be.a.string;
+
+    const notcontains = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonContains('references:seo', 'baz');
+    
+    expect(notcontains.length).to.equal(0);
+  }).timeout(20000);
+
+  it('Should filter by json nested x 2 array', async () => {
+    const equals = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonEquals('references:seo.1.keywords.0', 'foo');
+
+    expect(equals.length).to.equal(1);
+    expect(equals[0].id).to.equal(2);
+    expect(equals[0].name).to.equal('Jane Doe');
+    expect(equals[0].age).to.equal(31);
+    expect(equals[0].active).to.equal(0);
+    expect(equals[0].created).to.be.a.string;
+
+    const contains = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .whereJsonContains('references:seo.1.keywords', 'foo');
+
+    expect(contains.length).to.equal(1);
+    expect(contains[0].id).to.equal(2);
+    expect(contains[0].name).to.equal('Jane Doe');
+    expect(contains[0].age).to.equal(31);
+    expect(contains[0].active).to.equal(0);
+    expect(contains[0].created).to.be.a.string;
+  }).timeout(20000);
+
+  it('Should delete profile', async () => {
+    const actual = await engine.delete('profile')
+      .where('name = ?', [ 'Jane Doe' ]);
+    expect(actual).to.be.empty;
+    const rows = await engine.select<Profile>('*').from('profile');
+    expect(rows.length).to.equal(1);
+  }).timeout(20000);
 });

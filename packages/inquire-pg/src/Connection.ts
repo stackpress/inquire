@@ -36,6 +36,10 @@ export default class PGConnection implements Connection<Resource> {
    */
   public format(request: QueryObject) {
     let { query, values = [] } = request;
+    //escaped question marks for identifiers (??) should not 
+    // be replaced with parameter placeholders ($1, $2, etc.)
+    const hash = Math.random().toString(36).substring(2, 15);
+    query = query.replaceAll('??', `:QUESTION${hash}:`);
     for (let i = 0; i < values.length; i++) {
       if (!query.includes('?')) {
         throw Exception.for(
@@ -59,6 +63,7 @@ export default class PGConnection implements Connection<Resource> {
         'Query does not match the number of values.'
       );
     }
+    query = query.replaceAll(`:QUESTION${hash}:`, '?');
     return { query, values };
   }
 

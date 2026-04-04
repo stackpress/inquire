@@ -11,10 +11,12 @@ import type {
   Value, 
   FlatValue, 
   Dialect, 
-  QueryObject 
+  QueryObject,
+  OrQueryObject,
+  JSONScalarValue
 } from '../types.js';
 import Exception from '../Exception.js';
-import { joins } from '../helpers.js';
+import { joins, isIndex } from '../helpers.js';
 
 //The character used to quote identifiers.
 export const q = '"';
@@ -36,6 +38,47 @@ export const typemap: Record<string, string> = {
   date: 'DATE',
   datetime: 'TIMESTAMP',
   time: 'TIME'
+};
+
+export function getJsonSelector(
+  selector: string, 
+  splitter = ':', 
+  separator = '.'
+) {
+  //if the selector is empty
+  if (selector.length === 0) {
+    //return empty column and selector
+    return { column: '', selector: '' };
+  }
+  //ex. data:info.name -> column: data, selector: info.name
+  //get the first occurrence of the : in the filter selector
+  const index = selector.indexOf(splitter);
+  //if there's no selector notation
+  if (index === -1) {
+    //the entire selector is the column
+    return { column: selector, selector: '' };
+  }
+  //get the char length of the selector notation (:)
+  const length = splitter.length;
+  //the column is the part before the selector notation
+  const column = selector.substring(0, index);
+  //the path is the part after the selector notation
+  const path = selector.substring(index + length);
+  //split path into paths and remove empty ones
+  const paths = path.split(separator).filter(Boolean);
+  //if no path, save some compute...
+  if (path.length === 0) {
+    return { column, selector: '' };
+  }
+  //the last one has a special annotation...
+  const last = paths.pop()!;
+  //convert paths to proper JSON selectors
+  const selectors = paths.map(path => (
+    isIndex.test(path) ? `->${path}` : `->$$${path}$$`
+  ));
+  selectors.push(isIndex.test(last) ? `->>${last}` : `->>$$${last}$$`)
+
+  return { column, selector: selectors.join('') };
 };
 
 export function getType(key: string, length?: number | [ number, number ]) {
@@ -508,34 +551,100 @@ const Pgsql: Dialect = {
 
     query.push(`SELECT ${columns.join(', ')}`);
     if (build.table) {
+      const table = `${q}${build.table[0]}${q}`;
       if (build.table[1] !== build.table[0]) {
-        query.push(`FROM ${q}${build.table[0]}${q} AS ${q}${build.table[1]}${q}`);
+        const alias = `${q}${build.table[1]}${q}`;
+        query.push(`FROM ${table} AS ${alias}`);
       } else {
-        query.push(`FROM ${q}${build.table[0]}${q}`);
+        query.push(`FROM ${table}`);
       }
     }
 
     if (build.relations.length) {
       const relations = build.relations.map(relation => {
-        const type = relation.type as Join;
+        const type = joins[relation.type as Join];
         const table = relation.table !== relation.as 
           ? `${q}${relation.table}${q} AS ${q}${relation.as}${q}`
           : `${q}${relation.table}${q}`;
-        return `${joins[type]} JOIN ${table} ON (${q}${relation.from}${q} = ${q}${relation.to}${q})`;
+        const from = `${q}${relation.from}${q}`;
+        const to = `${q}${relation.to}${q}`;
+        return `${type} JOIN ${table} ON (${from} = ${to})`;
       });
       query.push(relations.join(' '));
     }
 
-    if (build.filters.length) {
-      const filters = build.filters.map(filter => {
-        values.push(...filter[1]);
-        return filter[0];
-      }).join(' AND ');
-      query.push(`WHERE ${filters}`);
+    if (build.filters.length > 0 || build.json.length > 0) {
+      const filters: string[] = [];
+      if (build.filters.length) {
+        filters.push(...build.filters.map(filter => {
+          values.push(...filter[1]);
+          return filter[0];
+        }));
+      }
+      build.json.forEach(filter => {
+        const { operator } = filter;
+        //convert builder selector to dialect selector
+        const { column, selector } = getJsonSelector(
+          filter.selector, 
+          build.selector, 
+          build.separator
+        );
+        //if there's no column
+        if (column.length === 0) {
+          return;
+        }
+        //make a temporary or query object to hold the JSON filters
+        const or: OrQueryObject<JSONScalarValue> = { query: [], values: [] };
+        //if the operator is equals, we need to use 
+        // JSON_EXTRACT and compare it to the value
+        if (operator === 'equals') {
+          filter.values.forEach(value => {
+            or.query.push(`${q}${column}${q}${selector} = ?`);
+            or.values.push(value);
+          });
+        //if the operator is contains, we need to use 
+        // JSON_CONTAINS and check if it contains the value
+        } else if (operator === 'contains') {
+          filter.values.forEach(value => {
+            const array = selector.replace('->>', '->');
+            or.query.push(`${q}${column}${q}${array} ?? ?`);
+            or.values.push(value);
+          });
+        }
+        //if there are any JSON filters, wrap them in 
+        // parentheses and add them to the main filters
+        if (or.query.length > 0 && or.values.length > 0) {
+          filters.push(`(${or.query.join(' OR ')})`);
+          values.push(...or.values);
+        }
+      });
+      //if there are any filters
+      if (filters.length > 0) {
+        //add them to the query
+        query.push(`WHERE ${filters.join(' AND ')}`);
+      }
     }
 
     if (build.sort.length) {
-      const sort = build.sort.map((sort) => `${q}${sort[0]}${q} ${sort[1].toUpperCase()}`);
+      const sort = build.sort.map(sort => {
+        //if the sort column is using the selector notation
+        if (sort[0].includes(build.selector)) {
+          //convert builder selector to dialect selector
+          const { column, selector } = getJsonSelector(
+            sort[0], 
+            build.selector, 
+            build.separator
+          );
+          //if there's no column
+          if (column.length === 0) {
+            //return empty string to avoid syntax errors
+            return '';
+          }
+          const selection = `${q}${column}${q}${selector}`;
+          return `${selection} ${sort[1].toUpperCase()}`;
+        }
+        return `${q}${sort[0]}${q} ${sort[1].toUpperCase()}`
+      }).filter(Boolean);
       query.push(`ORDER BY ${sort.join(`, `)}`);
     }
 
@@ -592,27 +701,6 @@ const Pgsql: Dialect = {
     }
 
     return { query: query.join(' '), values };
-  },
-
-  /**
-   * Converts to proper JSON selector
-   */
-  json(column: string, path: string, separator = '.') {
-    if (path.length === 0) {
-      return `${q}${column}${q}::text`;
-    }
-    //path examples to consider:
-    // - 0: array root: column->0
-    // - id: object key: column->'id'
-    // - 0.id: array of objects: column->0->'id'
-    // - ids.0: object with array value: column->'ids'->0
-    const paths = path.split(separator).filter(Boolean);
-    const last = paths.pop()!;
-    const selector = paths.map(
-      part => /^\d+$/.test(part) ? `->${part}` : `->$$${part}$$`
-    );
-    selector.push(/^\d+$/.test(last) ? `->>${last}` : `->>$$${last}$$`)
-    return `${q}${column}${q}${selector.join('')}`;
   }
 };
 

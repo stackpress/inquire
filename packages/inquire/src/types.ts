@@ -71,11 +71,11 @@ export type StrictValue = string|number;
 export type StrictOptValue = StrictValue|null;
 //for filters
 export type FlatValue = StrictOptValue|boolean|Date;
+export type JSONScalarValue = string|number|boolean|null;
 //for setting values
 export type Value = FlatValue
   | (FlatValue|NestedObject<Value>)[]
   | NestedObject<Value>;
-
 
 export type Resolve<T> = (value: T) => T;
 export type Reject = (error: Error) => void;
@@ -105,11 +105,12 @@ export type Dialect = {
   select(builder: Select): QueryObject;
   truncate(table: string, cascade?: boolean): QueryObject;
   update(builder: Update): QueryObject;
-  json(column: string, path: string, separator?: string): string;
 };
 
 //--------------------------------------------------------------------//
 // Engine Types
+
+export type OrQueryObject<V = Value> = { query: string[], values: V[] };
 
 export type QueryObject = { query: string, values?: Value[] };
 

@@ -5,7 +5,8 @@ import type {
   Resolve,
   Dialect,
   Relation, 
-  FlatValue
+  FlatValue,
+  JSONScalarValue
 } from '../types.js';
 import Engine from '../Engine.js';
 import Exception from '../Exception.js';
@@ -32,6 +33,15 @@ export default class Select<R = unknown> {
   protected _filters: [string, FlatValue[]][] = [];
 
   /**
+   * The JSON filters to apply.
+   */
+  protected _json: {
+    selector: string,  
+    operator: string, 
+    values: JSONScalarValue[]
+  }[] = [];
+
+  /**
    * The range
    */
   protected _limit: number = 0;
@@ -42,14 +52,26 @@ export default class Select<R = unknown> {
   protected _relations: Relation[] = [];
 
   /**
+   * Notation used to indicate to traverse through JSON 
+   * columns, default is colon (ex. data:info.name)
+   */
+  protected _selector = ':';
+
+  /**
+   * The separator for JSON selectors, 
+   * default is dot (ex. data.info.name)
+   */
+  protected _separator = '.';
+
+  /**
    * The sort order.
    */
-  protected _sort: [string, Order][] = [];
+  protected _sort: [ string, Order ][] = [];
 
   /**
    * The table to select from.
    */
-  protected _table?: [string, string];
+  protected _table?: [ string, string ];
 
   /**
    * Sets the engine for the builder
@@ -64,11 +86,27 @@ export default class Select<R = unknown> {
   public set engine(engine: Engine | undefined) {
     this._engine = engine;
   }
+
+  /**
+   * Sets the notation used to indicate to traverse through JSON 
+   * columns, default is colon (ex. data:info.name)
+   */
+  public set selector(selector: string) {
+    this._selector = selector;
+  }
+
+  /**
+   * Sets the separator for JSON selectors, 
+   * default is dot (ex. data.info.name)
+   */
+  public set separator(separator: string) {
+    this._separator = separator;
+  }
   
   /**
    * Set select, quote and action
    */
-  public constructor(select: string|string[] = '*', engine?: Engine) {
+  public constructor(select: string | string[] = '*', engine?: Engine) {
     this._engine = engine;
     this.select(select);
   }
@@ -78,8 +116,11 @@ export default class Select<R = unknown> {
    */
   public build() {
     return {
+      selector: this._selector,
+      separator: this._separator,
       columns: this._columns,
       filters: this._filters,
+      json: this._json,
       limit: this._limit,
       offset: this._offset,
       relations: this._relations,
@@ -164,6 +205,40 @@ export default class Select<R = unknown> {
    */
   public where(query: string, values: FlatValue[] = []) {
     this._filters.push([query, values]);
+    return this;
+  }
+
+  /**
+   * Special where clause for JSON columns. Checks if the value at the 
+   * selector equals the provided value.
+   */
+  public whereJsonEquals(
+    selector: string, 
+    value: JSONScalarValue | JSONScalarValue[]
+  ) {
+    const values = Array.isArray(value) ? value : [ value ];
+    this._json.push({ 
+      selector, 
+      operator: 'equals', 
+      values 
+    });
+    return this;
+  }
+
+  /**
+   * Special where clause for JSON columns. Checks if the value at the 
+   * selector contains the provided value.
+   */
+  public whereJsonContains(
+    selector: string, 
+    value: JSONScalarValue | JSONScalarValue[]
+  ) {
+    const values = Array.isArray(value) ? value : [ value ];
+    this._json.push({ 
+      selector, 
+      operator: 'contains', 
+      values 
+    });
     return this;
   }
 }

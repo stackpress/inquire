@@ -11,10 +11,12 @@ import type {
   Value, 
   FlatValue, 
   Dialect, 
-  QueryObject 
+  QueryObject,
+  OrQueryObject,
+  JSONScalarValue
 } from '../types.js';
 import Exception from '../Exception.js';
-import { joins } from '../helpers.js';
+import { joins, isIndex } from '../helpers.js';
 
 //The character used to quote identifiers.
 export const q = '`';
@@ -36,6 +38,40 @@ export const typemap: Record<string, string> = {
   date: 'INTEGER',
   datetime: 'INTEGER',
   time: 'INTEGER'
+};
+
+export function getJsonSelector(
+  selector: string, 
+  splitter = ':', 
+  separator = '.'
+) {
+  //if the selector is empty
+  if (selector.length === 0) {
+    //return empty column and selector
+    return { column: '', selector: '' };
+  }
+  //ex. data:info.name -> column: data, selector: info.name
+  //get the first occurrence of the : in the filter selector
+  const index = selector.indexOf(splitter);
+  //if there's no selector notation
+  if (index === -1) {
+    //the entire selector is the column
+    return { column: selector, selector: '$' };
+  }
+  //get the char length of the selector notation (:)
+  const length = splitter.length;
+  //the column is the part before the selector notation
+  const column = selector.substring(0, index);
+  //the path is the part after the selector notation
+  const path = selector.substring(index + length);
+  //split path into paths and remove empty ones
+  const paths = path.split(separator).filter(Boolean);
+  //convert paths to proper JSON selectors
+  const selectors = paths.map(path => (
+    isIndex.test(path) ? `[${path}]` : `.${path}`
+  ));
+
+  return { column, selector: '$' + selectors.join('') };
 };
 
 export function getType(key: string, length?: number | [ number, number ]) {
@@ -438,16 +474,78 @@ const Sqlite: Dialect = {
       query.push(relations.join(' '));
     }
 
-    if (build.filters.length) {
-      const filters = build.filters.map(filter => {
-        values.push(...filter[1]);
-        return filter[0];
-      }).join(' AND ');
-      query.push(`WHERE ${filters}`);
+    if (build.filters.length > 0 || build.json.length > 0) {
+      const filters: string[] = [];
+      if (build.filters.length) {
+        filters.push(...build.filters.map(filter => {
+          values.push(...filter[1]);
+          return filter[0];
+        }));
+      }
+      build.json.forEach(filter => {
+        const { operator } = filter;
+        //convert builder selector to dialect selector
+        const { column, selector } = getJsonSelector(
+          filter.selector, 
+          build.selector, 
+          build.separator
+        );
+        //if there's no column or selector
+        if (column.length === 0 || selector.length === 0) {
+          return;
+        }
+        //make a temporary or query object to hold the JSON filters
+        const or: OrQueryObject<JSONScalarValue> = { query: [], values: [] };
+        //if the operator is equals, we need to use 
+        // JSON_EXTRACT and compare it to the value
+        if (operator === 'equals') {
+          filter.values.forEach(value => {
+            or.query.push(`json_extract(${q}${column}${q}, '${selector}') = ?`);
+            or.values.push(value);
+          });
+        //if the operator is contains, we need to use 
+        // JSON_CONTAINS and check if it contains the value
+        } else if (operator === 'contains') {
+          const each = `json_each(${q}${column}${q}, '${selector}')`;
+          filter.values.forEach(value => {
+            or.query.push(`EXISTS (SELECT 1 FROM ${each} WHERE value = ?)`);
+            or.values.push(value);
+          });
+        }
+        //if there are any JSON filters, wrap them in 
+        // parentheses and add them to the main filters
+        if (or.query.length > 0 && or.values.length > 0) {
+          filters.push(`(${or.query.join(' OR ')})`);
+          values.push(...or.values);
+        }
+      });
+      //if there are any filters
+      if (filters.length > 0) {
+        //add them to the query
+        query.push(`WHERE ${filters.join(' AND ')}`);
+      }
     }
 
     if (build.sort.length) {
-      const sort = build.sort.map((sort) => `${q}${sort[0]}${q} ${sort[1].toUpperCase()}`);
+      const sort = build.sort.map(sort => {
+        //if the sort column is using the selector notation
+        if (sort[0].includes(build.selector)) {
+          //convert builder selector to dialect selector
+          const { column, selector } = getJsonSelector(
+            sort[0], 
+            build.selector, 
+            build.separator
+          );
+          //if there's no column or selector
+          if (column.length === 0 || selector.length === 0) {
+            //return empty string to avoid syntax errors
+            return '';
+          }
+          const selection = `json_extract(${q}${column}${q}, '${selector}')`;
+          return `${selection} ${sort[1].toUpperCase()}`;
+        }
+        return `${q}${sort[0]}${q} ${sort[1].toUpperCase()}`
+      }).filter(Boolean);
       query.push(`ORDER BY ${sort.join(`, `)}`);
     }
 
@@ -503,22 +601,6 @@ const Sqlite: Dialect = {
     }
 
     return { query: query.join(' '), values };
-  },
-
-  /**
-   * Converts to proper JSON selector
-   */
-  json(column: string, path: string, separator = '.') {
-    if (path.length === 0) {
-      return `json_extract(${q}${column}${q}, '$')`;
-    }
-    const selector = path
-      .split(separator)
-      .filter(Boolean)
-      .map(path => /^\d+$/.test(path) ? `[${path}]` : `.${path}`)
-      .join('');
-
-    return `json_extract(${q}${column}${q}, '$${selector}')`;
   }
 };
 

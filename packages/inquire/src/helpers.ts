@@ -9,6 +9,34 @@ export const joins = {
   cross: 'CROSS'
 };
 
+export const isIndex = /^\d+$/;
+export const backSlashes = /\\/g;
+export const doubleQuotes = /"/g;
+
+/**
+ * Escapes backslashes in a string by 
+ * replacing them with double backslashes.
+ */
+export function escapeBackSlashes(value: string) {
+  return value.replace(backSlashes, '\\\\');
+};
+
+/**
+ * Escapes double quotes in a string by 
+ * replacing them with backslash-double quote.
+ */
+export function escapeDoubleQuotes(value: string) {
+  return value.replace(doubleQuotes, '\\"');
+};
+
+/**
+ * Escapes backslashes and double quotes 
+ * in a string to make it safe for JSON.
+ */
+export function safeJsonValue(value: string) {
+  return escapeDoubleQuotes(escapeBackSlashes(value));
+};
+
 /**
  * Returns true if the two objects are the same
  */

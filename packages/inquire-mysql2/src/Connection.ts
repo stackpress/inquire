@@ -39,6 +39,8 @@ export default class Mysql2Connection implements Connection<Resource> {
    */
   public format(request: QueryObject) {
     let { query, values = [] } = request;
+    //escaped question marks for identifiers (??)
+    query = query.replaceAll('??', '\\?');
     for (let i = 0; i < values.length; i++) {
       //check the value for Date and arrays and objects
       const value = values[i];
