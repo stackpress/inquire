@@ -11,7 +11,7 @@
     "pglite": "yarn --cwd packages/inquire-pglite",
     "sqlite": "yarn --cwd packages/inquire-sqlite3",
     "build": "yarn inquire build && yarn mysql build && yarn pg build && yarn pglite build && yarn sqlite build",
-    "report": "yarn report:env nyc yarn test:inquire && nyc report -r lcov",
+    "report": "yarn report:env nyc yarn inquire test && nyc report -r lcov",
     "report:env": "NODE_OPTIONS=\"--disable-warning=ExperimentalWarning --experimental-loader @istanbuljs/esm-loader-hook\"",
     "test": "yarn inquire test && yarn mysql test && yarn pg test && yarn pglite test && yarn sqlite test",
     "test:crdb": "yarn --cwd examples/with-crdb test",
