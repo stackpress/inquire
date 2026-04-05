@@ -540,7 +540,7 @@ const Mysql: Dialect = {
         }));
       }
       build.json.forEach(filter => {
-        const { operator } = filter;
+        const { query, replace } = filter;
         //convert builder selector to dialect selector
         const { column, selector } = getJsonSelector(
           filter.selector, 
@@ -553,19 +553,22 @@ const Mysql: Dialect = {
         }
         //make a temporary or query object to hold the JSON filters
         const or: OrQueryObject<JSONScalarValue> = { query: [], values: [] };
-        //if the operator is equals, we need to use 
-        // JSON_EXTRACT and compare it to the value
-        if (operator === 'equals') {
-          filter.values.forEach(value => {
-            or.query.push(`JSON_UNQUOTE(JSON_EXTRACT(${q}${column}${q}, '${selector}')) = ?`);
-            or.values.push(value);
-          });
         //if the operator is contains, we need to use 
         // JSON_CONTAINS and check if it contains the value
-        } else if (operator === 'contains') {
+        if (query === 'contains') {
           filter.values.forEach(value => {
             or.query.push(`JSON_CONTAINS(${q}${column}${q}, ?, '${selector}')`);
             or.values.push(JSON.stringify(value));
+          });
+        // JSON_EXTRACT and compare it to the value
+        } else {
+          const clause = query.replaceAll(
+            replace, 
+            `JSON_UNQUOTE(JSON_EXTRACT(${q}${column}${q}, '${selector}'))`
+          );
+          filter.values.forEach(value => {
+            or.query.push(clause);
+            or.values.push(value);
           });
         }
         //if there are any JSON filters, wrap them in 

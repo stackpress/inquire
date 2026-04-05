@@ -38,7 +38,8 @@ export default class Select<R = unknown> implements WhereBuilder {
    */
   protected _json: {
     selector: string,  
-    operator: string, 
+    query: string, 
+    replace: string,
     values: JSONScalarValue[]
   }[] = [];
 
@@ -213,14 +214,16 @@ export default class Select<R = unknown> implements WhereBuilder {
    * Special where clause for JSON columns. Checks if the value at the 
    * selector equals the provided value.
    */
-  public whereJsonEquals(
-    selector: string, 
+  public whereJson(
+    query: string, 
+    selector: [ string, string ], 
     value: JSONScalarValue | JSONScalarValue[]
   ) {
     const values = Array.isArray(value) ? value : [ value ];
     this._json.push({ 
-      selector, 
-      operator: 'equals', 
+      selector: selector[0], 
+      query, 
+      replace: selector[1], 
       values 
     });
     return this;
@@ -237,7 +240,8 @@ export default class Select<R = unknown> implements WhereBuilder {
     const values = Array.isArray(value) ? value : [ value ];
     this._json.push({ 
       selector, 
-      operator: 'contains', 
+      query: 'contains', 
+      replace: '',
       values 
     });
     return this;

@@ -582,7 +582,7 @@ const Pgsql: Dialect = {
         }));
       }
       build.json.forEach(filter => {
-        const { operator } = filter;
+        const { query, replace } = filter;
         //convert builder selector to dialect selector
         const { column, selector } = getJsonSelector(
           filter.selector, 
@@ -595,19 +595,26 @@ const Pgsql: Dialect = {
         }
         //make a temporary or query object to hold the JSON filters
         const or: OrQueryObject<JSONScalarValue> = { query: [], values: [] };
-        //if the operator is equals, we need to use 
-        // JSON_EXTRACT and compare it to the value
-        if (operator === 'equals') {
-          filter.values.forEach(value => {
-            or.query.push(`${q}${column}${q}${selector} = ?`);
-            or.values.push(value);
-          });
-        //if the operator is contains, we need to use 
-        // JSON_CONTAINS and check if it contains the value
-        } else if (operator === 'contains') {
+
+        //if the operator is contains
+        if (query === 'contains') {
           filter.values.forEach(value => {
             const array = selector.replace('->>', '->');
             or.query.push(`${q}${column}${q}${array} ?? ?`);
+            or.values.push(value);
+          });
+        //compare it to the value
+        } else {
+          //we are doing the clause formation this
+          //way to make sure $ isn't removed
+          const clause = query.replaceAll(
+            replace, 
+            //$$$$ escapes $ in the selector so 
+            // it isn't replaced by a single $
+            `${q}${column}${q}${selector.replace(/\$/g, '$$$$')}`
+          );
+          filter.values.forEach(value => {
+            or.query.push(clause);
             or.values.push(value);
           });
         }

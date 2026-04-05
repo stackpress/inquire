@@ -132,7 +132,7 @@ describe('Sqlite3 Tests', () => {
     const actual = await engine
       .select<Profile>('*')
       .from('profile')
-      .whereJsonEquals('references:foo', 'bar');
+      .whereJson('%s = ?', [ 'references:foo', '%s' ], 'bar');
 
     expect(actual.length).to.equal(1);
     expect(actual[0].id).to.equal(2);
@@ -144,14 +144,14 @@ describe('Sqlite3 Tests', () => {
     const invalid = await engine
       .select<Profile>('*')
       .from('profile')
-      .whereJsonEquals('references:foo', 'foo');
+      .whereJson('%s = ?', [ 'references:foo', '%s' ], 'foo');
     
     expect(invalid.length).to.equal(0);
 
     const nested = await engine
       .select<Profile>('*')
       .from('profile')
-      .whereJsonEquals('references:bar.zoo', 'foo');
+      .whereJson('%s = ?', [ 'references:bar.zoo', '%s' ], 'foo');
 
     expect(nested.length).to.equal(1);
     expect(nested[0].id).to.equal(2);
@@ -165,7 +165,7 @@ describe('Sqlite3 Tests', () => {
     const equals = await engine
       .select<Profile>('*')
       .from('profile')
-      .whereJsonEquals('tags:1', 'zoo');
+      .whereJson('%s = ?', [ 'tags:1', '%s' ], 'zoo');
 
     expect(equals.length).to.equal(1);
     expect(equals[0].id).to.equal(2);
@@ -205,7 +205,7 @@ describe('Sqlite3 Tests', () => {
     const equals = await engine
       .select<Profile>('*')
       .from('profile')
-      .whereJsonEquals('references:seo.0', 'zoo');
+      .whereJson('%s = ?', [ 'references:seo.0', '%s' ], 'zoo');
 
     expect(equals.length).to.equal(1);
     expect(equals[0].id).to.equal(2);
@@ -245,7 +245,7 @@ describe('Sqlite3 Tests', () => {
     const equals = await engine
       .select<Profile>('*')
       .from('profile')
-      .whereJsonEquals('references:seo.1.keywords.0', 'foo');
+      .whereJson('%s = ?', [ 'references:seo.1.keywords.0', '%s' ], 'foo');
 
     expect(equals.length).to.equal(1);
     expect(equals[0].id).to.equal(2);
