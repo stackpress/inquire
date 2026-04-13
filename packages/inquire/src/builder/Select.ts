@@ -81,7 +81,7 @@ export default class Select<R = unknown> implements WhereBuilder {
    * Set select, quote and action
    */
   public constructor(
-    select: string | (string | [ string, string ])[] = '*', 
+    select: string | (string | string[])[] = '*', 
     engine?: Engine
   ) {
     this._engine = engine;
