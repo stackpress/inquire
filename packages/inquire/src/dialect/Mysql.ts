@@ -47,6 +47,10 @@ export class MysqlDialect implements Dialect {
   //Recommended quote character
   public readonly q = q;
 
+  //used for json notation
+  public separator: string = '.';
+  public splitter: string = ':';
+
   /**
    * Converts alter builder to query and values
    */
@@ -485,6 +489,7 @@ export class MysqlDialect implements Dialect {
     });
 
     query.push(`SELECT ${columns.join(', ')}`);
+
     const table = `${this.q}${build.from.name}${this.q}`;
     if (build.from.alias) {
       const alias = `${this.q}${build.from.alias}${this.q}`;
@@ -514,17 +519,34 @@ export class MysqlDialect implements Dialect {
     if (build.where.length > 0 || build.json.length > 0) {
       const filters: string[] = [];
       if (build.where.length) {
-        filters.push(...build.where.map(filter => {
-          values.push(...filter.values);
-          return filter.clause;
-        }));
+        //find json phrases
+          // - ex. data:info.name
+          // - ex. profile.data:info
+          // - ex. profile.data:info.name
+          const jsonSelector = new RegExp(
+            `([a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){0,1}\\${this.splitter}`
+            + `[a-zA-Z0-9_]+(\\${this.separator}[a-zA-Z0-9_]+)*)`, 
+            'g'
+          );
+          filters.push(...build.where.map(filter => {
+            values.push(...filter.values);
+            //then replace with XJsonDialect.parse().extract
+            return filter.clause.replace(jsonSelector, match => {
+              const json = MysqlJsonDialect.parse(
+                match,
+                this.splitter,
+                this.separator
+              );
+              return json ? json.extract : match;
+            });
+          }));
       }
       build.json.forEach(filter => {
         const { query, replace } = filter;
         const json = MysqlJsonDialect.parse(
           filter.selector, 
-          build.selector, 
-          build.separator
+          this.splitter, 
+          this.separator
         );
         //if invalid JSON selector, skip it
         if (!json) return;
@@ -563,11 +585,11 @@ export class MysqlDialect implements Dialect {
     if (build.sort.length) {
       const sort = build.sort.map(sort => {
         //if the sort column is using the selector ":" notation
-        if (sort.column.name.includes(build.selector)) {
+        if (sort.column.name.includes(this.splitter)) {
           const json = MysqlJsonDialect.parse(
             sort.column.name, 
-            build.selector, 
-            build.separator
+            this.splitter, 
+            this.separator
           );
           //if invalid JSON selector, skip it
           if (!json) return '';

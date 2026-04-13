@@ -165,6 +165,21 @@ describe('Connection Tests', () => {
     expect(nested[0].references.foo).to.equal('bar');
     expect(nested[0].active).to.equal(false);
     expect(nested[0].created).to.be.instanceOf(Date);
+
+    const native = await engine
+      .select<Profile>('*')
+      .from('profile')
+      .where('references:foo = ?', [ 'bar' ]);
+
+    expect(native.length).to.equal(1);
+    expect(native[0].id).to.equal(2);
+    expect(native[0].name).to.equal('Jane Doe');
+    expect(native[0].age).to.equal(31);
+    expect(native[0].tags[0]).to.equal('foo');
+    expect(native[0].tags[1]).to.equal('zoo');
+    expect(native[0].references.foo).to.equal('bar');
+    expect(native[0].active).to.equal(false);
+    expect(native[0].created).to.be.instanceOf(Date);
   }).timeout(20000);
 
   it('Should filter by json array', async () => {

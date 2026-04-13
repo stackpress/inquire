@@ -49,21 +49,9 @@ export default class Select<R = unknown> implements WhereBuilder {
   protected _offset: number = 0;
 
   /**
-   * Notation used to indicate to traverse through JSON 
-   * columns, default is colon (ex. data:info.name)
-   */
-  protected _selector = ':';
-
-  /**
    * The columns to select.
    */
   protected _selectors: Selector[] = [];
-
-  /**
-   * The separator for JSON selectors, 
-   * default is dot (ex. data.info.name)
-   */
-  protected _separator = '.';
 
   /**
    * The sort order.
@@ -88,22 +76,6 @@ export default class Select<R = unknown> implements WhereBuilder {
   public set engine(engine: Engine | undefined) {
     this._engine = engine;
   }
-
-  /**
-   * Sets the notation used to indicate to traverse through JSON 
-   * columns, default is colon (ex. data:info.name)
-   */
-  public set selector(selector: string) {
-    this._selector = selector;
-  }
-
-  /**
-   * Sets the separator for JSON selectors, 
-   * default is dot (ex. data.info.name)
-   */
-  public set separator(separator: string) {
-    this._separator = separator;
-  }
   
   /**
    * Set select, quote and action
@@ -127,8 +99,6 @@ export default class Select<R = unknown> implements WhereBuilder {
       limit: this._limit,
       offset: this._offset,
       selectors: this._selectors,
-      selector: this._selector,
-      separator: this._separator,
       sort: this._sort,
       where: this._where
     }

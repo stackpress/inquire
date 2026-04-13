@@ -48,6 +48,10 @@ export class SqliteDialect implements Dialect {
   //Recommended quote character
   public readonly q = q;
 
+  //used for json notation
+  public separator: string = '.';
+  public splitter: string = ':';
+
   /**
    * Converts alter builder to query and values
    * 
@@ -473,9 +477,26 @@ export class SqliteDialect implements Dialect {
     if (build.where.length > 0 || build.json.length > 0) {
       const filters: string[] = [];
       if (build.where.length) {
+        //find json phrases
+        // - ex. data:info.name
+        // - ex. profile.data:info
+        // - ex. profile.data:info.name
+        const jsonSelector = new RegExp(
+          `([a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){0,1}\\${this.splitter}`
+          + `[a-zA-Z0-9_]+(\\${this.separator}[a-zA-Z0-9_]+)*)`, 
+          'g'
+        );
         filters.push(...build.where.map(filter => {
           values.push(...filter.values);
-          return filter.clause;
+          //then replace with XJsonDialect.parse().extract
+          return filter.clause.replace(jsonSelector, match => {
+            const json = SqliteJsonDialect.parse(
+              match,
+              this.splitter,
+              this.separator
+            );
+            return json ? json.extract : match;
+          });
         }));
       }
       build.json.forEach(filter => {
@@ -483,8 +504,8 @@ export class SqliteDialect implements Dialect {
         //convert builder selector to json dialect
         const json = SqliteJsonDialect.parse(
           filter.selector, 
-          build.selector, 
-          build.separator
+          this.splitter, 
+          this.separator
         );
         //if invalid JSON selector, skip it
         if (!json) return;
@@ -522,11 +543,11 @@ export class SqliteDialect implements Dialect {
     if (build.sort.length) {
       const sort = build.sort.map(sort => {
         //if the sort column is using the selector ":" notation
-        if (sort.column.name.includes(build.selector)) {
+        if (sort.column.name.includes(this.splitter)) {
           const json = SqliteJsonDialect.parse(
             sort.column.name, 
-            build.selector, 
-            build.separator
+            this.splitter, 
+            this.separator
           );
           //if invalid JSON selector, skip it
           if (!json) return '';
