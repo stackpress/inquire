@@ -8,7 +8,7 @@ import Delete from '../src/builder/Delete';
 import Insert from '../src/builder/Insert';
 import Select from '../src/builder/Select';
 import Update from '../src/builder/Update';
-import Pgsql, { getDefault, getType } from '../src/dialect/Pgsql';
+import Pgsql from '../src/dialect/Pgsql';
 
 describe('Pgsql Dialect Tests', () => {
   it('Should translate alter', async () => {
@@ -263,35 +263,6 @@ describe('Pgsql Dialect Tests', () => {
     expect(query.query).to.equal('UPDATE "table" SET "name" = ? WHERE id = ?');
     expect(query.values?.[0]).to.equal('foobar');
     expect(query.values?.[1]).to.equal(1);
-  });
-
-  // Line 53
-  it('Should set type to "SMALLINT" when length is exactly 1', () => {
-    const { type, length } = getType('integer', 1);
-    expect(type).to.equal('SMALLINT');
-    expect(length).to.be.undefined;
-  });
-
-  // Line 55
-  it('Should set type to BIGINT when length is greater than 11', () => {
-    const { type } = getType('int', 12);
-    expect(type).to.equal('BIGINT');
-  });
-
-  // Line 69
-  
-  // Line 75
-  it('Should return "CURRENT_DATE" when type is "DATE" and value is not an object', () => {
-    const result = getDefault('now()', 'DATE');
-    expect(result).to.equal('CURRENT_DATE');
-  });
-
-  // Line 77
-  it('Should return "CURRENT_TIME" when type is "TIME" and value is "now()"', () => {
-    const value = 'now()';
-    const type = 'TIME';
-    const result = getDefault(value, type);
-    expect(result).to.equal('CURRENT_TIME');
   });
   
   // Line 259

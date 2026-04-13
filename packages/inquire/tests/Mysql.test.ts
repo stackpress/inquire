@@ -8,7 +8,7 @@ import Delete from '../src/builder/Delete';
 import Insert from '../src/builder/Insert';
 import Select from '../src/builder/Select';
 import Update from '../src/builder/Update';
-import Mysql, { getType } from '../src/dialect/Mysql';
+import Mysql from '../src/dialect/Mysql';
 
 describe('Mysql Dialect Tests', () => {
   it('Should translate alter', async () => {
@@ -205,7 +205,7 @@ describe('Mysql Dialect Tests', () => {
   it('Should translate select', async () => {
     const select = new Select('*');
     select.from('table');
-    select.join('inner', 'profile', 'profile.id', 'table.profileId');
+    select.join('inner', 'profile', ['profile','id'], ['table','profileId']);
     select.where('id = ?', [ 1 ]);
     select.order('id', 'asc');
     select.limit(1);
@@ -214,7 +214,7 @@ describe('Mysql Dialect Tests', () => {
     const query = Mysql.select(select);
     expect(query.query).to.equal(
       "SELECT * FROM `table` "
-      + "INNER JOIN `profile` ON (`profile.id` = `table.profileId`) "
+      + "INNER JOIN `profile` ON (`profile`.`id` = `table`.`profileId`) "
       + "WHERE id = ? "
       + "ORDER BY `id` ASC "
       + "LIMIT 1 OFFSET 1"
@@ -231,19 +231,6 @@ describe('Mysql Dialect Tests', () => {
     expect(query.query).to.equal("UPDATE `table` SET `name` = ? WHERE id = ?");
     expect(query.values?.[0]).to.equal('foobar');
     expect(query.values?.[1]).to.equal(1);
-  });
-
-  // Line 58
-  it('Should set type to "TINYINT" when length is exactly 1', () => {
-    const { type, length } = getType('int', 1);
-    expect(type).to.equal('TINYINT');
-    expect(length).to.be.undefined;
-  });
-
-  // Line 60
-  it('Should set type to BIGINT when length is greater than 11', () => {
-    const { type } = getType('int', 12);
-    expect(type).to.equal('BIGINT');
   });
 
 

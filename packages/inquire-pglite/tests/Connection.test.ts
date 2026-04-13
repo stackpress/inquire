@@ -19,7 +19,7 @@ type Profile = {
   references: Record<string, string>
 };
 
-describe('PGConnection Tests', () => {
+describe('Connection Tests', () => {
   //this is the raw resource
   const resource = new PGlite(path.join(import.meta.dirname, 'database'));
   //this is the connection

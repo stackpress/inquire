@@ -7,16 +7,18 @@ import type Select from '../builder/Select.js';
 import type Update from '../builder/Update.js';
 //common
 import type { 
-  Join, 
+  Column,
+  JoinType, 
   Value, 
   FlatValue, 
   Dialect, 
+  JsonDialect,
   QueryObject,
   OrQueryObject,
   JSONScalarValue
 } from '../types.js';
 import Exception from '../Exception.js';
-import { joins, isIndex } from '../helpers.js';
+import { joinTypes, isIndex } from '../helpers.js';
 
 //The character used to quote identifiers.
 export const q = '`';
@@ -40,63 +42,11 @@ export const typemap: Record<string, string> = {
   time: 'INTEGER'
 };
 
-export function getJsonSelector(
-  selector: string, 
-  splitter = ':', 
-  separator = '.'
-) {
-  //if the selector is empty
-  if (selector.length === 0) {
-    //return empty column and selector
-    return { column: '', selector: '' };
-  }
-  //ex. data:info.name -> column: data, selector: info.name
-  //get the first occurrence of the : in the filter selector
-  const index = selector.indexOf(splitter);
-  //if there's no selector notation
-  if (index === -1) {
-    //the entire selector is the column
-    return { column: selector, selector: '$' };
-  }
-  //get the char length of the selector notation (:)
-  const length = splitter.length;
-  //the column is the part before the selector notation
-  const column = selector.substring(0, index);
-  //the path is the part after the selector notation
-  const path = selector.substring(index + length);
-  //split path into paths and remove empty ones
-  const paths = path.split(separator).filter(Boolean);
-  //convert paths to proper JSON selectors
-  const selectors = paths.map(path => (
-    isIndex.test(path) ? `[${path}]` : `.${path}`
-  ));
-
-  return { column, selector: '$' + selectors.join('') };
-};
-
-export function getType(key: string, length?: number | [ number, number ]) {
-  //try to infer the type from the key
-  let type = typemap[key.toLowerCase()] || key.toUpperCase();
-  //if length is a number...
-  if (!Array.isArray(length)) {
-    //if char, varchar
-    if (type === 'CHAR' || type === 'VARCHAR') {
-      //make sure there's a length
-      length = length || 255;
-    }
-    //if int
-    if (type === 'INTEGER' || type === 'REAL') {
-      length = undefined;
-    }
-  }
-  return { type, length };
-};
-
-const Sqlite: Dialect = {
+export class SqliteDialect implements Dialect {
   //The name of the dialect, used for logging and error messages.
-  name: 'sqlite',
+  public readonly name = 'sqlite';
   //Recommended quote character
-  q, 
+  public readonly q = q;
 
   /**
    * Converts alter builder to query and values
@@ -127,7 +77,7 @@ const Sqlite: Dialect = {
 
     build.fields.remove.forEach(name => {
       transactions.push({
-        query: `ALTER TABLE ${q}${build.table}${q} DROP COLUMN ${q}${name}${q}`,
+        query: `ALTER TABLE ${this.q}${build.table}${this.q} DROP COLUMN ${this.q}${name}${this.q}`,
         values: []
       });
     });
@@ -140,8 +90,8 @@ const Sqlite: Dialect = {
     Object.keys(build.fields.add).forEach(name => {
       const field = build.fields.add[name];
       const column: string[] = [];
-      const { type, length } = getType(field.type, field.length);
-      column.push(`${q}${name}${q}`);
+      const { type, length } = this._getType(field.type, field.length);
+      column.push(`${this.q}${name}${this.q}`);
       if (type === 'REAL' || type === 'INTEGER') {
         column.push(type);
       } else if (Array.isArray(length)) {
@@ -175,7 +125,7 @@ const Sqlite: Dialect = {
       }
 
       transactions.push({
-        query: `ALTER TABLE ${q}${build.table}${q} ADD COLUMN ${column.join(' ')}`,
+        query: `ALTER TABLE ${this.q}${build.table}${this.q} ADD COLUMN ${column.join(' ')}`,
         values: []
       });
     });
@@ -187,7 +137,7 @@ const Sqlite: Dialect = {
 
     Object.keys(build.fields.update).map(name => {
       const field = build.fields.update[name];
-      let { type, length } = getType(field.type, field.length);
+      let { type, length } = this._getType(field.type, field.length);
       
       if (type === 'REAL' || type === 'INTEGER') {
       } else if (Array.isArray(length)) {
@@ -197,7 +147,7 @@ const Sqlite: Dialect = {
       }
       //SQLite does not support modifying column constraints (like NOT NULL, DEFAULT) directly.
       transactions.push({
-        query: `ALTER TABLE ${q}${build.table}${q} ALTER COLUMN ${q}${name}${q} SET DATA TYPE ${type}`,
+        query: `ALTER TABLE ${this.q}${build.table}${this.q} ALTER COLUMN ${this.q}${name}${this.q} SET DATA TYPE ${type}`,
         values: []
       });
     });
@@ -209,7 +159,7 @@ const Sqlite: Dialect = {
 
     build.unique.remove.forEach(name => {
       transactions.push({
-        query: `DROP INDEX ${q}${name}${q}`,
+        query: `DROP INDEX ${this.q}${name}${this.q}`,
         values: []
       });
     });
@@ -221,7 +171,7 @@ const Sqlite: Dialect = {
 
     Object.entries(build.unique.add).forEach(([name, values]) => {
       transactions.push({ 
-        query: `CREATE UNIQUE INDEX ${q}${name}${q} ON ${q}${build.table}${q}(${q}${values.join(`${q}, ${q}`)}${q})`, 
+        query: `CREATE UNIQUE INDEX ${this.q}${name}${this.q} ON ${this.q}${build.table}${this.q}(${this.q}${values.join(`${this.q}, ${this.q}`)}${this.q})`, 
         values: [] 
       });
     });
@@ -233,7 +183,7 @@ const Sqlite: Dialect = {
 
     build.keys.remove.forEach(name => {
       transactions.push({
-        query: `DROP INDEX ${q}${name}${q}`,
+        query: `DROP INDEX ${this.q}${name}${this.q}`,
         values: []
       });
     });
@@ -245,7 +195,7 @@ const Sqlite: Dialect = {
 
     Object.entries(build.keys.add).forEach(([name, values]) => {
       transactions.push({ 
-        query: `CREATE INDEX ${q}${name}${q} ON ${q}${build.table}${q}(${q}${values.join(`${q}, ${q}`)}${q})`, 
+        query: `CREATE INDEX ${this.q}${name}${this.q} ON ${this.q}${build.table}${this.q}(${this.q}${values.join(`${this.q}, ${this.q}`)}${this.q})`, 
         values: [] 
       });
     });
@@ -254,7 +204,7 @@ const Sqlite: Dialect = {
       throw Exception.for('No alterations made.')
     }
     return transactions;
-  },
+  }
 
   /**
    * Converts create builder to query and values
@@ -276,8 +226,8 @@ const Sqlite: Dialect = {
     const fields = Object.keys(build.fields).map(name => {
       const field = build.fields[name];
       const column: string[] = [];
-      const { type, length } = getType(field.type, field.length);
-      column.push(`${q}${name}${q}`);
+      const { type, length } = this._getType(field.type, field.length);
+      column.push(`${this.q}${name}${this.q}`);
       if (type === 'REAL' || type === 'INTEGER') {
         column.push(type);
       } else if (Array.isArray(length)) {
@@ -326,8 +276,8 @@ const Sqlite: Dialect = {
     if (Object.keys(build.foreign).length) {
       fields.push(...Object.values(build.foreign).map(info => {
         return [
-          `FOREIGN KEY (${q}${info.local}${q})`,
-          `REFERENCES ${q}${info.table}${q}(${q}${info.foreign}${q})`,
+          `FOREIGN KEY (${this.q}${info.local}${this.q})`,
+          `REFERENCES ${this.q}${info.table}${this.q}(${this.q}${info.foreign}${this.q})`,
           info.delete ? `ON DELETE ${info.delete}`: '', 
           info.update ? `ON UPDATE ${info.update}`: ''
         ].join(' ');
@@ -335,7 +285,7 @@ const Sqlite: Dialect = {
     }
 
     transactions.push({ 
-      query: `CREATE TABLE IF NOT EXISTS ${q}${build.table}${q} (${fields.join(', ')})`, 
+      query: `CREATE TABLE IF NOT EXISTS ${this.q}${build.table}${this.q} (${fields.join(', ')})`, 
       values: [] 
     });
 
@@ -346,7 +296,7 @@ const Sqlite: Dialect = {
 
     Object.entries(build.unique).forEach(([name, values]) => {
       transactions.push({ 
-        query: `CREATE UNIQUE INDEX ${q}${name}${q} ON ${q}${build.table}${q}(${q}${values.join(`${q}, ${q}`)}${q})`, 
+        query: `CREATE UNIQUE INDEX ${this.q}${name}${this.q} ON ${this.q}${build.table}${this.q}(${this.q}${values.join(`${this.q}, ${this.q}`)}${this.q})`, 
         values: [] 
       });
     });
@@ -358,13 +308,13 @@ const Sqlite: Dialect = {
 
     Object.entries(build.keys).forEach(([name, values]) => {
       transactions.push({ 
-        query: `CREATE INDEX ${q}${name}${q} ON ${q}${build.table}${q}(${q}${values.join(`${q}, ${q}`)}${q})`, 
+        query: `CREATE INDEX ${this.q}${name}${this.q} ON ${this.q}${build.table}${this.q}(${this.q}${values.join(`${this.q}, ${this.q}`)}${this.q})`, 
         values: [] 
       });
     });
 
     return transactions;
-  },
+  }
 
   /**
    * Converts delete builder to query and values
@@ -377,7 +327,7 @@ const Sqlite: Dialect = {
 
     const query: string[] = [];
     const values: FlatValue[] = [];
-    query.push(`DELETE FROM ${q}${build.table}${q}`);
+    query.push(`DELETE FROM ${this.q}${build.table}${this.q}`);
 
     const filters = build.filters.map(filter => {
       values.push(...filter[1]);
@@ -386,14 +336,14 @@ const Sqlite: Dialect = {
     query.push(`WHERE ${filters}`);
 
     return { query: query.join(' '), values };
-  },
+  }
 
   /**
    * Drops a table
    */
   drop(table: string) {
-    return { query: `DROP TABLE IF EXISTS ${q}${table}${q}`, values: [] };
-  },
+    return { query: `DROP TABLE IF EXISTS ${this.q}${table}${this.q}`, values: [] };
+  }
 
   /**
    * Converts insert builder to query and values
@@ -407,10 +357,10 @@ const Sqlite: Dialect = {
     const query: string[] = [];
     const values: Value[] = [];
     
-    query.push(`INSERT INTO ${q}${build.table}${q}`);
+    query.push(`INSERT INTO ${this.q}${build.table}${this.q}`);
 
     const keys = Object.keys(build.values[0]);
-    query.push(`(${q}${keys.join(`${q}, ${q}`)}${q})`);
+    query.push(`(${this.q}${keys.join(`${this.q}, ${this.q}`)}${this.q})`);
 
     const row = build.values.map((value) => {
       const row = keys.map(key => value[key]);
@@ -421,94 +371,135 @@ const Sqlite: Dialect = {
     query.push(`VALUES ${row.join(', ')}`);
     if (build.returning.length) {
       query.push(`RETURNING ${build.returning.map(
-        column => column !== '*' ? `${q}${column}${q}` : column
+        column => column !== '*' ? `${this.q}${column}${this.q}` : column
       ).join(', ')}`);
     }
     return { query: query.join(' '), values };
-  },
+  }
+
+  /**
+   * Returns a subset of methods for handling JSON selectors in queries.
+   */
+  public json(column: string, path: string[]): JsonDialect;
+  public json(column: string, path?: string, separator?: string): JsonDialect;
+  public json(column: string, path?: string|string[], separator?: string) {
+    if (!Array.isArray(path)) {
+      return SqliteJsonDialect.parse(
+        column, 
+        path || ':', 
+        separator || '.', 
+        this.q
+      );
+    }
+    //split the by . and remove empty ones
+    const columnPath = column.split('.').filter(Boolean);
+    return new SqliteJsonDialect(
+      columnPath.length === 0 
+        //ex. profile_id
+        ? { name: column } 
+        : columnPath.length === 1 
+        //ex. profile_id
+        ? { name: columnPath[0] } 
+        //ex. profile.profile_id
+        : { table: columnPath[0], name: columnPath[1] }, 
+      path,
+      this.q
+    );
+  }
 
   /**
    * Renames a table
    */
   rename(from: string, to: string) {
     return { 
-      query: `ALTER TABLE ${q}${from}${q} RENAME TO ${q}${to}${q}`, 
+      query: `ALTER TABLE ${this.q}${from}${this.q} RENAME TO ${this.q}${to}${this.q}`, 
       values: [] 
     };
-  },
+  }
 
   /**
    * Converts select builder to query and values
    */
   select(builder: Select) {
     const build = builder.build();
-    if (!build.table) {
+    if (!build.from) {
       throw Exception.for('No table specified');
     }
 
     const query: string[] = [];
     const values: FlatValue[] = [];
-    const columns = build.columns
-      .map(column => column.split(','))
-      .flat(1)
-      .map(column => column.trim())
-      .filter(Boolean);
+
+    const columns = build.selectors.map(selector => {
+      const name = selector.name !== '*' 
+        ? `${this.q}${selector.name}${this.q}` 
+        : '*';
+      return selector.table && selector.alias
+        ? `${this.q}${selector.table}${this.q}.${name} AS ${this.q}${selector.alias}${this.q}`
+        : selector.table
+        ? `${this.q}${selector.table}${this.q}.${name}`
+        : selector.alias
+        ? `${name} AS ${this.q}${selector.alias}${this.q}`
+        : name
+    });
 
     query.push(`SELECT ${columns.join(', ')}`);
-    if (build.table) {
-      if (build.table[1] !== build.table[0]) {
-        query.push(`FROM ${q}${build.table[0]}${q} AS ${q}${build.table[1]}${q}`);
-      } else {
-        query.push(`FROM ${q}${build.table[0]}${q}`);
-      }
+
+    const table = `${this.q}${build.from.name}${this.q}`;
+    if (build.from.alias) {
+      const alias = `${this.q}${build.from.alias}${this.q}`;
+      query.push(`FROM ${table} AS ${alias}`);
+    } else {
+      query.push(`FROM ${table}`);
     }
 
-    if (build.relations.length) {
-      const relations = build.relations.map(relation => {
-        const type = relation.type as Join;
-        const table = relation.table !== relation.as 
-          ? `${q}${relation.table}${q} AS ${q}${relation.as}${q}`
-          : `${q}${relation.table}${q}`;
-        return `${joins[type]} JOIN ${table} ON (${q}${relation.from}${q} = ${q}${relation.to}${q})`;
+    if (build.joins.length) {
+      const joins = build.joins.map(relation => {
+        const type = joinTypes[relation.type as JoinType];
+        const table = relation.table.alias 
+          ? `${this.q}${relation.table.name}${this.q}`
+            + ` AS ${this.q}${relation.table.alias}${this.q}`
+          : `${this.q}${relation.table.name}${this.q}`;
+        const from = relation.from.table 
+          ? `${this.q}${relation.from.table}${this.q}.${this.q}${relation.from.name}${this.q}`
+          : `${this.q}${relation.from.name}${this.q}`;
+        const to = relation.to.table 
+          ? `${this.q}${relation.to.table}${this.q}.${this.q}${relation.to.name}${this.q}`
+          : `${this.q}${relation.to.name}${this.q}`;
+        return `${type} JOIN ${table} ON (${from} = ${to})`;
       });
-      query.push(relations.join(' '));
+      query.push(joins.join(' '));
     }
 
-    if (build.filters.length > 0 || build.json.length > 0) {
+    if (build.where.length > 0 || build.json.length > 0) {
       const filters: string[] = [];
-      if (build.filters.length) {
-        filters.push(...build.filters.map(filter => {
-          values.push(...filter[1]);
-          return filter[0];
+      if (build.where.length) {
+        filters.push(...build.where.map(filter => {
+          values.push(...filter.values);
+          return filter.clause;
         }));
       }
       build.json.forEach(filter => {
         const { query, replace } = filter;
-        //convert builder selector to dialect selector
-        const { column, selector } = getJsonSelector(
+        //convert builder selector to json dialect
+        const json = SqliteJsonDialect.parse(
           filter.selector, 
           build.selector, 
           build.separator
         );
-        //if there's no column or selector
-        if (column.length === 0 || selector.length === 0) {
-          return;
-        }
+        //if invalid JSON selector, skip it
+        if (!json) return;
+        
         //make a temporary or query object to hold the JSON filters
         const or: OrQueryObject<JSONScalarValue> = { query: [], values: [] };
         //if the operator is contains, we need to use EXISTS pollyfill
         if (query === 'contains') {
-          const each = `json_each(${q}${column}${q}, '${selector}')`;
           filter.values.forEach(value => {
-            or.query.push(`EXISTS (SELECT 1 FROM ${each} WHERE value = ?)`);
+            or.query.push(json.contains);
             or.values.push(value);
           });
         // JSON_EXTRACT and compare it to the value
         } else {
-          const clause = query.replaceAll(
-            replace, 
-            `json_extract(${q}${column}${q}, '${selector}')`
-          );
+          const clause = json.where(query, replace);
           filter.values.forEach(value => {
             or.query.push(clause);
             or.values.push(value);
@@ -530,23 +521,21 @@ const Sqlite: Dialect = {
 
     if (build.sort.length) {
       const sort = build.sort.map(sort => {
-        //if the sort column is using the selector notation
-        if (sort[0].includes(build.selector)) {
-          //convert builder selector to dialect selector
-          const { column, selector } = getJsonSelector(
-            sort[0], 
+        //if the sort column is using the selector ":" notation
+        if (sort.column.name.includes(build.selector)) {
+          const json = SqliteJsonDialect.parse(
+            sort.column.name, 
             build.selector, 
             build.separator
           );
-          //if there's no column or selector
-          if (column.length === 0 || selector.length === 0) {
-            //return empty string to avoid syntax errors
-            return '';
-          }
-          const selection = `json_extract(${q}${column}${q}, '${selector}')`;
-          return `${selection} ${sort[1].toUpperCase()}`;
+          //if invalid JSON selector, skip it
+          if (!json) return '';
+          return `${json.extract} ${sort.direction.toUpperCase()}`;
         }
-        return `${q}${sort[0]}${q} ${sort[1].toUpperCase()}`
+        const column = sort.column.table 
+          ? `${this.q}${sort.column.table}${this.q}.${this.q}${sort.column.name}${this.q}`
+          : `${this.q}${sort.column.name}${this.q}`;
+        return `${column} ${sort.direction.toUpperCase()}`;
       }).filter(Boolean);
       query.push(`ORDER BY ${sort.join(`, `)}`);
     }
@@ -560,17 +549,17 @@ const Sqlite: Dialect = {
     }
 
     return { query: query.join(' '), values };
-  },
+  }
 
   /**
    * Truncate table
    */
   truncate(table: string, cascade = false) {
     return { 
-      query: `TRUNCATE TABLE ${q}${table}${q}${cascade ? ' CASCADE' : ''}`, 
+      query: `TRUNCATE TABLE ${this.q}${table}${this.q}${cascade ? ' CASCADE' : ''}`, 
       values: [] 
     };
-  },
+  }
 
   /**
    * Converts update builder to query and values
@@ -584,12 +573,12 @@ const Sqlite: Dialect = {
     const query: string[] = [];
     const values: Value[] = [];
 
-    query.push(`UPDATE ${q}${build.table}${q}`);
+    query.push(`UPDATE ${this.q}${build.table}${this.q}`);
 
     if (Object.keys(build.data).length) {
       const data = Object.keys(build.data).map(key => {
         values.push(build.data[key]);
-        return `${q}${key}${q} = ?`;
+        return `${this.q}${key}${this.q} = ?`;
       }).join(', ');
       query.push(`SET ${data}`);
     }
@@ -604,6 +593,125 @@ const Sqlite: Dialect = {
 
     return { query: query.join(' '), values };
   }
+
+  /**
+   * Returns a type and length for the given type key and length,
+   * properly formatted for SQL.
+   */
+  protected _getType(key: string, length?: number | [ number, number ]) {
+    //try to infer the type from the key
+    let type = typemap[key.toLowerCase()] || key.toUpperCase();
+    //if length is a number...
+    if (!Array.isArray(length)) {
+      //if char, varchar
+      if (type === 'CHAR' || type === 'VARCHAR') {
+        //make sure there's a length
+        length = length || 255;
+      }
+      //if int
+      if (type === 'INTEGER' || type === 'REAL') {
+        length = undefined;
+      }
+    }
+    return { type, length };
+  }
 };
 
-export default Sqlite;
+export class SqliteJsonDialect implements JsonDialect {
+  /**
+   * Parses a JSON selector string into a PgsqlJsonDialect object.
+   */
+  public static parse(
+    selector: string, 
+    splitter = ':', 
+    separator = '.', 
+    quote = q
+  ) {
+    //if the selector is empty
+    if (selector.length === 0) {
+      //return empty column and selector
+      return null;
+    }
+    //ex. data:info.name -> column: data, selector: info.name
+    //get the first occurrence of the : in the filter selector
+    const index = selector.indexOf(splitter);
+    //if there's no selector notation
+    if (index === -1) {
+      //NOTE: dont use separator in this case, just use static '.'
+      const columnPath = selector.split('.').filter(Boolean);
+      //now form the column object
+      const column = columnPath.length === 0 
+        //ex. profile_id
+        ? { name: selector } 
+        : columnPath.length === 1 
+        //ex. profile_id
+        ? { name: columnPath[0] } 
+        //ex. profile.profile_id
+        : { table: columnPath[0], name: columnPath[1] };
+      //the entire selector is the column
+      return new SqliteJsonDialect(column, [], quote);
+    }
+    //get the char length of the selector notation (:)
+    const length = splitter.length;
+    //get the left part of the selector before the selector notation (:)
+    //this is either something like: profile_id or profile.profile_id
+    const select = selector.substring(0, index);
+    //split the by . and remove empty ones
+    //NOTE: dont use separator in this case, just use static '.'
+    const columnPath = select.split('.').filter(Boolean);
+    //now form the column object
+    const column = columnPath.length === 0 
+      //ex. profile_id
+      ? { name: selector } 
+      : columnPath.length === 1 
+      //ex. profile_id
+      ? { name: columnPath[0] } 
+      //ex. profile.profile_id
+      : { table: columnPath[0], name: columnPath[1] };
+    //get the right part of the selector after the selector notation (:)
+    const json = selector.substring(index + length);
+    //now form the json path
+    const path = json.split(separator).filter(Boolean);
+    return new SqliteJsonDialect(column, path, quote);
+  }
+
+  //ex. $
+  //ex. $.firstName
+  //ex. $.settings.theme
+  //ex. $.tags[0]
+  public readonly selector: string;
+  //ex. json_extract(data, '$.firstName')
+  public readonly extract: string;
+  //ex. EXISTS (SELECT 1 FROM json_each(data, '$.tags') WHERE value = ?)
+  public readonly contains: string;
+
+  /**
+   * Sets the selector and extract properties 
+   * based on the column and path provided.
+   */
+  public constructor(column: Column, path: string[], q: string) {
+    //convert paths to proper JSON selectors
+    const selectors = path.map(path => (
+      isIndex.test(path) ? `[${path}]` : `.${path}`
+    ));
+
+    const select = column.table
+      ? `${q}${column.table}${q}.${q}${column.name}${q}`
+      : `${q}${column.name}${q}`;
+
+    this.selector = '$' + selectors.join('');
+    this.extract = `json_extract(${select}, '${this.selector}')`;
+
+    const each = `json_each(${select}, '${this.selector}')`;
+    this.contains = `EXISTS (SELECT 1 FROM ${each} WHERE value = ?)`;
+  }
+
+  /**
+   * Returns a JSON selector clause for the given operator and value.
+   */
+  public where(clause: string, replace: string) {
+    return clause.replaceAll(replace, this.extract);
+  }
+};
+
+export default new SqliteDialect();

@@ -156,4 +156,4 @@ export default class Create<R = unknown> {
       return await connection.query<R>(connection.format(last));
     }).then(resolve).catch(reject);
   }
-}
+};

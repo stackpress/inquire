@@ -7,16 +7,18 @@ import type Select from '../builder/Select.js';
 import type Update from '../builder/Update.js';
 //common
 import type { 
-  Join, 
+  Column,
+  JoinType, 
   Value, 
   FlatValue, 
   Dialect, 
+  JsonDialect,
   QueryObject,
   OrQueryObject,
   JSONScalarValue
 } from '../types.js';
 import Exception from '../Exception.js';
-import { joins, isIndex } from '../helpers.js';
+import { joinTypes, isIndex } from '../helpers.js';
 
 //The character used to quote identifiers.
 export const q = '"';
@@ -40,104 +42,12 @@ export const typemap: Record<string, string> = {
   time: 'TIME'
 };
 
-export function getJsonSelector(
-  selector: string, 
-  splitter = ':', 
-  separator = '.'
-) {
-  //if the selector is empty
-  if (selector.length === 0) {
-    //return empty column and selector
-    return { column: '', selector: '' };
-  }
-  //ex. data:info.name -> column: data, selector: info.name
-  //get the first occurrence of the : in the filter selector
-  const index = selector.indexOf(splitter);
-  //if there's no selector notation
-  if (index === -1) {
-    //the entire selector is the column
-    return { column: selector, selector: '' };
-  }
-  //get the char length of the selector notation (:)
-  const length = splitter.length;
-  //the column is the part before the selector notation
-  const column = selector.substring(0, index);
-  //the path is the part after the selector notation
-  const path = selector.substring(index + length);
-  //split path into paths and remove empty ones
-  const paths = path.split(separator).filter(Boolean);
-  //if no path, save some compute...
-  if (path.length === 0) {
-    return { column, selector: '' };
-  }
-  //the last one has a special annotation...
-  const last = paths.pop()!;
-  //convert paths to proper JSON selectors
-  const selectors = paths.map(path => (
-    isIndex.test(path) ? `->${path}` : `->$$${path}$$`
-  ));
-  selectors.push(isIndex.test(last) ? `->>${last}` : `->>$$${last}$$`)
-
-  return { column, selector: selectors.join('') };
-};
-
-export function getType(key: string, length?: number | [ number, number ]) {
-  //try to infer the type from the key
-  let type = typemap[key.toLowerCase()] || key.toUpperCase();
-  //if length is a number...
-  if (!Array.isArray(length)) {
-    //if char, varchar
-    if (type === 'CHAR' || type === 'VARCHAR') {
-      //make sure there's a length
-      length = length || 255;
-    //if number
-    } else if (type === 'INTEGER' || type === 'FLOAT') {
-      //make sure there's a length
-      length = length || 11;
-    }
-    //if int
-    if (type === 'INTEGER') {
-      //determine what kind of int
-      if (length === 1) {
-        type = 'SMALLINT';
-        length = undefined;
-      } else if (length && length > 11) {
-        type = 'BIGINT';
-        length = undefined;
-      }
-    }
-  }
-  return { type, length };
-};
-
-export function getDefault(value: any, type: string) {
-  if (typeof value === 'boolean') {
-    return value ? 'TRUE' : 'FALSE';
-  } else if (typeof value === 'number' || !isNaN(Number(value))) {
-    return value;
-  } else if (typeof value === 'string' && value.endsWith('()')) {
-    if (value.toLowerCase() === 'now()') {
-      if (type === 'TIMESTAMP') {
-        return 'CURRENT_TIMESTAMP';
-      } else if (type === 'DATE') {
-        return 'CURRENT_DATE';
-      } else if (type === 'TIME') {
-        return 'CURRENT_TIME';
-      }
-    }
-    return value.toUpperCase();
-  } else if (value && typeof value === 'object') {
-    return JSON.stringify(value);
-  }
-  return `'${value}'`;
-};
-
-const Pgsql: Dialect = {
+export class PgsqlDialect implements Dialect {
   //The name of the dialect, used for logging and error messages.
-  name: 'pgsql',
+  public readonly name = 'pgsql';
   //Recommended quote character
-  q, 
-  
+  public readonly q = q;
+
   /**
    * Converts alter builder to query and values
    */
@@ -151,7 +61,7 @@ const Pgsql: Dialect = {
     // DROP COLUMN `name`
 
     build.fields.remove.forEach(name => {
-      query.push(`ALTER TABLE ${q}${build.table}${q} DROP COLUMN ${q}${name}${q}`);
+      query.push(`ALTER TABLE ${this.q}${build.table}${this.q} DROP COLUMN ${this.q}${name}${this.q}`);
     });
 
     //----------------------------------------------------------------//
@@ -162,8 +72,8 @@ const Pgsql: Dialect = {
     Object.keys(build.fields.add).forEach(name => {
       const field = build.fields.add[name];
       const column: string[] = [];
-      const { type, length } = getType(field.type, field.length);
-      column.push(`${q}${name}${q}`);
+      const { type, length } = this._getType(field.type, field.length);
+      column.push(`${this.q}${name}${this.q}`);
       if (field.autoIncrement) {
         column.push('SERIAL');
       } else if (type === 'FLOAT' || type === 'INTEGER') {
@@ -178,13 +88,13 @@ const Pgsql: Dialect = {
       field.attribute && column.push(field.attribute);
       !field.nullable && column.push('NOT NULL');
       if (field.default) {
-        column.push(`DEFAULT ${getDefault(field.default, type)}`);
+        column.push(`DEFAULT ${this._getDefault(field.default, type)}`);
       } else if (field.nullable) {
         column.push('DEFAULT NULL');
       }
 
       query.push(
-        `ALTER TABLE ${q}${build.table}${q} `
+        `ALTER TABLE ${this.q}${build.table}${this.q} `
         + `ADD COLUMN ${column.join(' ')}`
       );
     });
@@ -196,48 +106,50 @@ const Pgsql: Dialect = {
 
     Object.keys(build.fields.update).forEach(name => {
       const field = build.fields.update[name];
-      const { type, length } = getType(field.type, field.length);
+      const { type, length } = this._getType(field.type, field.length);
       if (field.autoIncrement) {
         query.push(
-          `ALTER TABLE ${q}${build.table}${q} `
-          + `ALTER COLUMN ${q}${name}${q} TYPE SERIAL`
+          `ALTER TABLE ${this.q}${build.table}${this.q} `
+          + `ALTER COLUMN ${this.q}${name}${this.q} TYPE SERIAL`
         );
       } else if (type === 'FLOAT' || type === 'INTEGER') {
         query.push(
-          `ALTER TABLE ${q}${build.table}${q} ` 
-          + `ALTER COLUMN ${q}${name}${q} TYPE ${type}`
+          `ALTER TABLE ${this.q}${build.table}${this.q} ` 
+          + `ALTER COLUMN ${this.q}${name}${this.q} TYPE ${type}`
         );
       } else if (Array.isArray(length)) {
         query.push(
-          `ALTER TABLE ${q}${build.table}${q} ` 
-          + `ALTER COLUMN ${q}${name}${q} TYPE ${type}(${length.join(', ')})`
+          `ALTER TABLE ${this.q}${build.table}${this.q} ` 
+          + `ALTER COLUMN ${this.q}${name}${this.q} TYPE ${type}(${length.join(', ')})`
         );
       } else if (length) {
         query.push(
-          `ALTER TABLE ${q}${build.table}${q} ` 
-          + `ALTER COLUMN ${q}${name}${q} TYPE ${type}(${length})`
+          `ALTER TABLE ${this.q}${build.table}${this.q} ` 
+          + `ALTER COLUMN ${this.q}${name}${this.q} TYPE ${type}(${length})`
         );
       } else {
         query.push(
-          `ALTER TABLE ${q}${build.table}${q} ` 
-          + `ALTER COLUMN ${q}${name}${q} TYPE ${type}`
+          `ALTER TABLE ${this.q}${build.table}${this.q} ` 
+          + `ALTER COLUMN ${this.q}${name}${this.q} TYPE ${type}`
         );
       }
       if (typeof field.nullable === 'boolean' && !field.nullable) {
         query.push(
-          `ALTER TABLE ${q}${build.table}${q} ` 
-          + `ALTER COLUMN ${q}${name}${q} SET NOT NULL`
+          `ALTER TABLE ${this.q}${build.table}${this.q} ` 
+          + `ALTER COLUMN ${this.q}${name}${this.q} SET NOT NULL`
         );
       }
       if (field.default) {
         query.push(
-          `ALTER TABLE ${q}${build.table}${q} ` 
-          + `ALTER COLUMN ${q}${name}${q} SET DEFAULT ${getDefault(field.default, type)}`
+          `ALTER TABLE ${this.q}${build.table}${this.q} ` 
+          + `ALTER COLUMN ${this.q}${name}${this.q} SET DEFAULT ${
+            this._getDefault(field.default, type)
+          }`
         );
       } else if (field.nullable) {
         query.push(
-          `ALTER TABLE ${q}${build.table}${q} ` 
-          + `ALTER COLUMN ${q}${name}${q} SET DEFAULT NULL`
+          `ALTER TABLE ${this.q}${build.table}${this.q} ` 
+          + `ALTER COLUMN ${this.q}${name}${this.q} SET DEFAULT NULL`
         );
       }
     });
@@ -249,8 +161,8 @@ const Pgsql: Dialect = {
 
     build.primary.remove.forEach(name => {
       query.push(
-        `ALTER TABLE ${q}${build.table}${q} `
-        + `DROP CONSTRAINT ${q}${name}${q}`
+        `ALTER TABLE ${this.q}${build.table}${this.q} `
+        + `DROP CONSTRAINT ${this.q}${name}${this.q}`
       );
     });
 
@@ -261,8 +173,8 @@ const Pgsql: Dialect = {
 
     if (build.primary.add.length) {
       query.push(
-        `ALTER TABLE ${q}${build.table}${q} `
-        +`ADD PRIMARY KEY (${q}${build.primary.add.join(`${q}, ${q}`)}${q})`
+        `ALTER TABLE ${this.q}${build.table}${this.q} `
+        +`ADD PRIMARY KEY (${this.q}${build.primary.add.join(`${this.q}, ${this.q}`)}${this.q})`
       );
     }
 
@@ -273,8 +185,8 @@ const Pgsql: Dialect = {
 
     build.unique.remove.forEach(name => {
       query.push(
-        `ALTER TABLE ${q}${build.table}${q} `
-        + `DROP UNIQUE ${q}${name}${q}`
+        `ALTER TABLE ${this.q}${build.table}${this.q} `
+        + `DROP UNIQUE ${this.q}${name}${this.q}`
       );
     });
 
@@ -285,8 +197,8 @@ const Pgsql: Dialect = {
 
     Object.keys(build.unique.add).forEach(key => {
       query.push(
-        `ALTER TABLE ${q}${build.table}${q} `
-        + `ADD UNIQUE ${q}${key}${q} (${q}${build.unique.add[key].join(`${q}, ${q}`)}${q})`
+        `ALTER TABLE ${this.q}${build.table}${this.q} `
+        + `ADD UNIQUE ${this.q}${key}${this.q} (${this.q}${build.unique.add[key].join(`${this.q}, ${this.q}`)}${this.q})`
       );
     });
 
@@ -297,8 +209,8 @@ const Pgsql: Dialect = {
 
     build.keys.remove.forEach(name => {
       query.push(
-        `ALTER TABLE ${q}${build.table}${q} `
-        + `DROP INDEX ${q}${name}${q}`);
+        `ALTER TABLE ${this.q}${build.table}${this.q} `
+        + `DROP INDEX ${this.q}${name}${this.q}`);
     });
 
     //----------------------------------------------------------------//
@@ -308,8 +220,8 @@ const Pgsql: Dialect = {
 
     Object.keys(build.keys.add).forEach(key => {
       query.push(
-        `ALTER TABLE ${q}${build.table}${q} `
-        + `ADD INDEX ${q}${key}${q} (${q}${build.keys.add[key].join(`${q}, ${q}`)}${q})`
+        `ALTER TABLE ${this.q}${build.table}${this.q} `
+        + `ADD INDEX ${this.q}${key}${this.q} (${this.q}${build.keys.add[key].join(`${this.q}, ${this.q}`)}${this.q})`
       );
     });
 
@@ -320,8 +232,8 @@ const Pgsql: Dialect = {
 
     build.foreign.remove.forEach(name => {
       query.push(
-        `ALTER TABLE ${q}${build.table}${q} `
-        + `DROP CONSTRAINT ${q}${name}${q}`);
+        `ALTER TABLE ${this.q}${build.table}${this.q} `
+        + `DROP CONSTRAINT ${this.q}${name}${this.q}`);
     });
 
     //----------------------------------------------------------------//
@@ -332,9 +244,9 @@ const Pgsql: Dialect = {
     // ON UPDATE RESTRICT
     Object.entries(build.foreign.add).forEach(([ name, info ]) => {
       query.push(
-        `ALTER TABLE ${q}${build.table}${q} `
-        + `ADD CONSTRAINT ${q}${name}${q} FOREIGN KEY (${q}${info.local}${q}) `
-        + `REFERENCES ${q}${info.table}${q}(${q}${info.foreign}${q}) `
+        `ALTER TABLE ${this.q}${build.table}${this.q} `
+        + `ADD CONSTRAINT ${this.q}${name}${this.q} FOREIGN KEY (${this.q}${info.local}${this.q}) `
+        + `REFERENCES ${this.q}${info.table}${this.q}(${this.q}${info.foreign}${this.q}) `
         + (info.delete ? `ON DELETE ${info.delete} `: '')
         + (info.update ? `ON UPDATE ${info.update} `: '')
       );
@@ -344,7 +256,7 @@ const Pgsql: Dialect = {
       throw Exception.for('No alterations made.')
     }
     return query.map(query => ({ query, values: [] }));
-  },
+  }
 
   /**
    * Converts create builder to query and values
@@ -366,8 +278,8 @@ const Pgsql: Dialect = {
     const fields = Object.keys(build.fields).map(name => {
       const field = build.fields[name];
       const column: string[] = [];
-      const { type, length } = getType(field.type, field.length);
-      column.push(`${q}${name}${q}`);
+      const { type, length } = this._getType(field.type, field.length);
+      column.push(`${this.q}${name}${this.q}`);
       if (field.autoIncrement) {
         column.push('SERIAL');
       } else if (type === 'FLOAT' || type === 'INTEGER') {
@@ -382,7 +294,7 @@ const Pgsql: Dialect = {
       field.attribute && column.push(field.attribute);
       !field.nullable && column.push('NOT NULL');
       if (field.default) {
-        column.push(`DEFAULT ${getDefault(field.default, type)}`);
+        column.push(`DEFAULT ${this._getDefault(field.default, type)}`);
       } else if (field.nullable) {
         column.push('DEFAULT NULL');
       }
@@ -399,7 +311,7 @@ const Pgsql: Dialect = {
   
     if (build.primary.length) {
       query.push(`, PRIMARY KEY (${build.primary
-        .map(key => `${q}${key}${q}`)
+        .map(key => `${this.q}${key}${this.q}`)
         .join(', ')})`
       );
     }
@@ -411,7 +323,7 @@ const Pgsql: Dialect = {
 
     if (Object.keys(build.unique).length) {
       query.push(', ' + Object.keys(build.unique).map(
-        key => `UNIQUE (${q}${build.unique[key].join(`${q}, ${q}`)}${q})`
+        key => `UNIQUE (${this.q}${build.unique[key].join(`${this.q}, ${this.q}`)}${this.q})`
       ).join(', '));
     }
 
@@ -425,8 +337,8 @@ const Pgsql: Dialect = {
     if (Object.keys(build.foreign).length) {
       query.push(', ' + Object.entries(build.foreign).map(([ name, info ]) => {
         return [
-          `CONSTRAINT ${q}${name}${q} FOREIGN KEY (${q}${info.local}${q})`,
-          `REFERENCES ${q}${info.table}${q}(${q}${info.foreign}${q})`,
+          `CONSTRAINT ${this.q}${name}${this.q} FOREIGN KEY (${this.q}${info.local}${this.q})`,
+          `REFERENCES ${this.q}${info.table}${this.q}(${this.q}${info.foreign}${this.q})`,
           info.delete ? `ON DELETE ${info.delete}`: '', 
           info.update ? `ON UPDATE ${info.update}`: ''
         ].join(' ');
@@ -435,7 +347,7 @@ const Pgsql: Dialect = {
 
     const transactions: QueryObject[] = [
       { 
-        query: `CREATE TABLE IF NOT EXISTS ${q}${build.table}${q} (${query.join(' ')})`, 
+        query: `CREATE TABLE IF NOT EXISTS ${this.q}${build.table}${this.q} (${query.join(' ')})`, 
         values: [] 
       }
     ];
@@ -448,14 +360,14 @@ const Pgsql: Dialect = {
     if (Object.keys(build.keys).length) {
       Object.keys(build.keys).forEach(key => {
         transactions.push({
-          query: `CREATE INDEX ${q}${key}${q} ON ${q}${build.table}${q}(${q}${build.keys[key].join(`${q}, ${q}`)}${q})`,
+          query: `CREATE INDEX ${this.q}${key}${this.q} ON ${this.q}${build.table}${this.q}(${this.q}${build.keys[key].join(`${this.q}, ${this.q}`)}${this.q})`,
           values: []
         });
       });
     }
 
     return transactions;
-  },
+  }
 
   /**
    * Converts delete builder to query and values
@@ -469,7 +381,7 @@ const Pgsql: Dialect = {
 
     const query: string[] = [];
     const values: FlatValue[] = [];
-    query.push(`DELETE FROM ${q}${build.table}${q}`);
+    query.push(`DELETE FROM ${this.q}${build.table}${this.q}`);
 
     const filters = build.filters.map(filter => {
       values.push(...filter[1]);
@@ -478,14 +390,14 @@ const Pgsql: Dialect = {
     query.push(`WHERE ${filters}`);
 
     return { query: query.join(' '), values };
-  },
+  }
 
   /**
    * Drops a table
    */
   drop(table: string) {
-    return { query: `DROP TABLE IF EXISTS ${q}${table}${q}`, values: [] };
-  },
+    return { query: `DROP TABLE IF EXISTS ${this.q}${table}${this.q}`, values: [] };
+  }
 
   /**
    * Converts insert builder to query and values
@@ -500,10 +412,10 @@ const Pgsql: Dialect = {
     const query: string[] = [];
     const values: Value[] = [];
     
-    query.push(`INSERT INTO ${q}${build.table}${q}`);
+    query.push(`INSERT INTO ${this.q}${build.table}${this.q}`);
 
     const keys = Object.keys(build.values[0]);
-    query.push(`(${q}${keys.join(`${q}, ${q}`)}${q})`);
+    query.push(`(${this.q}${keys.join(`${this.q}, ${this.q}`)}${this.q})`);
 
     const rows = build.values.map((value) => {
       const row = keys.map(key => value[key]);
@@ -515,21 +427,51 @@ const Pgsql: Dialect = {
     
     if (build.returning.length) {
       query.push(`RETURNING ${build.returning.map(
-        column => column !== '*' ? `${q}${column}${q}` : column
+        column => column !== '*' ? `${this.q}${column}${this.q}` : column
       ).join(', ')}`);
     }
     return { query: query.join(' '), values };
-  },
+  }
+  
+  /**
+   * Returns a subset of methods for handling JSON selectors in queries.
+   */
+  public json(column: string, path: string[]): JsonDialect;
+  public json(column: string, path?: string, separator?: string): JsonDialect;
+  public json(column: string, path?: string|string[], separator?: string) {
+    if (!Array.isArray(path)) {
+      return PgsqlJsonDialect.parse(
+        column, 
+        path || ':', 
+        separator || '.',
+        this.q
+      );
+    }
+    //split the by . and remove empty ones
+    const columnPath = column.split('.').filter(Boolean);
+    return new PgsqlJsonDialect(
+      columnPath.length === 0 
+        //ex. profile_id
+        ? { name: column } 
+        : columnPath.length === 1 
+        //ex. profile_id
+        ? { name: columnPath[0] } 
+        //ex. profile.profile_id
+        : { table: columnPath[0], name: columnPath[1] }, 
+      path,
+      this.q
+    );
+  }
 
   /**
    * Renames a table
    */
   rename(from: string, to: string) {
     return { 
-      query: `RENAME TABLE ${q}${from}${q} TO ${q}${to}${q}`, 
+      query: `RENAME TABLE ${this.q}${from}${this.q} TO ${this.q}${to}${this.q}`, 
       values: [] 
     };
-  },
+  }
 
   /**
    * Converts select builder to query and values
@@ -537,82 +479,85 @@ const Pgsql: Dialect = {
    */
   select(builder: Select) {
     const build = builder.build();
-    if (!build.table) {
+    if (!build.from) {
       throw Exception.for('No table specified');
     }
 
     const query: string[] = [];
     const values: FlatValue[] = [];
-    const columns = build.columns
-      .map(column => column.split(','))
-      .flat(1)
-      .map(column => column.trim())
-      .filter(Boolean);
+
+    const columns = build.selectors.map(selector => {
+      const name = selector.name !== '*' 
+        ? `${this.q}${selector.name}${this.q}` 
+        : '*';
+      return selector.table && selector.alias
+        ? `${this.q}${selector.table}${this.q}.${name} AS ${this.q}${selector.alias}${this.q}`
+        : selector.table
+        ? `${this.q}${selector.table}${this.q}.${name}`
+        : selector.alias
+        ? `${name} AS ${this.q}${selector.alias}${this.q}`
+        : name
+    });
 
     query.push(`SELECT ${columns.join(', ')}`);
-    if (build.table) {
-      const table = `${q}${build.table[0]}${q}`;
-      if (build.table[1] !== build.table[0]) {
-        const alias = `${q}${build.table[1]}${q}`;
-        query.push(`FROM ${table} AS ${alias}`);
-      } else {
-        query.push(`FROM ${table}`);
-      }
+    const table = `${this.q}${build.from.name}${this.q}`;
+    if (build.from.alias) {
+      const alias = `${this.q}${build.from.alias}${this.q}`;
+      query.push(`FROM ${table} AS ${alias}`);
+    } else {
+      query.push(`FROM ${table}`);
     }
 
-    if (build.relations.length) {
-      const relations = build.relations.map(relation => {
-        const type = joins[relation.type as Join];
-        const table = relation.table !== relation.as 
-          ? `${q}${relation.table}${q} AS ${q}${relation.as}${q}`
-          : `${q}${relation.table}${q}`;
-        const from = `${q}${relation.from}${q}`;
-        const to = `${q}${relation.to}${q}`;
+    if (build.joins.length) {
+      const joins = build.joins.map(relation => {
+        const type = joinTypes[relation.type as JoinType];
+        const table = relation.table.alias 
+          ? `${this.q}${relation.table.name}${this.q}`
+            + ` AS ${this.q}${relation.table.alias}${this.q}`
+          : `${this.q}${relation.table.name}${this.q}`;
+        const from = relation.from.table 
+          ? `${this.q}${relation.from.table}${this.q}.${this.q}${relation.from.name}${this.q}`
+          : `${this.q}${relation.from.name}${this.q}`;
+        const to = relation.to.table 
+          ? `${this.q}${relation.to.table}${this.q}.${this.q}${relation.to.name}${this.q}`
+          : `${this.q}${relation.to.name}${this.q}`;
         return `${type} JOIN ${table} ON (${from} = ${to})`;
       });
-      query.push(relations.join(' '));
+      query.push(joins.join(' '));
     }
 
-    if (build.filters.length > 0 || build.json.length > 0) {
+    if (build.where.length > 0 || build.json.length > 0) {
       const filters: string[] = [];
-      if (build.filters.length) {
-        filters.push(...build.filters.map(filter => {
-          values.push(...filter[1]);
-          return filter[0];
+      if (build.where.length) {
+        filters.push(...build.where.map(filter => {
+          values.push(...filter.values);
+          return filter.clause;
         }));
       }
       build.json.forEach(filter => {
         const { query, replace } = filter;
-        //convert builder selector to dialect selector
-        const { column, selector } = getJsonSelector(
+        //convert builder selector to json dialect
+        const json = PgsqlJsonDialect.parse(
           filter.selector, 
           build.selector, 
           build.separator
         );
-        //if there's no column
-        if (column.length === 0) {
-          return;
-        }
+        //if invalid JSON selector, skip it
+        if (!json) return;
         //make a temporary or query object to hold the JSON filters
         const or: OrQueryObject<JSONScalarValue> = { query: [], values: [] };
 
         //if the operator is contains
         if (query === 'contains') {
           filter.values.forEach(value => {
-            const array = selector.replace('->>', '->');
-            or.query.push(`${q}${column}${q}${array} ?? ?`);
+            or.query.push(json.contains);
             or.values.push(value);
           });
         //compare it to the value
         } else {
           //we are doing the clause formation this
           //way to make sure $ isn't removed
-          const clause = query.replaceAll(
-            replace, 
-            //$$$$ escapes $ in the selector so 
-            // it isn't replaced by a single $
-            `${q}${column}${q}${selector.replace(/\$/g, '$$$$')}`
-          );
+          const clause = json.where(query, replace);
           filter.values.forEach(value => {
             or.query.push(clause);
             or.values.push(value);
@@ -634,23 +579,21 @@ const Pgsql: Dialect = {
 
     if (build.sort.length) {
       const sort = build.sort.map(sort => {
-        //if the sort column is using the selector notation
-        if (sort[0].includes(build.selector)) {
-          //convert builder selector to dialect selector
-          const { column, selector } = getJsonSelector(
-            sort[0], 
+        //if the sort column is using the selector ":" notation
+        if (sort.column.name.includes(build.selector)) {
+          const json = PgsqlJsonDialect.parse(
+            sort.column.name, 
             build.selector, 
             build.separator
           );
-          //if there's no column
-          if (column.length === 0) {
-            //return empty string to avoid syntax errors
-            return '';
-          }
-          const selection = `${q}${column}${q}${selector}`;
-          return `${selection} ${sort[1].toUpperCase()}`;
+          //if invalid JSON selector, skip it
+          if (!json) return '';
+          return `${json.extract} ${sort.direction.toUpperCase()}`;
         }
-        return `${q}${sort[0]}${q} ${sort[1].toUpperCase()}`
+        const column = sort.column.table 
+          ? `${this.q}${sort.column.table}${this.q}.${this.q}${sort.column.name}${this.q}`
+          : `${this.q}${sort.column.name}${this.q}`;
+        return `${column} ${sort.direction.toUpperCase()}`;
       }).filter(Boolean);
       query.push(`ORDER BY ${sort.join(`, `)}`);
     }
@@ -664,17 +607,17 @@ const Pgsql: Dialect = {
     }
 
     return { query: query.join(' '), values };
-  },
+  }
 
   /**
    * Truncate table
    */
   truncate(table: string, cascade = false) {
     return { 
-      query: `TRUNCATE TABLE ${q}${table}${q}${cascade ? ' CASCADE' : ''}`, 
+      query: `TRUNCATE TABLE ${this.q}${table}${this.q}${cascade ? ' CASCADE' : ''}`, 
       values: [] 
     };
-  },
+  }
 
   /**
    * Converts update builder to query and values
@@ -689,12 +632,12 @@ const Pgsql: Dialect = {
     const query: string[] = [];
     const values: Value[] = [];
 
-    query.push(`UPDATE ${q}${build.table}${q}`);
+    query.push(`UPDATE ${this.q}${build.table}${this.q}`);
 
     if (Object.keys(build.data).length) {
       const data = Object.keys(build.data).map(key => {
         values.push(build.data[key]);
-        return `${q}${key}${q} = ?`;
+        return `${this.q}${key}${this.q} = ?`;
       }).join(', ');
       query.push(`SET ${data}`);
     }
@@ -709,6 +652,166 @@ const Pgsql: Dialect = {
 
     return { query: query.join(' '), values };
   }
+
+  /**
+   * Returns a default value for the given value 
+   * and type, properly formatted for SQL.
+   */
+  protected _getDefault(value: any, type: string) {
+    if (typeof value === 'boolean') {
+      return value ? 'TRUE' : 'FALSE';
+    } else if (typeof value === 'number' || !isNaN(Number(value))) {
+      return value;
+    } else if (typeof value === 'string' && value.endsWith('()')) {
+      if (value.toLowerCase() === 'now()') {
+        if (type === 'TIMESTAMP') {
+          return 'CURRENT_TIMESTAMP';
+        } else if (type === 'DATE') {
+          return 'CURRENT_DATE';
+        } else if (type === 'TIME') {
+          return 'CURRENT_TIME';
+        }
+      }
+      return value.toUpperCase();
+    } else if (value && typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+    return `'${value}'`;
+  }
+
+  /**
+   * Returns a type and length for the given type key and length,
+   * properly formatted for SQL.
+   */
+  protected _getType(key: string, length?: number | [ number, number ]) {
+    //try to infer the type from the key
+    let type = typemap[key.toLowerCase()] || key.toUpperCase();
+    //if length is a number...
+    if (!Array.isArray(length)) {
+      //if char, varchar
+      if (type === 'CHAR' || type === 'VARCHAR') {
+        //make sure there's a length
+        length = length || 255;
+      //if number
+      } else if (type === 'INTEGER' || type === 'FLOAT') {
+        //make sure there's a length
+        length = length || 11;
+      }
+      //if int
+      if (type === 'INTEGER') {
+        //determine what kind of int
+        if (length === 1) {
+          type = 'SMALLINT';
+          length = undefined;
+        } else if (length && length > 11) {
+          type = 'BIGINT';
+          length = undefined;
+        }
+      }
+    }
+    return { type, length };
+  }
+}
+export class PgsqlJsonDialect implements JsonDialect {
+  /**
+   * Parses a JSON selector string into a PgsqlJsonDialect object.
+   */
+  public static parse(
+    selector: string, 
+    splitter = ':', 
+    separator = '.',
+    quote = q
+  ) {
+    //if the selector is empty
+    if (selector.length === 0) {
+      //return empty column and selector
+      return null;
+    }
+    //ex. data:info.name -> column: data, selector: info.name
+    //get the first occurrence of the : in the filter selector
+    const index = selector.indexOf(splitter);
+    //if there's no selector notation
+    if (index === -1) {
+      //NOTE: dont use separator in this case, just use static '.'
+      const columnPath = selector.split('.').filter(Boolean);
+      //now form the column object
+      const column = columnPath.length === 0 
+        //ex. profile_id
+        ? { name: selector } 
+        : columnPath.length === 1 
+        //ex. profile_id
+        ? { name: columnPath[0] } 
+        //ex. profile.profile_id
+        : { table: columnPath[0], name: columnPath[1] };
+      //the entire selector is the column
+      return new PgsqlJsonDialect(column, [], quote);
+    }
+    //get the char length of the selector notation (:)
+    const length = splitter.length;
+    //get the left part of the selector before the selector notation (:)
+    //this is either something like: profile_id or profile.profile_id
+    const select = selector.substring(0, index);
+    //split the by . and remove empty ones
+    //NOTE: dont use separator in this case, just use static '.'
+    const columnPath = select.split('.').filter(Boolean);
+    //now form the column object
+    const column = columnPath.length === 0 
+      //ex. profile_id
+      ? { name: selector } 
+      : columnPath.length === 1 
+      //ex. profile_id
+      ? { name: columnPath[0] } 
+      //ex. profile.profile_id
+      : { table: columnPath[0], name: columnPath[1] };
+    //get the right part of the selector after the selector notation (:)
+    const json = selector.substring(index + length);
+    //now form the json path
+    const path = json.split(separator).filter(Boolean);
+    return new PgsqlJsonDialect(column, path, quote);
+  }
+
+  //ex. ->>$$firstName$$
+  //ex. ->$$settings$$->>$$theme$$
+  //ex. ->$$tags$$->>0
+  public readonly selector: string;
+  //ex. user->>$$firstName$$
+  public readonly extract: string;
+  //ex. user->>$$firstName$$ ?? ?
+  public readonly contains: string;
+
+  /**
+   * Sets the selector and extract properties 
+   * based on the column and path provided.
+   */
+  public constructor(column: Column, path: string[], q: string) {
+    const paths = [ ...path ];
+    //the last one has a special annotation...
+    const last = paths.pop();
+    //convert paths to proper JSON selectors
+    const selectors = paths.map(path => (
+      isIndex.test(path) ? `->${path}` : `->$$${path}$$`
+    ));
+    last && selectors.push(isIndex.test(last) 
+      ? `->>${last}` 
+      : `->>$$${last}$$`);
+
+    const select = column.table
+      ? `${q}${column.table}${q}.${q}${column.name}${q}`
+      : `${q}${column.name}${q}`;
+
+    this.selector = selectors.join('');
+    this.extract = `${select}${this.selector}`;
+    this.contains = `${this.extract.replace('->>', '->')} ?? ?`;
+  }
+
+  /**
+   * Returns a JSON selector clause for the given operator and value.
+   */
+  public where(clause: string, replace: string) {
+    //$$$$ escapes $ in the selector so 
+    // it isn't replaced by a single $
+    return clause.replaceAll(replace, this.extract.replace(/\$/g, '$$$$'));
+  }
 };
 
-export default Pgsql;
+export default new PgsqlDialect();

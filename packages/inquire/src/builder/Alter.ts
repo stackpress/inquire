@@ -209,4 +209,4 @@ export default class Alter<R = unknown> {
       return await connection.query<R>(connection.format(last));
     }).then(resolve).catch(reject);
   }
-}
+};

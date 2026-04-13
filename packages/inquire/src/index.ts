@@ -1,21 +1,31 @@
 export type {
   Field,
-  Relation,
   ForeignKey,
   AlterFields,
   AlterKeys,
   AlterUnqiues,
   AlterPrimaries,
   AlterForeignKeys,
+  Column,
+  JoinType,
+  Join,
+  Selector,
+  Sort,
+  OrderType,
+  Table,
+  Where,
+  WhereJson,
+  WhereBuilder,
   StrictValue,
   StrictOptValue,
   FlatValue,
+  JSONScalarValue,
   Value,
   Resolve,
   Reject,
-  Order,
-  Join,
+  JsonDialect,
   Dialect,
+  OrQueryObject,
   QueryObject,
   Transaction,
   Connection
@@ -35,7 +45,17 @@ import Sqlite from './dialect/Sqlite.js';
 //local
 import Engine from './Engine.js';
 import Exception from './Exception.js';
-import { joins } from './helpers.js';
+
+export { 
+  joinTypes,
+  isIndex,
+  backSlashes,
+  doubleQuotes,
+  escapeBackSlashes,
+  escapeDoubleQuotes,
+  safeJsonValue,
+  jsonCompare
+} from './helpers.js';
 
 export {
   Alter,
@@ -48,6 +68,5 @@ export {
   Pgsql,
   Sqlite,
   Engine,
-  Exception,
-  joins
+  Exception
 };

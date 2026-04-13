@@ -180,4 +180,4 @@ export default class Update<R = unknown> implements WhereBuilder{
     });
     return this;
   }
-}
+};

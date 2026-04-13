@@ -354,7 +354,7 @@ describe('Sqlite Dialect Tests', () => {
   const select = new Select('table');
   select.from('table');
   const query = Sqlite.select(select);
-  expect(query.query).to.equal('SELECT table FROM `table`');
+  expect(query.query).to.equal('SELECT `table` FROM `table`');
   expect(query.values).to.be.empty;
   });
 

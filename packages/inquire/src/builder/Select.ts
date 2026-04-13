@@ -1,10 +1,15 @@
 //common
 import type { 
-  Order, 
+  Join, 
+  Selector, 
+  Sort, 
+  OrderType, 
+  Table, 
+  Where,
+  WhereJson,
   Reject,
   Resolve,
-  Dialect,
-  Relation, 
+  Dialect, 
   FlatValue,
   JSONScalarValue,
   WhereBuilder
@@ -14,34 +19,19 @@ import Exception from '../Exception.js';
 
 export default class Select<R = unknown> implements WhereBuilder {
   /**
-   * The columns to select.
-   */
-  protected _columns: string[] = [];
-
-  /**
    * Database engine
    */
   protected _engine?: Engine;
-  
-  /**
-   * The start
-   */
-  protected _offset: number = 0;
 
   /**
-   * The filters to apply.
+   * The table to select from.
    */
-  protected _filters: [string, FlatValue[]][] = [];
+  protected _from?: Table;
 
   /**
    * The JSON filters to apply.
    */
-  protected _json: {
-    selector: string,  
-    query: string, 
-    replace: string,
-    values: JSONScalarValue[]
-  }[] = [];
+  protected _json: WhereJson[] = [];
 
   /**
    * The range
@@ -51,13 +41,23 @@ export default class Select<R = unknown> implements WhereBuilder {
   /**
    * The relations to join.
    */
-  protected _relations: Relation[] = [];
+  protected _joins: Join[] = [];
+  
+  /**
+   * The start
+   */
+  protected _offset: number = 0;
 
   /**
    * Notation used to indicate to traverse through JSON 
    * columns, default is colon (ex. data:info.name)
    */
   protected _selector = ':';
+
+  /**
+   * The columns to select.
+   */
+  protected _selectors: Selector[] = [];
 
   /**
    * The separator for JSON selectors, 
@@ -68,12 +68,12 @@ export default class Select<R = unknown> implements WhereBuilder {
   /**
    * The sort order.
    */
-  protected _sort: [ string, Order ][] = [];
+  protected _sort: Sort[] = [];
 
   /**
-   * The table to select from.
+   * The filters to apply.
    */
-  protected _table?: [ string, string ];
+  protected _where: Where[] = [];
 
   /**
    * Sets the engine for the builder
@@ -108,7 +108,10 @@ export default class Select<R = unknown> implements WhereBuilder {
   /**
    * Set select, quote and action
    */
-  public constructor(select: string | string[] = '*', engine?: Engine) {
+  public constructor(
+    select: string | (string | [ string, string ])[] = '*', 
+    engine?: Engine
+  ) {
     this._engine = engine;
     this.select(select);
   }
@@ -118,32 +121,69 @@ export default class Select<R = unknown> implements WhereBuilder {
    */
   public build() {
     return {
-      columns: this._columns,
-      filters: this._filters,
+      from: this._from,
+      joins: this._joins,
       json: this._json,
       limit: this._limit,
       offset: this._offset,
-      relations: this._relations,
+      selectors: this._selectors,
       selector: this._selector,
       separator: this._separator,
       sort: this._sort,
-      table: this._table
+      where: this._where
     }
   }
 
   /**
    * FROM clause
    */
-  public from(table: string, as?: string) {
-    this._table = [table, as || table];
+  public from(table: string | string[], alias?: string) {
+    if (Array.isArray(table) && table.length === 0) {
+      //throw error?
+      return this;
+    }
+    this._from = !Array.isArray(table)
+      ? { name: table, alias }
+      : table.length === 1
+      ? { name: table[0], alias }
+      : { name: table[0], alias: table[1] || alias };
     return this;
   }
 
   /**
    * JOIN clause
    */
-  public join(type: string, table: string, from: string, to: string, as?: string) {
-    this._relations.push({ type, table, as: as || table, from, to });
+  public join(
+    type: string, 
+    table: string | string[], 
+    from: string | string[], 
+    to: string | string[]
+  ) {
+    if ((Array.isArray(table) && table.length === 0)
+      || (Array.isArray(from) && from.length === 0)
+      || (Array.isArray(to) && to.length === 0)
+    ) {
+      //throw error?
+      return this;
+    }
+    this._joins.push({ 
+      type, 
+      table: !Array.isArray(table) 
+        ? { name: table }
+        : table.length === 1
+        ? { name: table[0] }
+        : { name: table[0], alias: table[1] }, 
+      from: !Array.isArray(from) 
+        ? { name: from }
+        : from.length === 1
+        ? { name: from[0] }
+        : { table: from[0], name: from[1] }, 
+      to: !Array.isArray(to) 
+        ? { name: to }
+        : to.length === 1
+        ? { name: to[0] }
+        : { table: to[0], name: to[1] }
+    });
     return this;
   }
 
@@ -166,8 +206,22 @@ export default class Select<R = unknown> implements WhereBuilder {
   /**
    * ORDER BY clause
    */
-  public order(column: string, direction: Order = 'ASC') {
-    this._sort.push([column, direction]);
+  public order(
+    column: string | string[], 
+    direction: OrderType = 'ASC'
+  ) {
+    if ((Array.isArray(column) && column.length === 0)) {
+      //throw error?
+      return this;
+    }
+    this._sort.push({ 
+      column: !Array.isArray(column) 
+        ? { name: column }
+        : column.length === 1
+        ? { name: column[0] }
+        : { table: column[0], name: column[1] }, 
+      direction 
+    });
     return this;
   }
 
@@ -182,11 +236,58 @@ export default class Select<R = unknown> implements WhereBuilder {
     return dialect.select(this);
   }
 
-  public select(columns: string|string[]) {
-    if (Array.isArray(columns)) {
-      this._columns = columns;
-    } else {
-      this._columns = [ columns ];
+  /**
+   * SELECT clause
+   */
+  public select(columns: string | (string | string[])[]) {
+    //if the columns is a string
+    if (typeof columns === 'string') {
+      if (columns.indexOf(',') > -1) {
+        this._selectors = columns
+          .split(',')
+          .map(column => column.trim())
+          .filter(Boolean)
+          .map(column => ({ name: column }));
+      } else {
+        this._selectors = [{ name: columns }];
+      }
+      return this;
+    } 
+    //if columns is not an array at this point
+    if (!Array.isArray(columns)) {
+      //then there's nothing we can do with it
+      return this;
+    }
+    //make a storage for the final tuples
+    const select: Selector[] = [];
+    //for each column
+    for (const column of columns) {
+      //if this column is a string
+      if (typeof column === 'string') {
+        //make into tuple and push
+        select.push({ name: column });
+      //if column is an array with 2 items, we assume it's a tuple and push
+      } else if (Array.isArray(column) 
+        && column.every(item => typeof item === 'string')
+      ) {
+        column.length === 1 && select.push({ 
+          name: column[0] 
+        });
+        column.length === 2 && select.push({ 
+          name: column[0], 
+          alias: column[1] 
+        });
+        column.length > 2 && select.push({ 
+          table: column[0], 
+          name: column[1], 
+          alias: column[2] 
+        });
+      }
+    }
+    //if there are some valid columns
+    if (select.length > 0) {
+      //then set the columns
+      this._selectors = select;
     }
     return this;
   }
@@ -205,8 +306,8 @@ export default class Select<R = unknown> implements WhereBuilder {
   /**
    * WHERE clause
    */
-  public where(query: string, values: FlatValue[] = []) {
-    this._filters.push([query, values]);
+  public where(clause: string, values: FlatValue[] = []) {
+    this._where.push({ clause, values });
     return this;
   }
 
@@ -246,4 +347,4 @@ export default class Select<R = unknown> implements WhereBuilder {
     });
     return this;
   }
-}
+};

@@ -1,4 +1,4 @@
-export const joins = {
+export const joinTypes = {
   inner: 'INNER',
   left: 'LEFT',
   left_outer: 'LEFT OUTER',

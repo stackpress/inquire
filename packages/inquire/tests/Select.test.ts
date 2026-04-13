@@ -17,17 +17,16 @@ describe('Select Builder Tests', () => {
     select.offset(1);
     
     const build = select.build();
-    expect(build.columns[0]).to.equal('*');
-    expect(build.table?.[0]).to.equal('table');
-    expect(build.relations[0].type).to.equal('inner');
-    expect(build.relations[0].table).to.equal('profile');
-    expect(build.relations[0].from).to.equal('profile.id');
-    expect(build.relations[0].to).to.equal('table.profileId');
-    expect(build.relations[0].as).to.equal('profile');
-    expect(build.filters[0][0]).to.equal('id = ?');
-    expect(build.filters[0][1][0]).to.equal(1);
-    expect(build.sort[0][0]).to.equal('id');
-    expect(build.sort[0][1]).to.equal('asc');
+    expect(build.selectors[0].name).to.equal('*');
+    expect(build.from?.name).to.equal('table');
+    expect(build.joins[0].type).to.equal('inner');
+    expect(build.joins[0].table.name).to.equal('profile');
+    expect(build.joins[0].from.name).to.equal('profile.id');
+    expect(build.joins[0].to.name).to.equal('table.profileId');
+    expect(build.where[0].clause).to.equal('id = ?');
+    expect(build.where[0].values[0]).to.equal(1);
+    expect(build.sort[0].column.name).to.equal('id');
+    expect(build.sort[0].direction).to.equal('asc');
     expect(build.limit).to.equal(1);
     expect(build.offset).to.equal(1);
   });
@@ -48,13 +47,13 @@ describe('Select Builder Tests', () => {
   // Line 70
   it('Should initialize with default select value "*" when no select argument is provided', () => {
     const select = new Select();
-    expect(select.build().columns).to.deep.equal(['*']);
+    expect(select.build().selectors[0].name).to.equal('*');
   });
 
   // Line 72
   it('Should correctly initialize _columns with multiple column names', () => {
     const select = new Select(['column1', 'column2', 'column3']);
-    expect(select.build().columns).to.deep.equal(['column1', 'column2', 'column3']);
+    expect(select.build().selectors.map(s => s.name)).to.deep.equal(['column1', 'column2', 'column3']);
   });
 
   // Line 129
@@ -63,8 +62,8 @@ describe('Select Builder Tests', () => {
     select.order('name');
     const sort = select.build().sort;
     expect(sort).to.have.lengthOf(1);
-    expect(sort[0][0]).to.equal('name');
-    expect(sort[0][1]).to.equal('ASC');
+    expect(sort[0].column.name).to.equal('name');
+    expect(sort[0].direction).to.equal('ASC');
   });
 
   // Line 138 - 153 
@@ -100,10 +99,10 @@ describe('Select Builder Tests', () => {
   it('Should add a filter with an empty query string and no values', () => {
     const select = new Select('table');
     select.where('');
-    const filters = select.build().filters;
+    const filters = select.build().where;
     expect(filters).to.have.lengthOf(1);
-    expect(filters[0][0]).to.equal('');
-    expect(filters[0][1]).to.deep.equal([]);
+    expect(filters[0].clause).to.equal('');
+    expect(filters[0].values).to.deep.equal([]);
   });
  
 

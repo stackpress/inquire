@@ -99,4 +99,4 @@ export default class Insert<R = unknown> {
     this._values = values as Record<string, any>[];
     return this;
   }
-}
+};

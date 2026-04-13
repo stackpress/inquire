@@ -165,4 +165,4 @@ export default class Delete<R = unknown> implements WhereBuilder {
     });
     return this;
   }
-}
+};

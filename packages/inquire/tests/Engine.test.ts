@@ -74,7 +74,7 @@ describe('Engine Tests', () => {
     try {
       engine.diff(from, from).query()
     } catch (error) {
-      expect(error.message).to.equal('No alterations made.');
+      expect((error as Error).message).to.equal('No alterations made.');
     }
   });
 
@@ -274,7 +274,7 @@ describe('Engine Tests', () => {
       await engine.truncate('');
     } catch (error) {
       expect(error).to.be.instanceOf(Exception);
-      expect(error.message).to.equal('Table name cannot be empty');
+      expect((error as Error).message).to.equal('Table name cannot be empty');
     }
   });
 
@@ -340,6 +340,8 @@ describe('Engine Tests', () => {
 class MockConnection implements Connection {
   public dialect = Pgsql;
   public resource = {} as any;
+
+  lastId: string | number | undefined;
 
   /**
    * Formats the query to what the database connection understands
