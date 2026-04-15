@@ -18,12 +18,29 @@ export default class Mysql2Connection implements Connection<Resource> {
   protected _lastId?: number|string;
   //the database connection
   protected _resource: Connector;
+  //A hook used for logging purposes. Can also manipulate the final 
+  // query before execution.
+  protected _before = async (_request: QueryObject) => {};
+
+  /**
+   * Returns the before hook
+   */
+  public get before() {
+    return this._before;
+  }
 
   /**
    * Get the last inserted id
    */
   public get lastId() {
     return this._lastId;
+  }
+
+  /**
+   * Sets the before hook
+   */
+  public set before(before: (request: QueryObject) => Promise<void>) {
+    this._before = before;
   }
 
   /**
@@ -108,8 +125,13 @@ export default class Mysql2Connection implements Connection<Resource> {
    * Call the database. If no values are provided, use exec
    */
   protected async _query<R = unknown>(request: QueryObject) {
+    //allow last minute request manipulation
+    await this._before(request);
+    //extract the query and values from the request
     const { query, values = [] } = request;
+    //get the proprietary resource
     const resource = await this.resource();
+    //query the database and return the results
     const results = await resource.execute(query, values);
     if (Array.isArray(results[0])) {
       return results as Results<R>;

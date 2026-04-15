@@ -17,12 +17,34 @@ import { jsonCompare } from './helpers.js';
 export default class Engine<R = unknown> {
   //database connection
   public readonly connection: Connection<R>;
+  //A hook used for logging purposes. Can also manipulate the final 
+  // query before execution. Can also provide the results of the query, 
+  // in which case the database will not be queried.
+  protected _before: <R = unknown>(
+    request: QueryObject
+  ) => Promise<R[] | void> = async (_request: QueryObject) => {};
+
+  /**
+   * Returns the before hook
+   */
+  public get before() {
+    return this._before;
+  }
   
   /**
    * Returns sql dialect
    */
   public get dialect() {
     return this.connection.dialect;
+  }
+
+  /**
+   * Sets the before hook
+   */
+  public set before(before: <R = unknown>(
+    request: QueryObject
+  ) => Promise<R[] | void>) {
+    this._before = before;
   }
 
   /**
@@ -183,13 +205,19 @@ export default class Engine<R = unknown> {
    * native database engine connection. Any code that uses
    * this library should not care about the kind of database.
    */
-  public query<R = unknown>(query: QueryObject): Promise<R[]>;
-  public query<R = unknown>(query: string, values?: Value[]): Promise<R[]>;
-  public query<R = unknown>(query: string|QueryObject, values: Value[] = []) {
+  public async query<R = unknown>(query: QueryObject): Promise<R[]>;
+  public async query<R = unknown>(query: string, values?: Value[]): Promise<R[]>;
+  public async query<R = unknown>(query: string|QueryObject, values: Value[] = []) {
     if (typeof query === 'string') {
       query = { query, values };
     }
-    return this.connection.query<R>(query);
+    //allow last minute request manipulation and 
+    // possibly short circuit the query with results
+    const results = await this._before(query);
+    //if results were provided, return them
+    if (results) return results;
+    //otherwise, query the database
+    return await this.connection.query<R>(query);
   }
 
   /**

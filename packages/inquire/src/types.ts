@@ -181,10 +181,12 @@ export interface Connection<R = unknown> {
   //sql language dialect
   dialect: Dialect;
 
-  /**
-   * Get the last inserted id
-   */
+  //Get the last inserted id
   lastId: string | number | undefined;
+
+  //A hook used for logging purposes. Can also manipulate the final 
+  // query before execution.
+  before: (request: QueryObject) => Promise<void>;
 
   /**
    * Formats the query to what the database connection understands

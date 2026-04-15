@@ -17,12 +17,29 @@ export default class PGLiteConnection implements Connection<Resource> {
   public readonly dialect: Dialect = Pgsql;
   //the database connection
   protected _resource: Connector;
+  //A hook used for logging purposes. Can also manipulate the final 
+  // query before execution.
+  protected _before = async (_request: QueryObject) => {};
+
+  /**
+   * Returns the before hook
+   */
+  public get before() {
+    return this._before;
+  }
 
   /**
    * Get the last inserted id
    */
   public get lastId() {
     return undefined;
+  }
+
+  /**
+   * Sets the before hook
+   */
+  public set before(before: (request: QueryObject) => Promise<void>) {
+    this._before = before;
   }
 
   /**
@@ -122,7 +139,11 @@ export default class PGLiteConnection implements Connection<Resource> {
     request: QueryObject, 
     resource: Resource|TX
   ) {
+    //allow last minute request manipulation
+    await this._before(request);
+    //extract the query and values from the request
     const { query, values = [] } = request;
+    //query the database and return the results
     return values.length === 0
       ? (await resource.exec(query))[0] as Results<R>
       : await resource.query(query, values) as Results<R>;

@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@stackpress/inquire-mysql2": "0.7.2",
-    "mysql2": "3.16.0"
+    "mysql2": "3.22.0"
   },
   "devDependencies": {
     "@types/node": "25.0.3",
