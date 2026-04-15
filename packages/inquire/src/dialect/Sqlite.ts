@@ -5,6 +5,8 @@ import type Delete from '../builder/Delete.js';
 import type Insert from '../builder/Insert.js';
 import type Select from '../builder/Select.js';
 import type Update from '../builder/Update.js';
+//dialect
+import JsonTrait from './Json.js';
 //common
 import type { 
   Column,
@@ -42,24 +44,11 @@ export const typemap: Record<string, string> = {
   time: 'INTEGER'
 };
 
-export class SqliteDialect implements Dialect {
+export class SqliteDialect extends JsonTrait implements Dialect {
   //The name of the dialect, used for logging and error messages.
   public readonly name = 'sqlite';
   //Recommended quote character
   public readonly q = q;
-
-  //used for json notation
-  public separator: string = '.';
-  public splitter: string = ':';
-  //jsonic pattern
-  // - ex. data:info.name
-  // - ex. profile.data:info
-  // - ex. profile.data:info.name
-  public jsonic = new RegExp(
-    `([a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){0,1}\\${this.splitter}`
-    + `[a-zA-Z0-9_]+(\\${this.separator}[a-zA-Z0-9_]+)*)`, 
-    'g'
-  );
 
   /**
    * Converts alter builder to query and values
@@ -79,7 +68,7 @@ export class SqliteDialect implements Dialect {
    * - CREATE UNIQUE INDEX new_index_name ON table_name(new_column1, new_column2);
    * - DROP INDEX index_name;
    */
-  alter(builder: Alter) {
+  public alter(builder: Alter) {
     const build = builder.build();
     const transactions: QueryObject[] = [];
 
@@ -222,7 +211,7 @@ export class SqliteDialect implements Dialect {
   /**
    * Converts create builder to query and values
    */
-  create(builder: Create) {
+  public create(builder: Create) {
     const build = builder.build();
     if (!Object.values(build.fields).length) {
       throw Exception.for('No fields provided');
@@ -332,7 +321,7 @@ export class SqliteDialect implements Dialect {
   /**
    * Converts delete builder to query and values
    */
-  delete(builder: Delete) {
+  public delete(builder: Delete) {
     const build = builder.build();
     if (!build.filters.length) {
       throw Exception.for('No filters provided');
@@ -354,14 +343,14 @@ export class SqliteDialect implements Dialect {
   /**
    * Drops a table
    */
-  drop(table: string) {
+  public drop(table: string) {
     return { query: `DROP TABLE IF EXISTS ${this.q}${table}${this.q}`, values: [] };
   }
 
   /**
    * Converts insert builder to query and values
    */
-  insert(builder: Insert) {
+  public insert(builder: Insert) {
     const build = builder.build();
     if (build.values.length === 0) {
       throw Exception.for('No values provided');
@@ -423,7 +412,7 @@ export class SqliteDialect implements Dialect {
   /**
    * Renames a table
    */
-  rename(from: string, to: string) {
+  public rename(from: string, to: string) {
     return { 
       query: `ALTER TABLE ${this.q}${from}${this.q} RENAME TO ${this.q}${to}${this.q}`, 
       values: [] 
@@ -433,7 +422,7 @@ export class SqliteDialect implements Dialect {
   /**
    * Converts select builder to query and values
    */
-  select(builder: Select) {
+  public select(builder: Select) {
     const build = builder.build();
     if (!build.from) {
       throw Exception.for('No table specified');
@@ -447,11 +436,21 @@ export class SqliteDialect implements Dialect {
         ? `${this.q}${selector.name}${this.q}` 
         : '*';
       return selector.table && selector.alias
-        ? `${this.q}${selector.table}${this.q}.${name} AS ${this.q}${selector.alias}${this.q}`
+        ? [ 
+            `${this.q}${selector.table}${this.q}.${name}`, 
+            `${this.q}${selector.alias}${this.q}`
+          ].join(' AS ')
         : selector.table
         ? `${this.q}${selector.table}${this.q}.${name}`
+        : selector.alias && this._isJsonic(selector.name)
+        ? [
+            this._jsonReplace(selector.name),
+            `${this.q}${selector.alias}${this.q}`
+          ].join(' AS ')
         : selector.alias
         ? `${name} AS ${this.q}${selector.alias}${this.q}`
+        : this._isJsonic(selector.name)
+        ? this._jsonReplace(selector.name)
         : name
     });
 
@@ -489,14 +488,7 @@ export class SqliteDialect implements Dialect {
         filters.push(...build.where.map(filter => {
           values.push(...filter.values);
           //then replace with XJsonDialect.parse().extract
-          return filter.clause.replace(this.jsonic, match => {
-            const json = SqliteJsonDialect.parse(
-              match,
-              this.splitter,
-              this.separator
-            );
-            return json ? json.extract : match;
-          });
+          return this._jsonReplace(filter.clause);
         }));
       }
       build.json.forEach(filter => {
@@ -504,8 +496,8 @@ export class SqliteDialect implements Dialect {
         //convert builder selector to json dialect
         const json = SqliteJsonDialect.parse(
           filter.selector, 
-          this.splitter, 
-          this.separator
+          this._splitter, 
+          this._separator
         );
         //if invalid JSON selector, skip it
         if (!json) return;
@@ -543,15 +535,8 @@ export class SqliteDialect implements Dialect {
     if (build.sort.length) {
       const sort = build.sort.map(sort => {
         //if the sort column is using the selector ":" notation
-        if (sort.column.name.includes(this.splitter)) {
-          const json = SqliteJsonDialect.parse(
-            sort.column.name, 
-            this.splitter, 
-            this.separator
-          );
-          //if invalid JSON selector, skip it
-          if (!json) return '';
-          return `${json.extract} ${sort.direction.toUpperCase()}`;
+        if (this._isJsonic(sort.column.name)) {
+          return `${this._jsonReplace(sort.column.name)} ${sort.direction.toUpperCase()}`;
         }
         const column = sort.column.table 
           ? `${this.q}${sort.column.table}${this.q}.${this.q}${sort.column.name}${this.q}`
@@ -575,7 +560,7 @@ export class SqliteDialect implements Dialect {
   /**
    * Truncate table
    */
-  truncate(table: string, cascade = false) {
+  public truncate(table: string, cascade = false) {
     return { 
       query: `TRUNCATE TABLE ${this.q}${table}${this.q}${cascade ? ' CASCADE' : ''}`, 
       values: [] 
@@ -585,7 +570,7 @@ export class SqliteDialect implements Dialect {
   /**
    * Converts update builder to query and values
    */
-  update(builder: Update) {
+  public update(builder: Update) {
     const build = builder.build();
     if (!Object.keys(build.data).length) {
       throw Exception.for('No data provided');
@@ -635,6 +620,22 @@ export class SqliteDialect implements Dialect {
       }
     }
     return { type, length };
+  }
+    
+  /**
+   * Replaces JSON selectors in the given clause 
+   * with the corresponding json sql syntax.
+   */
+  protected _jsonReplace(clause: string) {
+    const regexp = new RegExp(this._pattern, 'g');
+    return clause.replace(regexp, match => {
+      const json = SqliteJsonDialect.parse(
+        match,
+        this._splitter,
+        this._separator
+      );
+      return json ? json.extract : match;
+    });
   }
 };
 

@@ -39,6 +39,7 @@ import Insert from './builder/Insert.js';
 import Select from './builder/Select.js';
 import Update from './builder/Update.js';
 //dialect
+import Json from './dialect/Json.js';
 import Mysql from './dialect/Mysql.js';
 import Pgsql from './dialect/Pgsql.js';
 import Sqlite from './dialect/Sqlite.js';
@@ -64,6 +65,7 @@ export {
   Insert,
   Select,
   Update,
+  Json,
   Mysql,
   Pgsql,
   Sqlite,

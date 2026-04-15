@@ -69,6 +69,10 @@
       "require": "./cjs/builder/Update.js",
       "import": "./esm/builder/Update.js"
     },
+    "./Json": {
+      "require": "./cjs/dialect/Json.js",
+      "import": "./esm/dialect/Json.js"
+    },
     "./Mysql": {
       "require": "./cjs/dialect/Mysql.js",
       "import": "./esm/dialect/Mysql.js"
@@ -96,6 +100,7 @@
       "Select": [ "./cjs/builder/Select.d.ts" ],
       "Update": [ "./cjs/builder/Update.d.ts" ],
       "Mysql": [ "./cjs/dialect/Mysql.d.ts" ],
+      "Json": [ "./cjs/dialect/Json.d.ts" ],
       "Pgsql": [ "./cjs/dialect/Pgsql.d.ts" ],
       "Sqlite": [ "./cjs/dialect/Sqlite.d.ts" ]
     }

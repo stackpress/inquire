@@ -5,6 +5,8 @@ import type Delete from '../builder/Delete.js';
 import type Insert from '../builder/Insert.js';
 import type Select from '../builder/Select.js';
 import type Update from '../builder/Update.js';
+//dialect
+import JsonTrait from './Json.js';
 //common
 import type { 
   Column,
@@ -42,29 +44,16 @@ export const typemap: Record<string, string> = {
   time: 'TIME'
 };
 
-export class PgsqlDialect implements Dialect {
+export class PgsqlDialect extends JsonTrait implements Dialect {
   //The name of the dialect, used for logging and error messages.
   public readonly name = 'pgsql';
   //Recommended quote character
   public readonly q = q;
 
-  //used for json notation
-  public separator: string = '.';
-  public splitter: string = ':';
-  //jsonic pattern
-  // - ex. data:info.name
-  // - ex. profile.data:info
-  // - ex. profile.data:info.name
-  public jsonic = new RegExp(
-    `([a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){0,1}\\${this.splitter}`
-    + `[a-zA-Z0-9_]+(\\${this.separator}[a-zA-Z0-9_]+)*)`, 
-    'g'
-  );
-
   /**
    * Converts alter builder to query and values
    */
-  alter(builder: Alter) {
+  public alter(builder: Alter) {
     const build = builder.build();
     const query: string[] = [];
 
@@ -275,7 +264,7 @@ export class PgsqlDialect implements Dialect {
    * Converts create builder to query and values
    * results: [ { rows: [], fields: [], affectedRows: 0 } ]
    */
-  create(builder: Create) {
+  public create(builder: Create) {
     const build = builder.build();
     if (!Object.values(build.fields).length) {
       throw Exception.for('No fields provided');
@@ -386,7 +375,7 @@ export class PgsqlDialect implements Dialect {
    * Converts delete builder to query and values
    * results: [ { rows: [], fields: [], affectedRows: 0 } ]
    */
-  delete(builder: Delete) {
+  public delete(builder: Delete) {
     const build = builder.build();
     if (!build.filters.length) {
       throw Exception.for('No filters provided');
@@ -408,7 +397,7 @@ export class PgsqlDialect implements Dialect {
   /**
    * Drops a table
    */
-  drop(table: string) {
+  public drop(table: string) {
     return { query: `DROP TABLE IF EXISTS ${this.q}${table}${this.q}`, values: [] };
   }
 
@@ -416,7 +405,7 @@ export class PgsqlDialect implements Dialect {
    * Converts insert builder to query and values
    * results: [ { rows: [], fields: [], affectedRows: 0 } ]
    */
-  insert(builder: Insert) {
+  public insert(builder: Insert) {
     const build = builder.build();
     if (build.values.length === 0) {
       throw Exception.for('No values provided');
@@ -479,7 +468,7 @@ export class PgsqlDialect implements Dialect {
   /**
    * Renames a table
    */
-  rename(from: string, to: string) {
+  public rename(from: string, to: string) {
     return { 
       query: `RENAME TABLE ${this.q}${from}${this.q} TO ${this.q}${to}${this.q}`, 
       values: [] 
@@ -490,7 +479,7 @@ export class PgsqlDialect implements Dialect {
    * Converts select builder to query and values
    * results: [{"rows":[],"fields":[{"name":"id","dataTypeID":1043}...],"affectedRows":0}]
    */
-  select(builder: Select) {
+  public select(builder: Select) {
     const build = builder.build();
     if (!build.from) {
       throw Exception.for('No table specified');
@@ -504,11 +493,21 @@ export class PgsqlDialect implements Dialect {
         ? `${this.q}${selector.name}${this.q}` 
         : '*';
       return selector.table && selector.alias
-        ? `${this.q}${selector.table}${this.q}.${name} AS ${this.q}${selector.alias}${this.q}`
+        ? [ 
+            `${this.q}${selector.table}${this.q}.${name}`, 
+            `${this.q}${selector.alias}${this.q}`
+          ].join(' AS ')
         : selector.table
         ? `${this.q}${selector.table}${this.q}.${name}`
+        : selector.alias && this._isJsonic(selector.name)
+        ? [
+            this._jsonReplace(selector.name),
+            `${this.q}${selector.alias}${this.q}`
+          ].join(' AS ')
         : selector.alias
         ? `${name} AS ${this.q}${selector.alias}${this.q}`
+        : this._isJsonic(selector.name)
+        ? this._jsonReplace(selector.name)
         : name
     });
 
@@ -546,14 +545,7 @@ export class PgsqlDialect implements Dialect {
         filters.push(...build.where.map(filter => {
           values.push(...filter.values);
           //then replace with XJsonDialect.parse().extract
-          return filter.clause.replace(this.jsonic, match => {
-            const json = PgsqlJsonDialect.parse(
-              match,
-              this.splitter,
-              this.separator
-            );
-            return json ? json.extract : match;
-          });
+          return this._jsonReplace(filter.clause);
         }));
       }
       build.json.forEach(filter => {
@@ -561,8 +553,8 @@ export class PgsqlDialect implements Dialect {
         //convert builder selector to json dialect
         const json = PgsqlJsonDialect.parse(
           filter.selector, 
-          this.splitter, 
-          this.separator
+          this._splitter, 
+          this._separator
         );
         //if invalid JSON selector, skip it
         if (!json) return;
@@ -602,15 +594,8 @@ export class PgsqlDialect implements Dialect {
     if (build.sort.length) {
       const sort = build.sort.map(sort => {
         //if the sort column is using the selector ":" notation
-        if (sort.column.name.includes(this.splitter)) {
-          const json = PgsqlJsonDialect.parse(
-            sort.column.name, 
-            this.splitter, 
-            this.separator
-          );
-          //if invalid JSON selector, skip it
-          if (!json) return '';
-          return `${json.extract} ${sort.direction.toUpperCase()}`;
+        if (this._isJsonic(sort.column.name)) {
+          return `${this._jsonReplace(sort.column.name)} ${sort.direction.toUpperCase()}`;
         }
         const column = sort.column.table 
           ? `${this.q}${sort.column.table}${this.q}.${this.q}${sort.column.name}${this.q}`
@@ -634,7 +619,7 @@ export class PgsqlDialect implements Dialect {
   /**
    * Truncate table
    */
-  truncate(table: string, cascade = false) {
+  public truncate(table: string, cascade = false) {
     return { 
       query: `TRUNCATE TABLE ${this.q}${table}${this.q}${cascade ? ' CASCADE' : ''}`, 
       values: [] 
@@ -645,7 +630,7 @@ export class PgsqlDialect implements Dialect {
    * Converts update builder to query and values
    * results: [ { rows: [], fields: [], affectedRows: 0 } ]
    */
-  update(builder: Update) {
+  public update(builder: Update) {
     const build = builder.build();
     if (!Object.keys(build.data).length) {
       throw Exception.for('No data provided');
@@ -732,6 +717,22 @@ export class PgsqlDialect implements Dialect {
       }
     }
     return { type, length };
+  }
+  
+  /**
+   * Replaces JSON selectors in the given clause 
+   * with the corresponding json sql syntax.
+   */
+  protected _jsonReplace(clause: string) {
+    const regexp = new RegExp(this._pattern, 'g');
+    return clause.replace(regexp, match => {
+      const json = PgsqlJsonDialect.parse(
+        match,
+        this._splitter,
+        this._separator
+      );
+      return json ? json.extract : match;
+    });
   }
 }
 export class PgsqlJsonDialect implements JsonDialect {

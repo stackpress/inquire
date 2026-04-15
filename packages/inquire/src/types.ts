@@ -157,7 +157,6 @@ export interface Dialect {
   q: string;
   separator: string;
   splitter: string;
-  jsonic: RegExp;
   alter(builder: Alter): QueryObject[];
   create(builder: Create): QueryObject[];
   delete(builder: Delete): QueryObject;

@@ -5,6 +5,8 @@ import type Delete from '../builder/Delete.js';
 import type Insert from '../builder/Insert.js';
 import type Select from '../builder/Select.js';
 import type Update from '../builder/Update.js';
+//dialect
+import JsonTrait from './Json.js';
 //common
 import type { 
   Column,
@@ -41,24 +43,11 @@ export const typemap: Record<string, string> = {
   time: 'TIME'
 };
 
-export class MysqlDialect implements Dialect {
+export class MysqlDialect extends JsonTrait implements Dialect {
   //The name of the dialect, used for logging and error messages.
   public readonly name = 'mysql';
   //Recommended quote character
   public readonly q = q;
-
-  //used for json notation
-  public separator: string = '.';
-  public splitter: string = ':';
-  //jsonic pattern
-  // - ex. data:info.name
-  // - ex. profile.data:info
-  // - ex. profile.data:info.name
-  public jsonic = new RegExp(
-    `([a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){0,1}\\${this.splitter}`
-    + `[a-zA-Z0-9_]+(\\${this.separator}[a-zA-Z0-9_]+)*)`, 
-    'g'
-  );
 
   /**
    * Converts alter builder to query and values
@@ -489,11 +478,21 @@ export class MysqlDialect implements Dialect {
         ? `${this.q}${selector.name}${this.q}` 
         : '*';
       return selector.table && selector.alias
-        ? `${this.q}${selector.table}${this.q}.${name} AS ${this.q}${selector.alias}${this.q}`
+        ? [ 
+            `${this.q}${selector.table}${this.q}.${name}`, 
+            `${this.q}${selector.alias}${this.q}`
+          ].join(' AS ')
         : selector.table
         ? `${this.q}${selector.table}${this.q}.${name}`
+        : selector.alias && this._isJsonic(selector.name)
+        ? [
+            this._jsonReplace(selector.name),
+            `${this.q}${selector.alias}${this.q}`
+          ].join(' AS ')
         : selector.alias
         ? `${name} AS ${this.q}${selector.alias}${this.q}`
+        : this._isJsonic(selector.name)
+        ? this._jsonReplace(selector.name)
         : name
     });
 
@@ -531,22 +530,15 @@ export class MysqlDialect implements Dialect {
         filters.push(...build.where.map(filter => {
           values.push(...filter.values);
           //then replace with XJsonDialect.parse().extract
-          return filter.clause.replace(this.jsonic, match => {
-            const json = MysqlJsonDialect.parse(
-              match,
-              this.splitter,
-              this.separator
-            );
-            return json ? json.extract : match;
-          });
+          return this._jsonReplace(filter.clause);
         }));
       }
       build.json.forEach(filter => {
         const { query, replace } = filter;
         const json = MysqlJsonDialect.parse(
           filter.selector, 
-          this.splitter, 
-          this.separator
+          this._splitter, 
+          this._separator
         );
         //if invalid JSON selector, skip it
         if (!json) return;
@@ -585,15 +577,8 @@ export class MysqlDialect implements Dialect {
     if (build.sort.length) {
       const sort = build.sort.map(sort => {
         //if the sort column is using the selector ":" notation
-        if (sort.column.name.includes(this.splitter)) {
-          const json = MysqlJsonDialect.parse(
-            sort.column.name, 
-            this.splitter, 
-            this.separator
-          );
-          //if invalid JSON selector, skip it
-          if (!json) return '';
-          return `${json.extract} ${sort.direction.toUpperCase()}`;
+        if (this._isJsonic(sort.column.name)) {
+          return `${this._jsonReplace(sort.column.name)} ${sort.direction.toUpperCase()}`;
         }
         const column = sort.column.table 
           ? `${this.q}${sort.column.table}${this.q}.${this.q}${sort.column.name}${this.q}`
@@ -688,6 +673,22 @@ export class MysqlDialect implements Dialect {
       }
     }
     return { type, length };
+  }
+
+  /**
+   * Replaces JSON selectors in the given clause 
+   * with the corresponding json sql syntax.
+   */
+  protected _jsonReplace(clause: string) {
+    const regexp = new RegExp(this._pattern, 'g');
+    return clause.replace(regexp, match => {
+      const json = MysqlJsonDialect.parse(
+        match,
+        this._splitter,
+        this._separator
+      );
+      return json ? json.extract : match;
+    });
   }
 };
 
