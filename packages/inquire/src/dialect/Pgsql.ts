@@ -51,6 +51,15 @@ export class PgsqlDialect implements Dialect {
   //used for json notation
   public separator: string = '.';
   public splitter: string = ':';
+  //jsonic pattern
+  // - ex. data:info.name
+  // - ex. profile.data:info
+  // - ex. profile.data:info.name
+  public jsonic = new RegExp(
+    `([a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){0,1}\\${this.splitter}`
+    + `[a-zA-Z0-9_]+(\\${this.separator}[a-zA-Z0-9_]+)*)`, 
+    'g'
+  );
 
   /**
    * Converts alter builder to query and values
@@ -534,19 +543,10 @@ export class PgsqlDialect implements Dialect {
     if (build.where.length > 0 || build.json.length > 0) {
       const filters: string[] = [];
       if (build.where.length) {
-        //find json phrases
-        // - ex. data:info.name
-        // - ex. profile.data:info
-        // - ex. profile.data:info.name
-        const jsonSelector = new RegExp(
-          `([a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){0,1}\\${this.splitter}`
-          + `[a-zA-Z0-9_]+(\\${this.separator}[a-zA-Z0-9_]+)*)`, 
-          'g'
-        );
         filters.push(...build.where.map(filter => {
           values.push(...filter.values);
           //then replace with XJsonDialect.parse().extract
-          return filter.clause.replace(jsonSelector, match => {
+          return filter.clause.replace(this.jsonic, match => {
             const json = PgsqlJsonDialect.parse(
               match,
               this.splitter,

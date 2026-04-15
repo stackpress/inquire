@@ -153,8 +153,11 @@ export interface JsonDialect {
 };
 
 export interface Dialect {
-  name: string,
-  q: string,
+  name: string;
+  q: string;
+  separator: string;
+  splitter: string;
+  jsonic: RegExp;
   alter(builder: Alter): QueryObject[];
   create(builder: Create): QueryObject[];
   delete(builder: Delete): QueryObject;
