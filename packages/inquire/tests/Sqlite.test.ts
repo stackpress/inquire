@@ -232,10 +232,10 @@ describe('Sqlite Dialect Tests', () => {
 
     const query = Sqlite.select(select);
     expect(query.query).to.equal(
-      "SELECT * FROM `table` "
-      + "INNER JOIN `profile` ON (`profile.id` = `table.profileId`) "
+      "SELECT * FROM table "
+      + "INNER JOIN profile ON (profile.id = table.profileId) "
       + "WHERE id = ? "
-      + "ORDER BY `id` ASC "
+      + "ORDER BY id ASC "
       + "LIMIT 1 OFFSET 1"
     );
     expect(query.values?.[0]).to.equal(1);
@@ -339,7 +339,7 @@ describe('Sqlite Dialect Tests', () => {
     select.from('', 'alias'); 
   
     const result = Sqlite.select(select);
-    expect(result.query).to.equal('SELECT * FROM `` AS `alias`');
+    expect(result.query).to.equal('SELECT * FROM  AS alias');
   });
 
   // Line 405
@@ -354,7 +354,7 @@ describe('Sqlite Dialect Tests', () => {
   const select = new Select('table');
   select.from('table');
   const query = Sqlite.select(select);
-  expect(query.query).to.equal('SELECT `table` FROM `table`');
+  expect(query.query).to.equal('SELECT table FROM table');
   expect(query.values).to.be.empty;
   });
 

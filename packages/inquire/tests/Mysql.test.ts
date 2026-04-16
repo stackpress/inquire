@@ -205,7 +205,12 @@ describe('Mysql Dialect Tests', () => {
   it('Should translate select', async () => {
     const select = new Select('*');
     select.from('table');
-    select.join('inner', 'profile', ['profile','id'], ['table','profileId']);
+    select.join(
+      'inner', 
+      'profile', 
+      'profile.id', 
+      'table.profileId'
+    );
     select.where('id = ?', [ 1 ]);
     select.order('id', 'asc');
     select.limit(1);
@@ -213,10 +218,35 @@ describe('Mysql Dialect Tests', () => {
 
     const query = Mysql.select(select);
     expect(query.query).to.equal(
-      "SELECT * FROM `table` "
-      + "INNER JOIN `profile` ON (`profile`.`id` = `table`.`profileId`) "
+      "SELECT * FROM table "
+      + "INNER JOIN profile ON (profile.id = table.profileId) "
       + "WHERE id = ? "
-      + "ORDER BY `id` ASC "
+      + "ORDER BY id ASC "
+      + "LIMIT 1 OFFSET 1"
+    );
+    expect(query.values?.[0]).to.equal(1);
+  });
+
+  it('Should translate select with quotes', async () => {
+    const select = new Select('*');
+    select.from({ name: 'table', alias: 't' });
+    select.join(
+      'inner', 
+      { name: 'profile', alias: 'p' }, 
+      { name: 'id', table: 'profile' }, 
+      { name: 'profileId', table: 'table' }
+    );
+    select.where('id = ?', [ 1 ]);
+    select.order({ name: 'id', table: 't' }, 'asc');
+    select.limit(1);
+    select.offset(1);
+
+    const query = Mysql.select(select);
+    expect(query.query).to.equal(
+      "SELECT * FROM `table` AS `t` "
+      + "INNER JOIN `profile` AS `p` ON (`profile`.`id` = `table`.`profileId`) "
+      + "WHERE id = ? "
+      + "ORDER BY `t`.`id` ASC "
       + "LIMIT 1 OFFSET 1"
     );
     expect(query.values?.[0]).to.equal(1);
@@ -316,7 +346,7 @@ describe('Mysql Dialect Tests', () => {
     select.from('my-table', 'my-table-alias');
   
     const query = Mysql.select(select);
-    expect(query.query).to.include('FROM `my-table` AS `my-table-alias`');
+    expect(query.query).to.include('FROM my-table AS my-table-alias');
   });
 
   // Line 502

@@ -489,49 +489,82 @@ export class PgsqlDialect extends JsonTrait implements Dialect {
     const values: FlatValue[] = [];
 
     const columns = build.selectors.map(selector => {
-      const name = selector.name !== '*' 
-        ? `${this.q}${selector.name}${this.q}` 
-        : '*';
+      //if the selector is a string
+      if (typeof selector === 'string') {
+        //no matter what that string is, just use it...
+        return selector;
+      }
+      //extract the column, table and alias from the selector
+      const { column, table, alias } = selector;
+      //selector types can be formatted and quoted...
       return selector.table && selector.alias
-        ? [ 
-            `${this.q}${selector.table}${this.q}.${name}`, 
-            `${this.q}${selector.alias}${this.q}`
-          ].join(' AS ')
+        ? `${this.q}${table}${this.q}.`
+          + `${this.q}${column}${this.q} `
+          + `AS ${this.q}${alias}${this.q}`
         : selector.table
-        ? `${this.q}${selector.table}${this.q}.${name}`
-        : selector.alias && this._isJsonic(selector.name)
+        //cant json here because:
+        // "table.JSON_UNQUOTE(JSON_EXTRACT(column, '$.path')) AS alias" 
+        // is not valid syntax...
+        ? `${this.q}${table}${this.q}.${this.q}${column}${this.q}`
+        : alias && this._isJsonic(column)
         ? [
-            this._jsonReplace(selector.name),
-            `${this.q}${selector.alias}${this.q}`
+            this._jsonReplace(column),
+            `${this.q}${alias}${this.q}`
           ].join(' AS ')
-        : selector.alias
-        ? `${name} AS ${this.q}${selector.alias}${this.q}`
-        : this._isJsonic(selector.name)
-        ? this._jsonReplace(selector.name)
-        : name
+        : alias
+        ? `${this.q}${column}${this.q} AS ${this.q}${alias}${this.q}`
+        : this._isJsonic(column)
+        ? this._jsonReplace(column)
+        : `${this.q}${column}${this.q}`
     });
 
     query.push(`SELECT ${columns.join(', ')}`);
 
-    const table = `${this.q}${build.from.name}${this.q}`;
-    if (build.from.alias) {
-      const alias = `${this.q}${build.from.alias}${this.q}`;
-      query.push(`FROM ${table} AS ${alias}`);
+    //if from table is a string
+    if (typeof build.from.table === 'string') {
+      const { table, alias } = build.from;
+      if (alias) {
+        //just use the string as is...
+        query.push(`FROM ${table} AS ${alias}`);
+      } else {
+        //just use the string as is...
+        query.push(`FROM ${table}`);
+      }
     } else {
-      query.push(`FROM ${table}`);
+      const { name, alias } = build.from.table;
+      if (alias) {
+        //format with quotes
+        query.push(`FROM ${this.q}${name}${this.q} AS ${this.q}${alias}${this.q}`);
+      } else {
+        //format with quotes
+        query.push(`FROM ${this.q}${name}${this.q}`);
+      }
     }
 
     if (build.joins.length) {
       const joins = build.joins.map(relation => {
+        //const { type, table, from, to } = relation;
         const type = joinTypes[relation.type as JoinType];
-        const table = relation.table.alias 
+        //for table, if it's a string
+        const table = typeof relation.table === 'string'
+          //just use the string as is...
+          ? relation.table
+          : relation.table.alias 
           ? `${this.q}${relation.table.name}${this.q}`
             + ` AS ${this.q}${relation.table.alias}${this.q}`
           : `${this.q}${relation.table.name}${this.q}`;
-        const from = relation.from.table 
+        //for from, if it's a string
+        const from = typeof relation.from === 'string'
+          //just use the string as is...
+          ? relation.from
+          : relation.from.table 
           ? `${this.q}${relation.from.table}${this.q}.${this.q}${relation.from.name}${this.q}`
           : `${this.q}${relation.from.name}${this.q}`;
-        const to = relation.to.table 
+        //for to, if it's a string
+        const to = typeof relation.to === 'string'
+          //just use the string as is...
+          ? relation.to
+          : relation.to.table 
           ? `${this.q}${relation.to.table}${this.q}.${this.q}${relation.to.name}${this.q}`
           : `${this.q}${relation.to.name}${this.q}`;
         return `${type} JOIN ${table} ON (${from} = ${to})`;
@@ -593,12 +626,19 @@ export class PgsqlDialect extends JsonTrait implements Dialect {
 
     if (build.sort.length) {
       const sort = build.sort.map(sort => {
+        //if the sort column is a string
+        if (typeof sort.column === 'string') {
+          //just use it as is...
+          return `${sort.column} ${sort.direction.toUpperCase()}`;
+        }
         //if the sort column is using the selector ":" notation
         if (this._isJsonic(sort.column.name)) {
-          return `${this._jsonReplace(sort.column.name)} ${sort.direction.toUpperCase()}`;
+          return `${this._jsonReplace(sort.column.name)} `
+            + sort.direction.toUpperCase();
         }
         const column = sort.column.table 
-          ? `${this.q}${sort.column.table}${this.q}.${this.q}${sort.column.name}${this.q}`
+          ? `${this.q}${sort.column.table}${this.q}.`
+            + `${this.q}${sort.column.name}${this.q}`
           : `${this.q}${sort.column.name}${this.q}`;
         return `${column} ${sort.direction.toUpperCase()}`;
       }).filter(Boolean);

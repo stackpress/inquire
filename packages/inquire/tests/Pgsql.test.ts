@@ -245,10 +245,10 @@ describe('Pgsql Dialect Tests', () => {
 
     const query = Pgsql.select(select);
     expect(query.query).to.equal(
-      'SELECT * FROM "table" '
-      + 'INNER JOIN "profile" ON ("profile.id" = "table.profileId") '
+      'SELECT * FROM table '
+      + 'INNER JOIN profile ON (profile.id = table.profileId) '
       + 'WHERE id = ? '
-      + 'ORDER BY "id" ASC '
+      + 'ORDER BY id ASC '
       + 'LIMIT 1 OFFSET 1'
     );
     expect(query.values?.[0]).to.equal(1);
@@ -327,7 +327,7 @@ describe('Pgsql Dialect Tests', () => {
   // Line 468
   it('Should handle table names with special characters in the Select builder', async () => {
     const select = new Select(['column1', 'column2']);
-    select.from('my-table', 'my-table-alias');
+    select.from({ name: 'my-table', alias: 'my-table-alias' });
     const query = Pgsql.select(select);
     expect(query.query).to.include('FROM "my-table" AS "my-table-alias"');
   });

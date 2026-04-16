@@ -1,5 +1,6 @@
 //common
 import type { 
+  Column,
   Join, 
   Selector, 
   Sort, 
@@ -26,7 +27,7 @@ export default class Select<R = unknown> implements WhereBuilder {
   /**
    * The table to select from.
    */
-  protected _from?: Table;
+  protected _from?: { table: string | Table, alias?: string };
 
   /**
    * The JSON filters to apply.
@@ -51,7 +52,7 @@ export default class Select<R = unknown> implements WhereBuilder {
   /**
    * The columns to select.
    */
-  protected _selectors: Selector[] = [];
+  protected _selectors: (Selector|string)[] = [];
 
   /**
    * The sort order.
@@ -81,7 +82,7 @@ export default class Select<R = unknown> implements WhereBuilder {
    * Set select, quote and action
    */
   public constructor(
-    select: string | (string | string[])[] = '*', 
+    select: string | (string | Selector)[] = '*', 
     engine?: Engine
   ) {
     this._engine = engine;
@@ -107,16 +108,8 @@ export default class Select<R = unknown> implements WhereBuilder {
   /**
    * FROM clause
    */
-  public from(table: string | string[], alias?: string) {
-    if (Array.isArray(table) && table.length === 0) {
-      //throw error?
-      return this;
-    }
-    this._from = !Array.isArray(table)
-      ? { name: table, alias }
-      : table.length === 1
-      ? { name: table[0], alias }
-      : { name: table[0], alias: table[1] || alias };
+  public from(table: string | Table, alias?: string) {
+    this._from = { table, alias };
     return this;
   }
 
@@ -125,35 +118,11 @@ export default class Select<R = unknown> implements WhereBuilder {
    */
   public join(
     type: string, 
-    table: string | string[], 
-    from: string | string[], 
-    to: string | string[]
+    table: string | Table, 
+    from: string | Column, 
+    to: string | Column
   ) {
-    if ((Array.isArray(table) && table.length === 0)
-      || (Array.isArray(from) && from.length === 0)
-      || (Array.isArray(to) && to.length === 0)
-    ) {
-      //throw error?
-      return this;
-    }
-    this._joins.push({ 
-      type, 
-      table: !Array.isArray(table) 
-        ? { name: table }
-        : table.length === 1
-        ? { name: table[0] }
-        : { name: table[0], alias: table[1] }, 
-      from: !Array.isArray(from) 
-        ? { name: from }
-        : from.length === 1
-        ? { name: from[0] }
-        : { table: from[0], name: from[1] }, 
-      to: !Array.isArray(to) 
-        ? { name: to }
-        : to.length === 1
-        ? { name: to[0] }
-        : { table: to[0], name: to[1] }
-    });
+    this._joins.push({ type, table, from, to });
     return this;
   }
 
@@ -177,21 +146,10 @@ export default class Select<R = unknown> implements WhereBuilder {
    * ORDER BY clause
    */
   public order(
-    column: string | string[], 
+    column: string | Column, 
     direction: OrderType = 'ASC'
   ) {
-    if ((Array.isArray(column) && column.length === 0)) {
-      //throw error?
-      return this;
-    }
-    this._sort.push({ 
-      column: !Array.isArray(column) 
-        ? { name: column }
-        : column.length === 1
-        ? { name: column[0] }
-        : { table: column[0], name: column[1] }, 
-      direction 
-    });
+    this._sort.push({ column, direction });
     return this;
   }
 
@@ -209,56 +167,24 @@ export default class Select<R = unknown> implements WhereBuilder {
   /**
    * SELECT clause
    */
-  public select(columns: string | (string | string[])[]) {
+  public select(columns: string | (string | Selector)[]) {
     //if the columns is a string
     if (typeof columns === 'string') {
+      //if a comma separated string
       if (columns.indexOf(',') > -1) {
-        this._selectors = columns
-          .split(',')
+        //set the selectors to a list of raw strings. These should be 
+        // processed as is to indicate to the dialect not to format it...
+        this._selectors = columns.split(',')
           .map(column => column.trim())
-          .filter(Boolean)
-          .map(column => ({ name: column }));
+          .filter(Boolean);
       } else {
-        this._selectors = [{ name: columns }];
+        //it's just a raw string, so set the selectors as 
+        // is to indicate to the dialect not to format it...
+        this._selectors = [ columns.trim() ];
       }
       return this;
     } 
-    //if columns is not an array at this point
-    if (!Array.isArray(columns)) {
-      //then there's nothing we can do with it
-      return this;
-    }
-    //make a storage for the final tuples
-    const select: Selector[] = [];
-    //for each column
-    for (const column of columns) {
-      //if this column is a string
-      if (typeof column === 'string') {
-        //make into tuple and push
-        select.push({ name: column });
-      //if column is an array with 2 items, we assume it's a tuple and push
-      } else if (Array.isArray(column) 
-        && column.every(item => typeof item === 'string')
-      ) {
-        column.length === 1 && select.push({ 
-          name: column[0] 
-        });
-        column.length === 2 && select.push({ 
-          name: column[0], 
-          alias: column[1] 
-        });
-        column.length > 2 && select.push({ 
-          table: column[0], 
-          name: column[1], 
-          alias: column[2] 
-        });
-      }
-    }
-    //if there are some valid columns
-    if (select.length > 0) {
-      //then set the columns
-      this._selectors = select;
-    }
+    this._selectors = columns;
     return this;
   }
 

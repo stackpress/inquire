@@ -78,19 +78,19 @@ export type JoinType = 'inner'
 
 export type Join = { 
   type: string, 
-  table: Table,  
-  from: Column, 
-  to: Column
+  table: string | Table,  
+  from: string | Column, 
+  to: string | Column
 };
 
 export type Selector = {
-  name: string,
+  column: string,
   table?: string,
   alias?: string
 };
 
 export type Sort = {
-  column: Column,
+  column: string|Column,
   direction: OrderType
 };
 
