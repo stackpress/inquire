@@ -1,5 +1,5 @@
 export const pattern = '([a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+)'
-  + '{0,1}%s[a-zA-Z0-9_]+(%s[a-zA-Z0-9_]+)*)';
+  + '{0,1}\\%s[a-zA-Z0-9_]+(\\%s[a-zA-Z0-9_]+)*)';
 
 export default abstract class JsonTrait {
   //Recommended quote character
