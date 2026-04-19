@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "0.3.14",
-    "@stackpress/inquire-pglite": "0.8.1"
+    "@stackpress/inquire-pglite": "0.8.2"
   },
   "devDependencies": {
     "@types/node": "25.3.5",
