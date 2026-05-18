@@ -7,6 +7,7 @@ import Select from './builder/Select.js';
 import Update from './builder/Update.js';
 //local
 import type { 
+  Selector,
   Value, 
   Connection, 
   QueryObject, 
@@ -231,7 +232,7 @@ export default class Engine<R = unknown> {
   /**
    * Select table query builder
    */
-  public select<R = unknown>(columns?: string|string[]) {
+  public select<R = unknown>(columns?: string | (string | Selector)[]) {
     return new Select<R>(columns, this);
   }
 
