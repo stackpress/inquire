@@ -1,0 +1,32 @@
+<nav class="pager">
+  {{#?:previousHref}}
+    <a
+      class="pager-link"
+      href="{{previousHref}}"
+      title="{{previousLabel}}"
+    >
+      <span>Previous signal</span>
+      <strong>{{previousLabel}}</strong>
+    </a>
+  {{|}}
+    <span class="pager-link pager-link-empty">
+      <span>Previous signal</span>
+      <strong>Start node</strong>
+    </span>
+  {{/?:previousHref}}
+  {{#?:nextHref}}
+    <a
+      class="pager-link pager-link-next"
+      href="{{nextHref}}"
+      title="{{nextLabel}}"
+    >
+      <span>Next signal</span>
+      <strong>{{nextLabel}}</strong>
+    </a>
+  {{|}}
+    <span class="pager-link pager-link-empty pager-link-next">
+      <span>Next signal</span>
+      <strong>Terminal node</strong>
+    </span>
+  {{/?:nextHref}}
+</nav>

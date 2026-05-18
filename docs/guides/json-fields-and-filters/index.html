@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html class="theme-auto" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1"
+      name="viewport"
+    />
+    <title>JSON Fields and Filters | Inquire</title>
+    <meta content="Use this guide when you store JSON in a column and still need to filter by nested values." name="description" />
+    <link href="https://stackpress.github.io/inquire/guides/json-fields-and-filters/" rel="canonical" />
+    <meta content="JSON Fields and Filters | Inquire" property="og:title" />
+    <meta content="Use this guide when you store JSON in a column and still need to filter by nested values." property="og:description" />
+    <meta content="article" property="og:type" />
+    <meta content="https://stackpress.github.io/inquire/guides/json-fields-and-filters/" property="og:url" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" property="og:image" />
+    <meta content="Inquire Documentation" property="og:site_name" />
+    <meta content="summary" name="twitter:card" />
+    <meta content="JSON Fields and Filters | Inquire" name="twitter:title" />
+    <meta content="Use this guide when you store JSON in a column and still need to filter by nested values." name="twitter:description" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" name="twitter:image" />
+    <link href="../../assets/favicon.ico" rel="icon" />
+    <link href="../../assets/site.css" rel="stylesheet" />
+  </head>
+  <body class="page-doc">
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brandmark" href="../../index.html" title="Inquire home">
+          <img
+            alt="Inquire logo"
+            height="72"
+            src="../../assets/logo.png"
+            width="72"
+          />
+          <span class="brandmark-copy">
+            <strong>Inquire</strong>
+            <span>TypeScript SQL builder</span>
+          </span>
+        </a>
+        <div class="site-header-actions">
+          <a
+            class="page-link"
+            href=""
+            title="Start with the quick start"
+          >
+            Quick Start
+          </a>
+          <button
+            aria-label="Toggle theme"
+            class="theme-toggle"
+            data-theme-toggle="true"
+            type="button"
+          >
+            <span>Light / Dark</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="site-frame">
+        <aside class="site-nav">
+          <div class="site-nav-cap">
+            <p>System map</p>
+            <strong>Guides</strong>
+          </div>
+          <section class="nav-group">
+  <div class="nav-group-header">
+    <p>CORE SYSTEM MAP</p>
+    <h2>Overview</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../index.html"
+        title="Inquire"
+      >
+        <span class="nav-item-title">Inquire</span>
+        <span class="nav-item-meta">Inquire is a lightweight TypeScript SQL builder. It helps you define schemas...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>OPERATIONAL BOOT SEQUENCE</p>
+    <h2>Tutorials</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../tutorials/quick-start/index.html"
+        title="Quick Start"
+      >
+        <span class="nav-item-title">Quick Start</span>
+        <span class="nav-item-meta">Get from zero to a working query with one table, one insert, and one typed s...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>ARCHITECTURE REASONING</p>
+    <h2>Explanation</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../explanation/mental-model/index.html"
+        title="Mental Model"
+      >
+        <span class="nav-item-title">Mental Model</span>
+        <span class="nav-item-meta">Inquire is a SQL builder, not an ORM.</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>TASK-SPECIFIC PROCEDURES</p>
+    <h2>Guides</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item is-active"
+        href="./index.html"
+        title="JSON Fields and Filters"
+      >
+        <span class="nav-item-title">JSON Fields and Filters</span>
+        <span class="nav-item-meta">Use this guide when you store JSON in a column and still need to filter by n...</span>
+      </a><a
+        class="nav-item"
+        href="../raw-sql-and-transactions/index.html"
+        title="Raw SQL and Transactions"
+      >
+        <span class="nav-item-title">Raw SQL and Transactions</span>
+        <span class="nav-item-meta">Use this guide when the builder surface is not enough or when you need expli...</span>
+      </a><a
+        class="nav-item"
+        href="../schema-changes/index.html"
+        title="Schema Changes"
+      >
+        <span class="nav-item-title">Schema Changes</span>
+        <span class="nav-item-meta">Use this guide when you need to define or change tables without adding a sep...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>ENGINE AND WRAPPERS</p>
+    <h2>API Core</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../api/index.html"
+        title="API Reference"
+      >
+        <span class="nav-item-title">API Reference</span>
+        <span class="nav-item-meta">Use this section when you already know the task and need exact API details.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/engine/index.html"
+        title="Engine"
+      >
+        <span class="nav-item-title">Engine</span>
+        <span class="nav-item-meta">`Engine` is the main entry point for schema changes, query builders, raw SQL...</span>
+      </a><a
+        class="nav-item"
+        href="../../api/connections/index.html"
+        title="Connections"
+      >
+        <span class="nav-item-title">Connections</span>
+        <span class="nav-item-meta">Connection wrappers adapt a native driver to Inquire's `Connection` interfac...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>COMPOSABLE QUERY UNITS</p>
+    <h2>API Builders</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../api/builders/index.html"
+        title="Builders"
+      >
+        <span class="nav-item-title">Builders</span>
+        <span class="nav-item-meta">Builders collect query intent and either:</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/alter/index.html"
+        title="Alter"
+      >
+        <span class="nav-item-title">Alter</span>
+        <span class="nav-item-meta">`Alter` defines incremental schema changes for an existing table.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/create/index.html"
+        title="Create"
+      >
+        <span class="nav-item-title">Create</span>
+        <span class="nav-item-meta">`Create` defines a new table schema.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/delete/index.html"
+        title="Delete"
+      >
+        <span class="nav-item-title">Delete</span>
+        <span class="nav-item-meta">`Delete` builds `DELETE` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/insert/index.html"
+        title="Insert"
+      >
+        <span class="nav-item-title">Insert</span>
+        <span class="nav-item-meta">`Insert` builds `INSERT` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/select/index.html"
+        title="Select"
+      >
+        <span class="nav-item-title">Select</span>
+        <span class="nav-item-meta">`Select` builds `SELECT` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/update/index.html"
+        title="Update"
+      >
+        <span class="nav-item-title">Update</span>
+        <span class="nav-item-meta">`Update` builds `UPDATE` queries.</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>SQL TRANSLATION MODULES</p>
+    <h2>API Dialects</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../api/dialects/index.html"
+        title="Dialects"
+      >
+        <span class="nav-item-title">Dialects</span>
+        <span class="nav-item-meta">Dialects convert builder state into database-specific SQL.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/dialects/mysql/index.html"
+        title="Mysql"
+      >
+        <span class="nav-item-title">Mysql</span>
+        <span class="nav-item-meta">`Mysql` is the MySQL dialect object exported by `@stackpress/inquire`.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/dialects/pgsql/index.html"
+        title="Pgsql"
+      >
+        <span class="nav-item-title">Pgsql</span>
+        <span class="nav-item-meta">`Pgsql` is the PostgreSQL dialect object exported by `@stackpress/inquire`.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/dialects/sqlite/index.html"
+        title="Sqlite"
+      >
+        <span class="nav-item-title">Sqlite</span>
+        <span class="nav-item-meta">`Sqlite` is the SQLite dialect object exported by `@stackpress/inquire`.</span>
+      </a>
+  </div>
+</section>
+
+        </aside>
+
+        <main class="site-main">
+          <div class="breadcrumbs"><a class="breadcrumb" href="../../index.html" title="Inquire">
+    Inquire
+  </a><a class="breadcrumb" href="./index.html" title="JSON Fields and Filters">
+    JSON Fields and Filters
+  </a>
+</div>
+
+          <section class="page-hero">
+            <div class="page-hero-signal">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="page-hero-copy">
+              <p class="page-hero-eyebrow">Ops</p>
+              <h1>JSON Fields and Filters</h1>
+              <p>Use this guide when you store JSON in a column and still need to filter by nested values.</p>
+            </div>
+            <div class="page-hero-schema">
+              <span class="schema-node schema-node-blue"></span>
+              <span class="schema-node schema-node-orange"></span>
+              <span class="schema-node schema-node-ghost"></span>
+            </div>
+          </section>
+
+          <article class="doc-panel">
+            <h2 id="store-json-values" class="doc-heading">Store JSON values</h2>
+<p>All supported connection wrappers format arrays and objects as JSON strings before execution.</p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>insert<span class="token token-operator">(</span><span class="token token-string">'profiles'</span><span class="token token-operator">)</span><span class="token token-operator">.</span>values<span class="token token-operator">(</span><span class="token token-operator">{</span>
+  name<span class="token token-operator">:</span> <span class="token token-string">'Ada'</span><span class="token token-operator">,</span>
+  settings<span class="token token-operator">:</span> <span class="token token-operator">{</span>
+    theme<span class="token token-operator">:</span> <span class="token token-string">'dark'</span><span class="token token-operator">,</span>
+    flags<span class="token token-operator">:</span> <span class="token token-operator">[</span><span class="token token-string">'beta'</span><span class="token token-operator">]</span>
+  <span class="token token-operator">}</span>
+<span class="token token-operator">}</span><span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>The underlying column type still depends on the dialect.</p>
+<ul class="doc-list">
+        <li>MySQL maps <code>json</code> to <code>JSON</code></li>
+      
+        <li>PostgreSQL maps <code>json</code> to <code>JSONB</code></li>
+      
+        <li>SQLite maps <code>json</code> to <code>TEXT</code></li>
+      </ul>
+<h2 id="filter-by-a-nested-json-value" class="doc-heading">Filter by a nested JSON value</h2>
+<p>Use <code>whereJson()</code> on <code>Select</code>, <code>Update</code>, or <code>Delete</code>.</p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">const</span> profiles = <span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>select<span class="token token-operator">(</span><span class="token token-string">'*'</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span><span class="token token-keyword">from</span><span class="token token-operator">(</span><span class="token token-string">'profiles'</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>whereJson<span class="token token-operator">(</span><span class="token token-string">'='</span><span class="token token-operator">,</span> <span class="token token-operator">[</span><span class="token token-string">'settings:theme'</span><span class="token token-operator">,</span> <span class="token token-string">'?'</span><span class="token token-operator">]</span><span class="token token-operator">,</span> <span class="token token-string">'dark'</span><span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>The builder stores the JSON selector and lets the dialect translate it to native SQL.</p>
+<h2 id="filter-by-containment" class="doc-heading">Filter by containment</h2>
+<p>Use <code>whereJsonContains()</code> when you want the dialect to perform a containment check.</p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">const</span> profiles = <span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>select<span class="token token-operator">(</span><span class="token token-string">'*'</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span><span class="token token-keyword">from</span><span class="token token-operator">(</span><span class="token token-string">'profiles'</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>whereJsonContains<span class="token token-operator">(</span><span class="token token-string">'settings:flags'</span><span class="token token-operator">,</span> <span class="token token-string">'beta'</span><span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>This is the most dialect-sensitive part of the builder surface. Test the emitted SQL against the database you actually use.</p>
+<h2 id="update-or-delete-with-json-filters" class="doc-heading">Update or delete with JSON filters</h2>
+<p>The same JSON filter helpers exist on <code>Update</code> and <code>Delete</code>.</p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>update<span class="token token-operator">(</span><span class="token token-string">'profiles'</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>set<span class="token token-operator">(</span><span class="token token-operator">{</span> active<span class="token token-operator">:</span> <span class="token token-keyword">false</span> <span class="token token-operator">}</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>whereJson<span class="token token-operator">(</span><span class="token token-string">'='</span><span class="token token-operator">,</span> <span class="token token-operator">[</span><span class="token token-string">'settings:theme'</span><span class="token token-operator">,</span> <span class="token token-string">'?'</span><span class="token token-operator">]</span><span class="token token-operator">,</span> <span class="token token-string">'legacy'</span><span class="token token-operator">)</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>delete<span class="token token-operator">(</span><span class="token token-string">'profiles'</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>whereJsonContains<span class="token token-operator">(</span><span class="token token-string">'settings:flags'</span><span class="token token-operator">,</span> <span class="token token-string">'deprecated'</span><span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<h2 id="choose-selectors-carefully" class="doc-heading">Choose selectors carefully</h2>
+<p>By default, selectors use:</p>
+<ul class="doc-list">
+        <li><code>:</code> to separate the column from the JSON path</li>
+      
+        <li><code>.</code> to separate path segments</li>
+      </ul>
+<p>Example:</p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">text</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="text"><code class="language-text">settings:notifications.email</code></pre>
+    </div>
+  
+<p><code>Update</code> and <code>Delete</code> expose writable <code>selector</code> and <code>separator</code> properties if you need different notation before calling <code>.build()</code> or <code>.query()</code>.</p>
+<h2 id="when-to-drop-to-raw-sql" class="doc-heading">When to drop to raw SQL</h2>
+<p>Use raw SQL if:</p>
+<ul class="doc-list">
+        <li>you need database-specific JSON functions</li>
+      
+        <li>you need JSON updates, not only JSON filters</li>
+      
+        <li>the exact SQL behavior matters more than cross-dialect consistency</li>
+      </ul>
+<p>See <a href="../raw-sql-and-transactions/index.html" title="Raw SQL and transactions">Raw SQL and transactions</a>.</p>
+          </article>
+
+          <nav class="pager">
+  <a
+      class="pager-link"
+      href="../../explanation/mental-model/index.html"
+      title="Mental Model"
+    >
+      <span>Previous signal</span>
+      <strong>Mental Model</strong>
+    </a>
+  <a
+      class="pager-link pager-link-next"
+      href="../raw-sql-and-transactions/index.html"
+      title="Raw SQL and Transactions"
+    >
+      <span>Next signal</span>
+      <strong>Raw SQL and Transactions</strong>
+    </a>
+</nav>
+
+        </main>
+
+        <aside class="site-toc">
+          <div class="site-toc-cap">
+            <p>Signal index</p>
+            <strong>On this page</strong>
+          </div>
+          
+    <a class="toc-link toc-link-level-2" href="#store-json-values">
+      Store JSON values
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#filter-by-a-nested-json-value">
+      Filter by a nested JSON value
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#filter-by-containment">
+      Filter by containment
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#update-or-delete-with-json-filters">
+      Update or delete with JSON filters
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#choose-selectors-carefully">
+      Choose selectors carefully
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#when-to-drop-to-raw-sql">
+      When to drop to raw SQL
+    </a>
+  
+        </aside>
+      </div>
+    </div>
+
+    <script defer src="../../assets/site.js"></script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+<section class="section-card">
+  <div class="section-card-header">
+    <p>{{A:eyebrow}}</p>
+    <h2>{{title}}</h2>
+  </div>
+  <div class="section-card-grid">
+    {{#@:items item}}
+      <a
+        class="section-card-link"
+        href="{{item.href}}"
+        title="{{item.title}}"
+      >
+        <strong>{{item.title}}</strong>
+        <span>{{.:item.description 110 ...}}</span>
+      </a>
+    {{/@:items}}
+  </div>
+</section>

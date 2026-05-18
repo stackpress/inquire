@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html class="theme-auto" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1"
+      name="viewport"
+    />
+    <title>Connections | Inquire</title>
+    <meta content="Connection wrappers adapt a native driver to Inquire's `Connection` interface." name="description" />
+    <link href="https://stackpress.github.io/inquire/api/connections/" rel="canonical" />
+    <meta content="Connections | Inquire" property="og:title" />
+    <meta content="Connection wrappers adapt a native driver to Inquire's `Connection` interface." property="og:description" />
+    <meta content="article" property="og:type" />
+    <meta content="https://stackpress.github.io/inquire/api/connections/" property="og:url" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" property="og:image" />
+    <meta content="Inquire Documentation" property="og:site_name" />
+    <meta content="summary" name="twitter:card" />
+    <meta content="Connections | Inquire" name="twitter:title" />
+    <meta content="Connection wrappers adapt a native driver to Inquire's `Connection` interface." name="twitter:description" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" name="twitter:image" />
+    <link href="../../assets/favicon.ico" rel="icon" />
+    <link href="../../assets/site.css" rel="stylesheet" />
+  </head>
+  <body class="page-doc">
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brandmark" href="../../index.html" title="Inquire home">
+          <img
+            alt="Inquire logo"
+            height="72"
+            src="../../assets/logo.png"
+            width="72"
+          />
+          <span class="brandmark-copy">
+            <strong>Inquire</strong>
+            <span>TypeScript SQL builder</span>
+          </span>
+        </a>
+        <div class="site-header-actions">
+          <a
+            class="page-link"
+            href=""
+            title="Start with the quick start"
+          >
+            Quick Start
+          </a>
+          <button
+            aria-label="Toggle theme"
+            class="theme-toggle"
+            data-theme-toggle="true"
+            type="button"
+          >
+            <span>Light / Dark</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="site-frame">
+        <aside class="site-nav">
+          <div class="site-nav-cap">
+            <p>System map</p>
+            <strong>API</strong>
+          </div>
+          <section class="nav-group">
+  <div class="nav-group-header">
+    <p>CORE SYSTEM MAP</p>
+    <h2>Overview</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../index.html"
+        title="Inquire"
+      >
+        <span class="nav-item-title">Inquire</span>
+        <span class="nav-item-meta">Inquire is a lightweight TypeScript SQL builder. It helps you define schemas...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>OPERATIONAL BOOT SEQUENCE</p>
+    <h2>Tutorials</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../tutorials/quick-start/index.html"
+        title="Quick Start"
+      >
+        <span class="nav-item-title">Quick Start</span>
+        <span class="nav-item-meta">Get from zero to a working query with one table, one insert, and one typed s...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>ARCHITECTURE REASONING</p>
+    <h2>Explanation</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../explanation/mental-model/index.html"
+        title="Mental Model"
+      >
+        <span class="nav-item-title">Mental Model</span>
+        <span class="nav-item-meta">Inquire is a SQL builder, not an ORM.</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>TASK-SPECIFIC PROCEDURES</p>
+    <h2>Guides</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../guides/json-fields-and-filters/index.html"
+        title="JSON Fields and Filters"
+      >
+        <span class="nav-item-title">JSON Fields and Filters</span>
+        <span class="nav-item-meta">Use this guide when you store JSON in a column and still need to filter by n...</span>
+      </a><a
+        class="nav-item"
+        href="../../guides/raw-sql-and-transactions/index.html"
+        title="Raw SQL and Transactions"
+      >
+        <span class="nav-item-title">Raw SQL and Transactions</span>
+        <span class="nav-item-meta">Use this guide when the builder surface is not enough or when you need expli...</span>
+      </a><a
+        class="nav-item"
+        href="../../guides/schema-changes/index.html"
+        title="Schema Changes"
+      >
+        <span class="nav-item-title">Schema Changes</span>
+        <span class="nav-item-meta">Use this guide when you need to define or change tables without adding a sep...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>ENGINE AND WRAPPERS</p>
+    <h2>API Core</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../index.html"
+        title="API Reference"
+      >
+        <span class="nav-item-title">API Reference</span>
+        <span class="nav-item-meta">Use this section when you already know the task and need exact API details.</span>
+      </a><a
+        class="nav-item"
+        href="../engine/index.html"
+        title="Engine"
+      >
+        <span class="nav-item-title">Engine</span>
+        <span class="nav-item-meta">`Engine` is the main entry point for schema changes, query builders, raw SQL...</span>
+      </a><a
+        class="nav-item is-active"
+        href="./index.html"
+        title="Connections"
+      >
+        <span class="nav-item-title">Connections</span>
+        <span class="nav-item-meta">Connection wrappers adapt a native driver to Inquire's `Connection` interfac...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>COMPOSABLE QUERY UNITS</p>
+    <h2>API Builders</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../builders/index.html"
+        title="Builders"
+      >
+        <span class="nav-item-title">Builders</span>
+        <span class="nav-item-meta">Builders collect query intent and either:</span>
+      </a><a
+        class="nav-item"
+        href="../builders/alter/index.html"
+        title="Alter"
+      >
+        <span class="nav-item-title">Alter</span>
+        <span class="nav-item-meta">`Alter` defines incremental schema changes for an existing table.</span>
+      </a><a
+        class="nav-item"
+        href="../builders/create/index.html"
+        title="Create"
+      >
+        <span class="nav-item-title">Create</span>
+        <span class="nav-item-meta">`Create` defines a new table schema.</span>
+      </a><a
+        class="nav-item"
+        href="../builders/delete/index.html"
+        title="Delete"
+      >
+        <span class="nav-item-title">Delete</span>
+        <span class="nav-item-meta">`Delete` builds `DELETE` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../builders/insert/index.html"
+        title="Insert"
+      >
+        <span class="nav-item-title">Insert</span>
+        <span class="nav-item-meta">`Insert` builds `INSERT` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../builders/select/index.html"
+        title="Select"
+      >
+        <span class="nav-item-title">Select</span>
+        <span class="nav-item-meta">`Select` builds `SELECT` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../builders/update/index.html"
+        title="Update"
+      >
+        <span class="nav-item-title">Update</span>
+        <span class="nav-item-meta">`Update` builds `UPDATE` queries.</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>SQL TRANSLATION MODULES</p>
+    <h2>API Dialects</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../dialects/index.html"
+        title="Dialects"
+      >
+        <span class="nav-item-title">Dialects</span>
+        <span class="nav-item-meta">Dialects convert builder state into database-specific SQL.</span>
+      </a><a
+        class="nav-item"
+        href="../dialects/mysql/index.html"
+        title="Mysql"
+      >
+        <span class="nav-item-title">Mysql</span>
+        <span class="nav-item-meta">`Mysql` is the MySQL dialect object exported by `@stackpress/inquire`.</span>
+      </a><a
+        class="nav-item"
+        href="../dialects/pgsql/index.html"
+        title="Pgsql"
+      >
+        <span class="nav-item-title">Pgsql</span>
+        <span class="nav-item-meta">`Pgsql` is the PostgreSQL dialect object exported by `@stackpress/inquire`.</span>
+      </a><a
+        class="nav-item"
+        href="../dialects/sqlite/index.html"
+        title="Sqlite"
+      >
+        <span class="nav-item-title">Sqlite</span>
+        <span class="nav-item-meta">`Sqlite` is the SQLite dialect object exported by `@stackpress/inquire`.</span>
+      </a>
+  </div>
+</section>
+
+        </aside>
+
+        <main class="site-main">
+          <div class="breadcrumbs"><a class="breadcrumb" href="../../index.html" title="Inquire">
+    Inquire
+  </a><a class="breadcrumb" href="../index.html" title="API Reference">
+    API Reference
+  </a><a class="breadcrumb" href="./index.html" title="Connections">
+    Connections
+  </a>
+</div>
+
+          <section class="page-hero">
+            <div class="page-hero-signal">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="page-hero-copy">
+              <p class="page-hero-eyebrow">Surface</p>
+              <h1>Connections</h1>
+              <p>Connection wrappers adapt a native driver to Inquire's `Connection` interface.</p>
+            </div>
+            <div class="page-hero-schema">
+              <span class="schema-node schema-node-blue"></span>
+              <span class="schema-node schema-node-orange"></span>
+              <span class="schema-node schema-node-ghost"></span>
+            </div>
+          </section>
+
+          <article class="doc-panel">
+            <p>Each wrapper:</p>
+<ul class="doc-list">
+        <li>exposes a dialect</li>
+      
+        <li>formats values for the native driver</li>
+      
+        <li>executes SQL</li>
+      
+        <li>manages transactions</li>
+      
+        <li>returns plain result arrays from <code>query()</code></li>
+      </ul>
+<h2 id="shared-interface" class="doc-heading">Shared interface</h2>
+<p>All connection wrappers implement the same core shape.</p>
+
+    <div class="table-wrap">
+      <table class="doc-table">
+        <thead>
+          <tr><th>Property or method</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>dialect</code></td><td>Active SQL dialect.</td></tr><tr><td><code>lastId</code></td><td>Last inserted id when the driver exposes one.</td></tr><tr><td><code>before</code></td><td>Hook that runs before the native query call.</td></tr><tr><td><code>format(request)</code></td><td>Adapts placeholders and values for the driver.</td></tr><tr><td><code>query(request)</code></td><td>Returns plain rows for application code.</td></tr><tr><td><code>resource()</code></td><td>Returns the native resource.</td></tr><tr><td><code>transaction(callback)</code></td><td>Runs work in a transaction.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  
+<p>Some wrappers also expose a <code>raw()</code> method on the concrete class, but that method is not part of the shared <code>Connection</code> interface.</p>
+<h2 id="mysql2" class="doc-heading">MySQL2</h2>
+<p>Package: <code>@stackpress/inquire-mysql2</code></p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">import</span> mysql <span class="token token-keyword">from</span> <span class="token token-string">'mysql2/promise'</span><span class="token token-operator">;</span>
+<span class="token token-keyword">import</span> connect <span class="token token-keyword">from</span> <span class="token token-string">'@stackpress/inquire-mysql2'</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">const</span> resource = <span class="token token-keyword">await</span> mysql<span class="token token-operator">.</span>createConnection<span class="token token-operator">(</span><span class="token token-operator">{</span>
+  host<span class="token token-operator">:</span> <span class="token token-string">'localhost'</span><span class="token token-operator">,</span>
+  user<span class="token token-operator">:</span> <span class="token token-string">'root'</span><span class="token token-operator">,</span>
+  database<span class="token token-operator">:</span> <span class="token token-string">'app'</span>
+<span class="token token-operator">}</span><span class="token token-operator">)</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">const</span> engine = connect<span class="token token-operator">(</span>resource<span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>Concrete class: <code>Mysql2Connection</code></p>
+<p>Notes:</p>
+<ul class="doc-list">
+        <li>uses the <code>Mysql</code> dialect</li>
+      
+        <li>tracks <code>lastId</code></li>
+      
+        <li>serializes dates, arrays, and objects in <code>format()</code></li>
+      
+        <li>uses native <code>beginTransaction()</code>, <code>commit()</code>, and <code>rollback()</code></li>
+      </ul>
+<h2 id="postgresql" class="doc-heading">PostgreSQL</h2>
+<p>Package: <code>@stackpress/inquire-pg</code></p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">import</span> <span class="token token-operator">{</span> Client <span class="token token-operator">}</span> <span class="token token-keyword">from</span> <span class="token token-string">'pg'</span><span class="token token-operator">;</span>
+<span class="token token-keyword">import</span> connect <span class="token token-keyword">from</span> <span class="token token-string">'@stackpress/inquire-pg'</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">const</span> client = <span class="token token-keyword">new</span> Client<span class="token token-operator">(</span><span class="token token-operator">{</span>
+  database<span class="token token-operator">:</span> <span class="token token-string">'app'</span><span class="token token-operator">,</span>
+  user<span class="token token-operator">:</span> <span class="token token-string">'postgres'</span>
+<span class="token token-operator">}</span><span class="token token-operator">)</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">await</span> client<span class="token token-operator">.</span>connect<span class="token token-operator">(</span><span class="token token-operator">)</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">const</span> engine = connect<span class="token token-operator">(</span>client<span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>Concrete class: <code>PGConnection</code></p>
+<p>Notes:</p>
+<ul class="doc-list">
+        <li>uses the <code>Pgsql</code> dialect</li>
+      
+        <li>rewrites <code>?</code> placeholders to <code>$1</code>, <code>$2</code>, and so on</li>
+      
+        <li>serializes dates, arrays, and objects in <code>format()</code></li>
+      
+        <li>does not expose <code>lastId</code></li>
+      </ul>
+<h2 id="pglite" class="doc-heading">PGlite</h2>
+<p>Package: <code>@stackpress/inquire-pglite</code></p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">import</span> <span class="token token-operator">{</span> PGlite <span class="token token-operator">}</span> <span class="token token-keyword">from</span> <span class="token token-string">'@electric-sql/pglite'</span><span class="token token-operator">;</span>
+<span class="token token-keyword">import</span> connect <span class="token token-keyword">from</span> <span class="token token-string">'@stackpress/inquire-pglite'</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">const</span> resource = <span class="token token-keyword">new</span> PGlite<span class="token token-operator">(</span><span class="token token-string">'./build/database'</span><span class="token token-operator">)</span><span class="token token-operator">;</span>
+<span class="token token-keyword">const</span> engine = connect<span class="token token-operator">(</span>resource<span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>Concrete class: <code>PGLiteConnection</code></p>
+<p>Notes:</p>
+<ul class="doc-list">
+        <li>uses the <code>Pgsql</code> dialect</li>
+      
+        <li>shares the same placeholder conversion rules as PostgreSQL</li>
+      
+        <li>does not expose <code>lastId</code></li>
+      </ul>
+<h2 id="better-sqlite3" class="doc-heading">better-sqlite3</h2>
+<p>Package: <code>@stackpress/inquire-sqlite3</code></p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">import</span> sqlite <span class="token token-keyword">from</span> <span class="token token-string">'better-sqlite3'</span><span class="token token-operator">;</span>
+<span class="token token-keyword">import</span> connect <span class="token token-keyword">from</span> <span class="token token-string">'@stackpress/inquire-sqlite3'</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">const</span> resource = sqlite<span class="token token-operator">(</span><span class="token token-string">':memory:'</span><span class="token token-operator">)</span><span class="token token-operator">;</span>
+<span class="token token-keyword">const</span> engine = connect<span class="token token-operator">(</span>resource<span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>Concrete class: <code>BetterSqlite3Connection</code></p>
+<p>Notes:</p>
+<ul class="doc-list">
+        <li>uses the <code>Sqlite</code> dialect</li>
+      
+        <li>converts booleans to <code>0</code> or <code>1</code></li>
+      
+        <li>tracks <code>lastId</code> through <code>lastInsertRowid</code></li>
+      
+        <li>treats <code>SELECT</code> and <code>INSERT ... RETURNING</code> as row-returning queries</li>
+      </ul>
+<h2 id="when-to-work-at-this-level" class="doc-heading">When to work at this level</h2>
+<p>Most application code should stay at the <code>Engine</code> level. Use the connection classes directly only when you need driver-specific behavior such as <code>raw()</code> access or direct access to the native <code>resource()</code>.</p>
+          </article>
+
+          <nav class="pager">
+  <a
+      class="pager-link"
+      href="../engine/index.html"
+      title="Engine"
+    >
+      <span>Previous signal</span>
+      <strong>Engine</strong>
+    </a>
+  <a
+      class="pager-link pager-link-next"
+      href="../builders/index.html"
+      title="Builders"
+    >
+      <span>Next signal</span>
+      <strong>Builders</strong>
+    </a>
+</nav>
+
+        </main>
+
+        <aside class="site-toc">
+          <div class="site-toc-cap">
+            <p>Signal index</p>
+            <strong>On this page</strong>
+          </div>
+          
+    <a class="toc-link toc-link-level-2" href="#shared-interface">
+      Shared interface
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#mysql2">
+      MySQL2
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#postgresql">
+      PostgreSQL
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#pglite">
+      PGlite
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#better-sqlite3">
+      better-sqlite3
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#when-to-work-at-this-level">
+      When to work at this level
+    </a>
+  
+        </aside>
+      </div>
+    </div>
+
+    <script defer src="../../assets/site.js"></script>
+  </body>
+</html>

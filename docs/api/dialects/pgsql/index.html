@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html class="theme-auto" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1"
+      name="viewport"
+    />
+    <title>Pgsql | Inquire</title>
+    <meta content="`Pgsql` is the PostgreSQL dialect object exported by `@stackpress/inquire`." name="description" />
+    <link href="https://stackpress.github.io/inquire/api/dialects/pgsql/" rel="canonical" />
+    <meta content="Pgsql | Inquire" property="og:title" />
+    <meta content="`Pgsql` is the PostgreSQL dialect object exported by `@stackpress/inquire`." property="og:description" />
+    <meta content="article" property="og:type" />
+    <meta content="https://stackpress.github.io/inquire/api/dialects/pgsql/" property="og:url" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" property="og:image" />
+    <meta content="Inquire Documentation" property="og:site_name" />
+    <meta content="summary" name="twitter:card" />
+    <meta content="Pgsql | Inquire" name="twitter:title" />
+    <meta content="`Pgsql` is the PostgreSQL dialect object exported by `@stackpress/inquire`." name="twitter:description" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" name="twitter:image" />
+    <link href="../../../assets/favicon.ico" rel="icon" />
+    <link href="../../../assets/site.css" rel="stylesheet" />
+  </head>
+  <body class="page-doc">
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brandmark" href="../../../index.html" title="Inquire home">
+          <img
+            alt="Inquire logo"
+            height="72"
+            src="../../../assets/logo.png"
+            width="72"
+          />
+          <span class="brandmark-copy">
+            <strong>Inquire</strong>
+            <span>TypeScript SQL builder</span>
+          </span>
+        </a>
+        <div class="site-header-actions">
+          <a
+            class="page-link"
+            href=""
+            title="Start with the quick start"
+          >
+            Quick Start
+          </a>
+          <button
+            aria-label="Toggle theme"
+            class="theme-toggle"
+            data-theme-toggle="true"
+            type="button"
+          >
+            <span>Light / Dark</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="site-frame">
+        <aside class="site-nav">
+          <div class="site-nav-cap">
+            <p>System map</p>
+            <strong>API</strong>
+          </div>
+          <section class="nav-group">
+  <div class="nav-group-header">
+    <p>CORE SYSTEM MAP</p>
+    <h2>Overview</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../../index.html"
+        title="Inquire"
+      >
+        <span class="nav-item-title">Inquire</span>
+        <span class="nav-item-meta">Inquire is a lightweight TypeScript SQL builder. It helps you define schemas...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>OPERATIONAL BOOT SEQUENCE</p>
+    <h2>Tutorials</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../../tutorials/quick-start/index.html"
+        title="Quick Start"
+      >
+        <span class="nav-item-title">Quick Start</span>
+        <span class="nav-item-meta">Get from zero to a working query with one table, one insert, and one typed s...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>ARCHITECTURE REASONING</p>
+    <h2>Explanation</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../../explanation/mental-model/index.html"
+        title="Mental Model"
+      >
+        <span class="nav-item-title">Mental Model</span>
+        <span class="nav-item-meta">Inquire is a SQL builder, not an ORM.</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>TASK-SPECIFIC PROCEDURES</p>
+    <h2>Guides</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../../guides/json-fields-and-filters/index.html"
+        title="JSON Fields and Filters"
+      >
+        <span class="nav-item-title">JSON Fields and Filters</span>
+        <span class="nav-item-meta">Use this guide when you store JSON in a column and still need to filter by n...</span>
+      </a><a
+        class="nav-item"
+        href="../../../guides/raw-sql-and-transactions/index.html"
+        title="Raw SQL and Transactions"
+      >
+        <span class="nav-item-title">Raw SQL and Transactions</span>
+        <span class="nav-item-meta">Use this guide when the builder surface is not enough or when you need expli...</span>
+      </a><a
+        class="nav-item"
+        href="../../../guides/schema-changes/index.html"
+        title="Schema Changes"
+      >
+        <span class="nav-item-title">Schema Changes</span>
+        <span class="nav-item-meta">Use this guide when you need to define or change tables without adding a sep...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>ENGINE AND WRAPPERS</p>
+    <h2>API Core</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../index.html"
+        title="API Reference"
+      >
+        <span class="nav-item-title">API Reference</span>
+        <span class="nav-item-meta">Use this section when you already know the task and need exact API details.</span>
+      </a><a
+        class="nav-item"
+        href="../../engine/index.html"
+        title="Engine"
+      >
+        <span class="nav-item-title">Engine</span>
+        <span class="nav-item-meta">`Engine` is the main entry point for schema changes, query builders, raw SQL...</span>
+      </a><a
+        class="nav-item"
+        href="../../connections/index.html"
+        title="Connections"
+      >
+        <span class="nav-item-title">Connections</span>
+        <span class="nav-item-meta">Connection wrappers adapt a native driver to Inquire's `Connection` interfac...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>COMPOSABLE QUERY UNITS</p>
+    <h2>API Builders</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../builders/index.html"
+        title="Builders"
+      >
+        <span class="nav-item-title">Builders</span>
+        <span class="nav-item-meta">Builders collect query intent and either:</span>
+      </a><a
+        class="nav-item"
+        href="../../builders/alter/index.html"
+        title="Alter"
+      >
+        <span class="nav-item-title">Alter</span>
+        <span class="nav-item-meta">`Alter` defines incremental schema changes for an existing table.</span>
+      </a><a
+        class="nav-item"
+        href="../../builders/create/index.html"
+        title="Create"
+      >
+        <span class="nav-item-title">Create</span>
+        <span class="nav-item-meta">`Create` defines a new table schema.</span>
+      </a><a
+        class="nav-item"
+        href="../../builders/delete/index.html"
+        title="Delete"
+      >
+        <span class="nav-item-title">Delete</span>
+        <span class="nav-item-meta">`Delete` builds `DELETE` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../builders/insert/index.html"
+        title="Insert"
+      >
+        <span class="nav-item-title">Insert</span>
+        <span class="nav-item-meta">`Insert` builds `INSERT` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../builders/select/index.html"
+        title="Select"
+      >
+        <span class="nav-item-title">Select</span>
+        <span class="nav-item-meta">`Select` builds `SELECT` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../builders/update/index.html"
+        title="Update"
+      >
+        <span class="nav-item-title">Update</span>
+        <span class="nav-item-meta">`Update` builds `UPDATE` queries.</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>SQL TRANSLATION MODULES</p>
+    <h2>API Dialects</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../index.html"
+        title="Dialects"
+      >
+        <span class="nav-item-title">Dialects</span>
+        <span class="nav-item-meta">Dialects convert builder state into database-specific SQL.</span>
+      </a><a
+        class="nav-item"
+        href="../mysql/index.html"
+        title="Mysql"
+      >
+        <span class="nav-item-title">Mysql</span>
+        <span class="nav-item-meta">`Mysql` is the MySQL dialect object exported by `@stackpress/inquire`.</span>
+      </a><a
+        class="nav-item is-active"
+        href="./index.html"
+        title="Pgsql"
+      >
+        <span class="nav-item-title">Pgsql</span>
+        <span class="nav-item-meta">`Pgsql` is the PostgreSQL dialect object exported by `@stackpress/inquire`.</span>
+      </a><a
+        class="nav-item"
+        href="../sqlite/index.html"
+        title="Sqlite"
+      >
+        <span class="nav-item-title">Sqlite</span>
+        <span class="nav-item-meta">`Sqlite` is the SQLite dialect object exported by `@stackpress/inquire`.</span>
+      </a>
+  </div>
+</section>
+
+        </aside>
+
+        <main class="site-main">
+          <div class="breadcrumbs"><a class="breadcrumb" href="../../../index.html" title="Inquire">
+    Inquire
+  </a><a class="breadcrumb" href="../../index.html" title="API Reference">
+    API Reference
+  </a><a class="breadcrumb" href="../index.html" title="Dialects">
+    Dialects
+  </a><a class="breadcrumb" href="./index.html" title="Pgsql">
+    Pgsql
+  </a>
+</div>
+
+          <section class="page-hero">
+            <div class="page-hero-signal">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="page-hero-copy">
+              <p class="page-hero-eyebrow">Surface</p>
+              <h1>Pgsql</h1>
+              <p>`Pgsql` is the PostgreSQL dialect object exported by `@stackpress/inquire`.</p>
+            </div>
+            <div class="page-hero-schema">
+              <span class="schema-node schema-node-blue"></span>
+              <span class="schema-node schema-node-orange"></span>
+              <span class="schema-node schema-node-ghost"></span>
+            </div>
+          </section>
+
+          <article class="doc-panel">
+            
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">import</span> Pgsql <span class="token token-keyword">from</span> <span class="token token-string">'@stackpress/inquire/Pgsql'</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<h2 id="properties" class="doc-heading">Properties</h2>
+
+    <div class="table-wrap">
+      <table class="doc-table">
+        <thead>
+          <tr><th>Property</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>name</code></td><td><code>pgsql</code></td></tr><tr><td><code>q</code></td><td><code>"</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  
+<p>The module also exports <code>typemap</code>.</p>
+<h2 id="type-mapping-highlights" class="doc-heading">Type mapping highlights</h2>
+<ul class="doc-list">
+        <li><code>json</code> -&gt; <code>JSONB</code></li>
+      
+        <li><code>boolean</code> -&gt; <code>BOOLEAN</code></li>
+      
+        <li><code>integer</code> -&gt; <code>INTEGER</code></li>
+      
+        <li><code>datetime</code> -&gt; <code>TIMESTAMP</code></li>
+      </ul>
+<h2 id="behavior-notes" class="doc-heading">Behavior notes</h2>
+<ul class="doc-list">
+        <li>connection wrappers rewrite <code>?</code> placeholders to <code>$1</code>, <code>$2</code>, and so on</li>
+      
+        <li>uses <code>SERIAL</code> for auto-increment fields</li>
+      
+        <li>uses double quotes for identifier quoting</li>
+      
+        <li>supports JSON expression generation through <code>json(...)</code></li>
+      </ul>
+<h2 id="example" class="doc-heading">Example</h2>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">const</span> request = engine<span class="token token-operator">.</span>select<span class="token token-operator">(</span><span class="token token-string">'*'</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span><span class="token token-keyword">from</span><span class="token token-operator">(</span><span class="token token-string">'users'</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>where<span class="token token-operator">(</span><span class="token token-string">'id = ?'</span><span class="token token-operator">,</span> <span class="token token-operator">[</span><span class="token token-number">1</span><span class="token token-operator">]</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>query<span class="token token-operator">(</span>Pgsql<span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<h2 id="related" class="doc-heading">Related</h2>
+<ul class="doc-list">
+        <li><a href="../../connections/index.html" title="PostgreSQL and PGlite connection wrappers">PostgreSQL and PGlite connection wrappers</a></li>
+      
+        <li><a href="../index.html" title="Dialects overview">Dialects overview</a></li>
+      </ul>
+          </article>
+
+          <nav class="pager">
+  <a
+      class="pager-link"
+      href="../mysql/index.html"
+      title="Mysql"
+    >
+      <span>Previous signal</span>
+      <strong>Mysql</strong>
+    </a>
+  <a
+      class="pager-link pager-link-next"
+      href="../sqlite/index.html"
+      title="Sqlite"
+    >
+      <span>Next signal</span>
+      <strong>Sqlite</strong>
+    </a>
+</nav>
+
+        </main>
+
+        <aside class="site-toc">
+          <div class="site-toc-cap">
+            <p>Signal index</p>
+            <strong>On this page</strong>
+          </div>
+          
+    <a class="toc-link toc-link-level-2" href="#properties">
+      Properties
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#type-mapping-highlights">
+      Type mapping highlights
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#behavior-notes">
+      Behavior notes
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#example">
+      Example
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#related">
+      Related
+    </a>
+  
+        </aside>
+      </div>
+    </div>
+
+    <script defer src="../../../assets/site.js"></script>
+  </body>
+</html>

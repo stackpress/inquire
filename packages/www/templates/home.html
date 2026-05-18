@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html class="theme-auto" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1"
+      name="viewport"
+    />
+    <title>{{metaTitle}}</title>
+    <meta content="{{metaDescription}}" name="description" />
+    <link href="{{canonicalUrl}}" rel="canonical" />
+    <meta content="{{metaTitle}}" property="og:title" />
+    <meta content="{{metaDescription}}" property="og:description" />
+    <meta content="{{ogType}}" property="og:type" />
+    <meta content="{{pageUrl}}" property="og:url" />
+    <meta content="{{ogImageUrl}}" property="og:image" />
+    <meta content="{{siteName}}" property="og:site_name" />
+    <meta content="summary" name="twitter:card" />
+    <meta content="{{metaTitle}}" name="twitter:title" />
+    <meta content="{{metaDescription}}" name="twitter:description" />
+    <meta content="{{ogImageUrl}}" name="twitter:image" />
+    <link href="{{assetRoot}}/favicon.ico" rel="icon" />
+    <link href="{{assetRoot}}/site.css" rel="stylesheet" />
+  </head>
+  <body class="{{pageClass}}">
+    <div class="page-home-shell">
+      <header class="page-home-header">
+        <a class="brandmark" href="{{homeHref}}" title="Inquire home">
+          <img
+            alt="Inquire logo"
+            height="72"
+            src="{{assetRoot}}/logo.png"
+            width="72"
+          />
+          <span class="brandmark-copy">
+            <h1>Inquire</h1>
+            <span>TypeScript SQL builder</span>
+          </span>
+        </a>
+        <div class="page-home-header-actions">
+          <a
+            class="page-home-link"
+            href="{{docsHref}}"
+            title="Start with the quick start"
+          >
+            Quick Start
+          </a>
+          <button
+            aria-label="Toggle theme"
+            class="theme-toggle"
+            data-theme-toggle="true"
+            type="button"
+          >
+            <span>Light / Dark</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="page-home-main">
+        <section class="page-home-hero">
+          <div class="page-home-hero-copy">
+            <p class="page-home-eyebrow">
+              Query Builder. Schema Builder. No ORM.
+            </p>
+            <p class="page-home-hero-lede">
+              Inquire is a lightweight TypeScript SQL builder for schema work,
+              typed queries, and multi-dialect execution. It stays close to SQL
+              so you can evaluate it quickly and keep control.
+            </p>
+            <div class="page-home-hero-actions">
+              <a
+                class="page-home-button page-home-button-primary"
+                href="{{docsHref}}"
+                title="Open the quick start"
+              >
+                Try the Quick Start
+              </a>
+              <a
+                class="page-home-button page-home-button-secondary"
+                href="./api/index.html"
+                title="Browse the API reference"
+              >
+                Learn More
+              </a>
+            </div>
+            <div class="page-home-surface-list">
+              {{#@:surfaces item}}
+                <span class="page-home-surface-pill">{{item}}</span>
+              {{/@:surfaces}}
+            </div>
+          </div>
+          <div class="page-home-hero-example">
+            {{homeExample}}
+          </div>
+        </section>
+
+        <section class="page-home-fit-grid">
+          <article class="page-home-fit-card">
+            <p class="page-home-fit-card-eyebrow">Good fit</p>
+            <h2>Use Inquire when you want</h2>
+            <ul class="page-home-fit-list">
+              {{#@:fit item}}
+                <li>{{item}}</li>
+              {{/@:fit}}
+            </ul>
+          </article>
+          <article class="page-home-fit-card page-home-fit-card-quiet">
+            <p class="page-home-fit-card-eyebrow">Not trying to be</p>
+            <h2>Choose something else if you need</h2>
+            <ul class="page-home-fit-list">
+              {{#@:notTrying item}}
+                <li>{{item}}</li>
+              {{/@:notTrying}}
+            </ul>
+          </article>
+        </section>
+
+        <section class="page-home-next">
+          <div class="page-home-next-header">
+            <p class="page-home-eyebrow">Start evaluating</p>
+            <h2>Pick the next page based on how you work</h2>
+          </div>
+          <div class="page-home-next-grid">
+            {{#@:featured item}}
+              <a
+                class="page-home-next-card"
+                href="{{item.href}}"
+                title="{{item.title}}"
+              >
+                <span class="page-home-next-label">{{item.label}}</span>
+                <strong>{{item.title}}</strong>
+                <span>{{item.description}}</span>
+              </a>
+            {{/@:featured}}
+          </div>
+        </section>
+      </main>
+
+      <script defer src="{{assetRoot}}/site.js"></script>
+    </div>
+  </body>
+</html>

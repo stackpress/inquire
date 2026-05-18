@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html class="theme-auto" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1"
+      name="viewport"
+    />
+    <title>{{metaTitle}}</title>
+    <meta content="{{metaDescription}}" name="description" />
+    <link href="{{canonicalUrl}}" rel="canonical" />
+    <meta content="{{metaTitle}}" property="og:title" />
+    <meta content="{{metaDescription}}" property="og:description" />
+    <meta content="{{ogType}}" property="og:type" />
+    <meta content="{{pageUrl}}" property="og:url" />
+    <meta content="{{ogImageUrl}}" property="og:image" />
+    <meta content="{{siteName}}" property="og:site_name" />
+    <meta content="summary" name="twitter:card" />
+    <meta content="{{metaTitle}}" name="twitter:title" />
+    <meta content="{{metaDescription}}" name="twitter:description" />
+    <meta content="{{ogImageUrl}}" name="twitter:image" />
+    <link href="{{assetRoot}}/favicon.ico" rel="icon" />
+    <link href="{{assetRoot}}/site.css" rel="stylesheet" />
+  </head>
+  <body class="{{pageClass}}">
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brandmark" href="{{homeHref}}" title="Inquire home">
+          <img
+            alt="Inquire logo"
+            height="72"
+            src="{{assetRoot}}/logo.png"
+            width="72"
+          />
+          <span class="brandmark-copy">
+            <strong>Inquire</strong>
+            <span>TypeScript SQL builder</span>
+          </span>
+        </a>
+        <div class="site-header-actions">
+          <a
+            class="page-link"
+            href="{{docsHref}}"
+            title="Start with the quick start"
+          >
+            Quick Start
+          </a>
+          <button
+            aria-label="Toggle theme"
+            class="theme-toggle"
+            data-theme-toggle="true"
+            type="button"
+          >
+            <span>Light / Dark</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="site-frame">
+        <aside class="site-nav">
+          <div class="site-nav-cap">
+            <p>System map</p>
+            <strong>{{section.name}}</strong>
+          </div>
+          {{navGroups}}
+        </aside>
+
+        <main class="site-main">
+          <div class="breadcrumbs">{{breadcrumbs}}</div>
+
+          <section class="page-hero">
+            <div class="page-hero-signal">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="page-hero-copy">
+              <p class="page-hero-eyebrow">{{section.eyebrow}}</p>
+              <h1>{{title}}</h1>
+              <p>{{description}}</p>
+            </div>
+            <div class="page-hero-schema">
+              <span class="schema-node schema-node-blue"></span>
+              <span class="schema-node schema-node-orange"></span>
+              <span class="schema-node schema-node-ghost"></span>
+            </div>
+          </section>
+
+          <article class="doc-panel">
+            {{content}}
+          </article>
+
+          {{pager}}
+        </main>
+
+        <aside class="site-toc">
+          <div class="site-toc-cap">
+            <p>Signal index</p>
+            <strong>On this page</strong>
+          </div>
+          {{toc}}
+        </aside>
+      </div>
+    </div>
+
+    <script defer src="{{assetRoot}}/site.js"></script>
+  </body>
+</html>

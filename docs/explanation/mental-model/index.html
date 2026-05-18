@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html class="theme-auto" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1"
+      name="viewport"
+    />
+    <title>Mental Model | Inquire</title>
+    <meta content="Inquire is a SQL builder, not an ORM." name="description" />
+    <link href="https://stackpress.github.io/inquire/explanation/mental-model/" rel="canonical" />
+    <meta content="Mental Model | Inquire" property="og:title" />
+    <meta content="Inquire is a SQL builder, not an ORM." property="og:description" />
+    <meta content="article" property="og:type" />
+    <meta content="https://stackpress.github.io/inquire/explanation/mental-model/" property="og:url" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" property="og:image" />
+    <meta content="Inquire Documentation" property="og:site_name" />
+    <meta content="summary" name="twitter:card" />
+    <meta content="Mental Model | Inquire" name="twitter:title" />
+    <meta content="Inquire is a SQL builder, not an ORM." name="twitter:description" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" name="twitter:image" />
+    <link href="../../assets/favicon.ico" rel="icon" />
+    <link href="../../assets/site.css" rel="stylesheet" />
+  </head>
+  <body class="page-doc">
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brandmark" href="../../index.html" title="Inquire home">
+          <img
+            alt="Inquire logo"
+            height="72"
+            src="../../assets/logo.png"
+            width="72"
+          />
+          <span class="brandmark-copy">
+            <strong>Inquire</strong>
+            <span>TypeScript SQL builder</span>
+          </span>
+        </a>
+        <div class="site-header-actions">
+          <a
+            class="page-link"
+            href=""
+            title="Start with the quick start"
+          >
+            Quick Start
+          </a>
+          <button
+            aria-label="Toggle theme"
+            class="theme-toggle"
+            data-theme-toggle="true"
+            type="button"
+          >
+            <span>Light / Dark</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="site-frame">
+        <aside class="site-nav">
+          <div class="site-nav-cap">
+            <p>System map</p>
+            <strong>Explanation</strong>
+          </div>
+          <section class="nav-group">
+  <div class="nav-group-header">
+    <p>CORE SYSTEM MAP</p>
+    <h2>Overview</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../index.html"
+        title="Inquire"
+      >
+        <span class="nav-item-title">Inquire</span>
+        <span class="nav-item-meta">Inquire is a lightweight TypeScript SQL builder. It helps you define schemas...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>OPERATIONAL BOOT SEQUENCE</p>
+    <h2>Tutorials</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../tutorials/quick-start/index.html"
+        title="Quick Start"
+      >
+        <span class="nav-item-title">Quick Start</span>
+        <span class="nav-item-meta">Get from zero to a working query with one table, one insert, and one typed s...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>ARCHITECTURE REASONING</p>
+    <h2>Explanation</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item is-active"
+        href="./index.html"
+        title="Mental Model"
+      >
+        <span class="nav-item-title">Mental Model</span>
+        <span class="nav-item-meta">Inquire is a SQL builder, not an ORM.</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>TASK-SPECIFIC PROCEDURES</p>
+    <h2>Guides</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../guides/json-fields-and-filters/index.html"
+        title="JSON Fields and Filters"
+      >
+        <span class="nav-item-title">JSON Fields and Filters</span>
+        <span class="nav-item-meta">Use this guide when you store JSON in a column and still need to filter by n...</span>
+      </a><a
+        class="nav-item"
+        href="../../guides/raw-sql-and-transactions/index.html"
+        title="Raw SQL and Transactions"
+      >
+        <span class="nav-item-title">Raw SQL and Transactions</span>
+        <span class="nav-item-meta">Use this guide when the builder surface is not enough or when you need expli...</span>
+      </a><a
+        class="nav-item"
+        href="../../guides/schema-changes/index.html"
+        title="Schema Changes"
+      >
+        <span class="nav-item-title">Schema Changes</span>
+        <span class="nav-item-meta">Use this guide when you need to define or change tables without adding a sep...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>ENGINE AND WRAPPERS</p>
+    <h2>API Core</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../api/index.html"
+        title="API Reference"
+      >
+        <span class="nav-item-title">API Reference</span>
+        <span class="nav-item-meta">Use this section when you already know the task and need exact API details.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/engine/index.html"
+        title="Engine"
+      >
+        <span class="nav-item-title">Engine</span>
+        <span class="nav-item-meta">`Engine` is the main entry point for schema changes, query builders, raw SQL...</span>
+      </a><a
+        class="nav-item"
+        href="../../api/connections/index.html"
+        title="Connections"
+      >
+        <span class="nav-item-title">Connections</span>
+        <span class="nav-item-meta">Connection wrappers adapt a native driver to Inquire's `Connection` interfac...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>COMPOSABLE QUERY UNITS</p>
+    <h2>API Builders</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../api/builders/index.html"
+        title="Builders"
+      >
+        <span class="nav-item-title">Builders</span>
+        <span class="nav-item-meta">Builders collect query intent and either:</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/alter/index.html"
+        title="Alter"
+      >
+        <span class="nav-item-title">Alter</span>
+        <span class="nav-item-meta">`Alter` defines incremental schema changes for an existing table.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/create/index.html"
+        title="Create"
+      >
+        <span class="nav-item-title">Create</span>
+        <span class="nav-item-meta">`Create` defines a new table schema.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/delete/index.html"
+        title="Delete"
+      >
+        <span class="nav-item-title">Delete</span>
+        <span class="nav-item-meta">`Delete` builds `DELETE` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/insert/index.html"
+        title="Insert"
+      >
+        <span class="nav-item-title">Insert</span>
+        <span class="nav-item-meta">`Insert` builds `INSERT` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/select/index.html"
+        title="Select"
+      >
+        <span class="nav-item-title">Select</span>
+        <span class="nav-item-meta">`Select` builds `SELECT` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/update/index.html"
+        title="Update"
+      >
+        <span class="nav-item-title">Update</span>
+        <span class="nav-item-meta">`Update` builds `UPDATE` queries.</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>SQL TRANSLATION MODULES</p>
+    <h2>API Dialects</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../api/dialects/index.html"
+        title="Dialects"
+      >
+        <span class="nav-item-title">Dialects</span>
+        <span class="nav-item-meta">Dialects convert builder state into database-specific SQL.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/dialects/mysql/index.html"
+        title="Mysql"
+      >
+        <span class="nav-item-title">Mysql</span>
+        <span class="nav-item-meta">`Mysql` is the MySQL dialect object exported by `@stackpress/inquire`.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/dialects/pgsql/index.html"
+        title="Pgsql"
+      >
+        <span class="nav-item-title">Pgsql</span>
+        <span class="nav-item-meta">`Pgsql` is the PostgreSQL dialect object exported by `@stackpress/inquire`.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/dialects/sqlite/index.html"
+        title="Sqlite"
+      >
+        <span class="nav-item-title">Sqlite</span>
+        <span class="nav-item-meta">`Sqlite` is the SQLite dialect object exported by `@stackpress/inquire`.</span>
+      </a>
+  </div>
+</section>
+
+        </aside>
+
+        <main class="site-main">
+          <div class="breadcrumbs"><a class="breadcrumb" href="../../index.html" title="Inquire">
+    Inquire
+  </a><a class="breadcrumb" href="./index.html" title="Mental Model">
+    Mental Model
+  </a>
+</div>
+
+          <section class="page-hero">
+            <div class="page-hero-signal">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="page-hero-copy">
+              <p class="page-hero-eyebrow">Model</p>
+              <h1>Mental Model</h1>
+              <p>Inquire is a SQL builder, not an ORM.</p>
+            </div>
+            <div class="page-hero-schema">
+              <span class="schema-node schema-node-blue"></span>
+              <span class="schema-node schema-node-orange"></span>
+              <span class="schema-node schema-node-ghost"></span>
+            </div>
+          </section>
+
+          <article class="doc-panel">
+            <p>That distinction matters because it explains both the strengths and the limits of the library.</p>
+<h2 id="what-inquire-does" class="doc-heading">What Inquire does</h2>
+<p>Inquire gives you:</p>
+<ul class="doc-list">
+        <li>schema builders for <code>create()</code> and <code>alter()</code></li>
+      
+        <li>query builders for <code>select()</code>, <code>insert()</code>, <code>update()</code>, and <code>delete()</code></li>
+      
+        <li>a shared <code>Engine</code> API across dialects</li>
+      
+        <li>connection wrappers that adapt native drivers</li>
+      
+        <li>typed query results through TypeScript generics</li>
+      </ul>
+<h2 id="what-inquire-does-not-do" class="doc-heading">What Inquire does not do</h2>
+<p>Inquire does not give you:</p>
+<ul class="doc-list">
+        <li>model classes</li>
+      
+        <li>relationship mapping</li>
+      
+        <li>identity maps</li>
+      
+        <li>change tracking</li>
+      
+        <li>lazy loading</li>
+      
+        <li>domain architecture</li>
+      </ul>
+<p>You still decide how your application is structured. That is intentional.</p>
+<h2 id="the-four-main-parts" class="doc-heading">The four main parts</h2>
+<h3 id="engine" class="doc-heading">Engine</h3>
+<p><code>Engine</code> is the entry point. It creates builders, runs raw queries, and exposes table-level helpers such as <code>drop()</code>, <code>rename()</code>, and <code>truncate()</code>.</p>
+<h3 id="builders" class="doc-heading">Builders</h3>
+<p>Builders hold intent until you ask for SQL or execute them.</p>
+<ul class="doc-list">
+        <li><code>Create</code> and <code>Alter</code> are for schema changes.</li>
+      
+        <li><code>Select</code>, <code>Insert</code>, <code>Update</code>, and <code>Delete</code> are for data access.</li>
+      </ul>
+<p>Each builder can:</p>
+<ul class="doc-list">
+        <li>collect state</li>
+      
+        <li>generate SQL with <code>.query()</code></li>
+      
+        <li>expose its internal shape with <code>.build()</code></li>
+      
+        <li>execute when awaited, if it has an engine</li>
+      </ul>
+<h3 id="dialects" class="doc-heading">Dialects</h3>
+<p>Dialects translate builder state into SQL.</p>
+<ul class="doc-list">
+        <li><code>Mysql</code></li>
+      
+        <li><code>Pgsql</code></li>
+      
+        <li><code>Sqlite</code></li>
+      </ul>
+<p>They handle differences such as identifier quoting, placeholder syntax, type mapping, JSON extraction, <code>RETURNING</code>, and <code>TRUNCATE</code>.</p>
+<h3 id="connections" class="doc-heading">Connections</h3>
+<p>A connection wrapper adapts a native driver to Inquire's <code>Connection</code> interface. It is responsible for:</p>
+<ul class="doc-list">
+        <li>formatting values for that driver</li>
+      
+        <li>running the query</li>
+      
+        <li>handling transactions</li>
+      
+        <li>exposing the active dialect</li>
+      </ul>
+<h2 id="why-this-design-is-useful" class="doc-heading">Why this design is useful</h2>
+<p>This design keeps SQL visible.</p>
+<p>You can:</p>
+<ul class="doc-list">
+        <li>keep your own repository or service layer</li>
+      
+        <li>inspect generated SQL before execution</li>
+      
+        <li>fall back to raw SQL at any time</li>
+      
+        <li>stay close to the underlying database</li>
+      </ul>
+<p>That makes Inquire a good fit when you want a small abstraction over SQL, not a system that designs your data layer for you.</p>
+<h2 id="typical-workflow" class="doc-heading">Typical workflow</h2>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">const</span> engine = connect<span class="token token-operator">(</span>resource<span class="token token-operator">)</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>create<span class="token token-operator">(</span><span class="token token-string">'users'</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>addField<span class="token token-operator">(</span><span class="token token-string">'id'</span><span class="token token-operator">,</span> <span class="token token-operator">{</span> <span class="token token-keyword">type</span><span class="token token-operator">:</span> <span class="token token-string">'integer'</span><span class="token token-operator">,</span> autoIncrement<span class="token token-operator">:</span> <span class="token token-keyword">true</span> <span class="token token-operator">}</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>addPrimaryKey<span class="token token-operator">(</span><span class="token token-string">'id'</span><span class="token token-operator">)</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>insert<span class="token token-operator">(</span><span class="token token-string">'users'</span><span class="token token-operator">)</span><span class="token token-operator">.</span>values<span class="token token-operator">(</span><span class="token token-operator">{</span> id<span class="token token-operator">:</span> <span class="token token-number">1</span> <span class="token token-operator">}</span><span class="token token-operator">)</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">const</span> rows = <span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>select<span class="token token-operator">&lt;</span><span class="token token-operator">{</span> id<span class="token token-operator">:</span> number <span class="token token-operator">}</span><span class="token token-operator">&gt;</span><span class="token token-operator">(</span><span class="token token-string">'id'</span><span class="token token-operator">)</span><span class="token token-operator">.</span><span class="token token-keyword">from</span><span class="token token-operator">(</span><span class="token token-string">'users'</span><span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>The library stays focused on schema and query building. Everything above that level remains your decision.</p>
+          </article>
+
+          <nav class="pager">
+  <a
+      class="pager-link"
+      href="../../tutorials/quick-start/index.html"
+      title="Quick Start"
+    >
+      <span>Previous signal</span>
+      <strong>Quick Start</strong>
+    </a>
+  <a
+      class="pager-link pager-link-next"
+      href="../../guides/json-fields-and-filters/index.html"
+      title="JSON Fields and Filters"
+    >
+      <span>Next signal</span>
+      <strong>JSON Fields and Filters</strong>
+    </a>
+</nav>
+
+        </main>
+
+        <aside class="site-toc">
+          <div class="site-toc-cap">
+            <p>Signal index</p>
+            <strong>On this page</strong>
+          </div>
+          
+    <a class="toc-link toc-link-level-2" href="#what-inquire-does">
+      What Inquire does
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#what-inquire-does-not-do">
+      What Inquire does not do
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#the-four-main-parts">
+      The four main parts
+    </a>
+  
+    <a class="toc-link toc-link-level-3" href="#engine">
+      Engine
+    </a>
+  
+    <a class="toc-link toc-link-level-3" href="#builders">
+      Builders
+    </a>
+  
+    <a class="toc-link toc-link-level-3" href="#dialects">
+      Dialects
+    </a>
+  
+    <a class="toc-link toc-link-level-3" href="#connections">
+      Connections
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#why-this-design-is-useful">
+      Why this design is useful
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#typical-workflow">
+      Typical workflow
+    </a>
+  
+        </aside>
+      </div>
+    </div>
+
+    <script defer src="../../assets/site.js"></script>
+  </body>
+</html>

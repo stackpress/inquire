@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html class="theme-auto" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1"
+      name="viewport"
+    />
+    <title>Raw SQL and Transactions | Inquire</title>
+    <meta content="Use this guide when the builder surface is not enough or when you need explicit transaction control around multiple operations." name="description" />
+    <link href="https://stackpress.github.io/inquire/guides/raw-sql-and-transactions/" rel="canonical" />
+    <meta content="Raw SQL and Transactions | Inquire" property="og:title" />
+    <meta content="Use this guide when the builder surface is not enough or when you need explicit transaction control around multiple operations." property="og:description" />
+    <meta content="article" property="og:type" />
+    <meta content="https://stackpress.github.io/inquire/guides/raw-sql-and-transactions/" property="og:url" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" property="og:image" />
+    <meta content="Inquire Documentation" property="og:site_name" />
+    <meta content="summary" name="twitter:card" />
+    <meta content="Raw SQL and Transactions | Inquire" name="twitter:title" />
+    <meta content="Use this guide when the builder surface is not enough or when you need explicit transaction control around multiple operations." name="twitter:description" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" name="twitter:image" />
+    <link href="../../assets/favicon.ico" rel="icon" />
+    <link href="../../assets/site.css" rel="stylesheet" />
+  </head>
+  <body class="page-doc">
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brandmark" href="../../index.html" title="Inquire home">
+          <img
+            alt="Inquire logo"
+            height="72"
+            src="../../assets/logo.png"
+            width="72"
+          />
+          <span class="brandmark-copy">
+            <strong>Inquire</strong>
+            <span>TypeScript SQL builder</span>
+          </span>
+        </a>
+        <div class="site-header-actions">
+          <a
+            class="page-link"
+            href=""
+            title="Start with the quick start"
+          >
+            Quick Start
+          </a>
+          <button
+            aria-label="Toggle theme"
+            class="theme-toggle"
+            data-theme-toggle="true"
+            type="button"
+          >
+            <span>Light / Dark</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="site-frame">
+        <aside class="site-nav">
+          <div class="site-nav-cap">
+            <p>System map</p>
+            <strong>Guides</strong>
+          </div>
+          <section class="nav-group">
+  <div class="nav-group-header">
+    <p>CORE SYSTEM MAP</p>
+    <h2>Overview</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../index.html"
+        title="Inquire"
+      >
+        <span class="nav-item-title">Inquire</span>
+        <span class="nav-item-meta">Inquire is a lightweight TypeScript SQL builder. It helps you define schemas...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>OPERATIONAL BOOT SEQUENCE</p>
+    <h2>Tutorials</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../tutorials/quick-start/index.html"
+        title="Quick Start"
+      >
+        <span class="nav-item-title">Quick Start</span>
+        <span class="nav-item-meta">Get from zero to a working query with one table, one insert, and one typed s...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>ARCHITECTURE REASONING</p>
+    <h2>Explanation</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../explanation/mental-model/index.html"
+        title="Mental Model"
+      >
+        <span class="nav-item-title">Mental Model</span>
+        <span class="nav-item-meta">Inquire is a SQL builder, not an ORM.</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>TASK-SPECIFIC PROCEDURES</p>
+    <h2>Guides</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../json-fields-and-filters/index.html"
+        title="JSON Fields and Filters"
+      >
+        <span class="nav-item-title">JSON Fields and Filters</span>
+        <span class="nav-item-meta">Use this guide when you store JSON in a column and still need to filter by n...</span>
+      </a><a
+        class="nav-item is-active"
+        href="./index.html"
+        title="Raw SQL and Transactions"
+      >
+        <span class="nav-item-title">Raw SQL and Transactions</span>
+        <span class="nav-item-meta">Use this guide when the builder surface is not enough or when you need expli...</span>
+      </a><a
+        class="nav-item"
+        href="../schema-changes/index.html"
+        title="Schema Changes"
+      >
+        <span class="nav-item-title">Schema Changes</span>
+        <span class="nav-item-meta">Use this guide when you need to define or change tables without adding a sep...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>ENGINE AND WRAPPERS</p>
+    <h2>API Core</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../api/index.html"
+        title="API Reference"
+      >
+        <span class="nav-item-title">API Reference</span>
+        <span class="nav-item-meta">Use this section when you already know the task and need exact API details.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/engine/index.html"
+        title="Engine"
+      >
+        <span class="nav-item-title">Engine</span>
+        <span class="nav-item-meta">`Engine` is the main entry point for schema changes, query builders, raw SQL...</span>
+      </a><a
+        class="nav-item"
+        href="../../api/connections/index.html"
+        title="Connections"
+      >
+        <span class="nav-item-title">Connections</span>
+        <span class="nav-item-meta">Connection wrappers adapt a native driver to Inquire's `Connection` interfac...</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>COMPOSABLE QUERY UNITS</p>
+    <h2>API Builders</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../api/builders/index.html"
+        title="Builders"
+      >
+        <span class="nav-item-title">Builders</span>
+        <span class="nav-item-meta">Builders collect query intent and either:</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/alter/index.html"
+        title="Alter"
+      >
+        <span class="nav-item-title">Alter</span>
+        <span class="nav-item-meta">`Alter` defines incremental schema changes for an existing table.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/create/index.html"
+        title="Create"
+      >
+        <span class="nav-item-title">Create</span>
+        <span class="nav-item-meta">`Create` defines a new table schema.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/delete/index.html"
+        title="Delete"
+      >
+        <span class="nav-item-title">Delete</span>
+        <span class="nav-item-meta">`Delete` builds `DELETE` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/insert/index.html"
+        title="Insert"
+      >
+        <span class="nav-item-title">Insert</span>
+        <span class="nav-item-meta">`Insert` builds `INSERT` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/select/index.html"
+        title="Select"
+      >
+        <span class="nav-item-title">Select</span>
+        <span class="nav-item-meta">`Select` builds `SELECT` queries.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/builders/update/index.html"
+        title="Update"
+      >
+        <span class="nav-item-title">Update</span>
+        <span class="nav-item-meta">`Update` builds `UPDATE` queries.</span>
+      </a>
+  </div>
+</section>
+
+<section class="nav-group">
+  <div class="nav-group-header">
+    <p>SQL TRANSLATION MODULES</p>
+    <h2>API Dialects</h2>
+  </div>
+  <div class="nav-group-items">
+    <a
+        class="nav-item"
+        href="../../api/dialects/index.html"
+        title="Dialects"
+      >
+        <span class="nav-item-title">Dialects</span>
+        <span class="nav-item-meta">Dialects convert builder state into database-specific SQL.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/dialects/mysql/index.html"
+        title="Mysql"
+      >
+        <span class="nav-item-title">Mysql</span>
+        <span class="nav-item-meta">`Mysql` is the MySQL dialect object exported by `@stackpress/inquire`.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/dialects/pgsql/index.html"
+        title="Pgsql"
+      >
+        <span class="nav-item-title">Pgsql</span>
+        <span class="nav-item-meta">`Pgsql` is the PostgreSQL dialect object exported by `@stackpress/inquire`.</span>
+      </a><a
+        class="nav-item"
+        href="../../api/dialects/sqlite/index.html"
+        title="Sqlite"
+      >
+        <span class="nav-item-title">Sqlite</span>
+        <span class="nav-item-meta">`Sqlite` is the SQLite dialect object exported by `@stackpress/inquire`.</span>
+      </a>
+  </div>
+</section>
+
+        </aside>
+
+        <main class="site-main">
+          <div class="breadcrumbs"><a class="breadcrumb" href="../../index.html" title="Inquire">
+    Inquire
+  </a><a class="breadcrumb" href="./index.html" title="Raw SQL and Transactions">
+    Raw SQL and Transactions
+  </a>
+</div>
+
+          <section class="page-hero">
+            <div class="page-hero-signal">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="page-hero-copy">
+              <p class="page-hero-eyebrow">Ops</p>
+              <h1>Raw SQL and Transactions</h1>
+              <p>Use this guide when the builder surface is not enough or when you need explicit transaction control around multiple operations.</p>
+            </div>
+            <div class="page-hero-schema">
+              <span class="schema-node schema-node-blue"></span>
+              <span class="schema-node schema-node-orange"></span>
+              <span class="schema-node schema-node-ghost"></span>
+            </div>
+          </section>
+
+          <article class="doc-panel">
+            <h2 id="run-a-raw-query" class="doc-heading">Run a raw query</h2>
+<p>Use <code>engine.query()</code> when you already have the SQL string.</p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">type</span> UserRow = <span class="token token-operator">{</span>
+  id<span class="token token-operator">:</span> number<span class="token token-operator">;</span>
+  email<span class="token token-operator">:</span> string<span class="token token-operator">;</span>
+<span class="token token-operator">}</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">const</span> rows = <span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>query<span class="token token-operator">&lt;</span>UserRow<span class="token token-operator">&gt;</span><span class="token token-operator">(</span>
+  <span class="token token-string">'SELECT id, email FROM users WHERE id = ?'</span><span class="token token-operator">,</span>
+  <span class="token token-operator">[</span><span class="token token-number">1</span><span class="token token-operator">]</span>
+<span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>You can also pass a query object.</p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">const</span> rows = <span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>query<span class="token token-operator">&lt;</span>UserRow<span class="token token-operator">&gt;</span><span class="token token-operator">(</span><span class="token token-operator">{</span>
+  query<span class="token token-operator">:</span> <span class="token token-string">'SELECT id, email FROM users WHERE id = ?'</span><span class="token token-operator">,</span>
+  values<span class="token token-operator">:</span> <span class="token token-operator">[</span><span class="token token-number">1</span><span class="token token-operator">]</span>
+<span class="token token-operator">}</span><span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<h2 id="use-a-template-string" class="doc-heading">Use a template string</h2>
+<p>Use <code>engine.sql</code> for small hand-written queries.</p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">const</span> rows = <span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>sql<span class="token token-operator">&lt;</span><span class="token token-operator">{</span> id<span class="token token-operator">:</span> number <span class="token token-operator">}</span><span class="token token-operator">&gt;</span><span class="token token-string">`
+  SELECT id
+  FROM users
+  WHERE email LIKE ${'%@example.com'}
+`</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>Inquire converts interpolated values into placeholders for the active dialect.</p>
+<h2 id="use-when-you-need-a-literal-question-mark" class="doc-heading">Use <code>??</code> when you need a literal question mark</h2>
+<p>PostgreSQL-family connection wrappers temporarily protect <code>??</code> while they rewrite value placeholders from <code>?</code> to <code>$1</code>, <code>$2</code>, and so on.</p>
+<p>This is only useful in edge cases. Prefer builders when quoting or placeholder behavior matters.</p>
+<h2 id="wrap-work-in-a-transaction" class="doc-heading">Wrap work in a transaction</h2>
+<p>Use <code>engine.transaction()</code> when multiple operations must succeed or fail together.</p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>transaction<span class="token token-operator">(</span><span class="token token-keyword">async</span> <span class="token token-operator">(</span>tx<span class="token token-operator">)</span> <span class="token token-operator">=&gt;</span> <span class="token token-operator">{</span>
+  <span class="token token-keyword">await</span> tx<span class="token token-operator">.</span>query<span class="token token-operator">(</span><span class="token token-operator">{</span>
+    query<span class="token token-operator">:</span> <span class="token token-string">'INSERT INTO users (email) VALUES (?)'</span><span class="token token-operator">,</span>
+    values<span class="token token-operator">:</span> <span class="token token-operator">[</span><span class="token token-string">'ada@example.com'</span><span class="token token-operator">]</span>
+  <span class="token token-operator">}</span><span class="token token-operator">)</span><span class="token token-operator">;</span>
+
+  <span class="token token-keyword">await</span> tx<span class="token token-operator">.</span>query<span class="token token-operator">(</span><span class="token token-operator">{</span>
+    query<span class="token token-operator">:</span> <span class="token token-string">'INSERT INTO profiles (user_id) VALUES (?)'</span><span class="token token-operator">,</span>
+    values<span class="token token-operator">:</span> <span class="token token-operator">[</span><span class="token token-number">1</span><span class="token token-operator">]</span>
+  <span class="token token-operator">}</span><span class="token token-operator">)</span><span class="token token-operator">;</span>
+<span class="token token-operator">}</span><span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>The connection wrapper decides how <code>BEGIN</code>, <code>COMMIT</code>, and <code>ROLLBACK</code> are implemented for the native driver.</p>
+<h2 id="add-request-hooks" class="doc-heading">Add request hooks</h2>
+<p>Both <code>Engine</code> and connection wrappers expose a <code>before</code> hook for last-minute request handling.</p>
+
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts">engine<span class="token token-operator">.</span>before = <span class="token token-keyword">async</span> <span class="token token-operator">(</span>request<span class="token token-operator">)</span> <span class="token token-operator">=&gt;</span> <span class="token token-operator">{</span>
+  console<span class="token token-operator">.</span>log<span class="token token-operator">(</span>request<span class="token token-operator">.</span>query<span class="token token-operator">,</span> request<span class="token token-operator">.</span>values<span class="token token-operator">)</span><span class="token token-operator">;</span>
+<span class="token token-operator">}</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+<p>Use this for logging, instrumentation, or request mutation. Keep it small and predictable.</p>
+          </article>
+
+          <nav class="pager">
+  <a
+      class="pager-link"
+      href="../json-fields-and-filters/index.html"
+      title="JSON Fields and Filters"
+    >
+      <span>Previous signal</span>
+      <strong>JSON Fields and Filters</strong>
+    </a>
+  <a
+      class="pager-link pager-link-next"
+      href="../schema-changes/index.html"
+      title="Schema Changes"
+    >
+      <span>Next signal</span>
+      <strong>Schema Changes</strong>
+    </a>
+</nav>
+
+        </main>
+
+        <aside class="site-toc">
+          <div class="site-toc-cap">
+            <p>Signal index</p>
+            <strong>On this page</strong>
+          </div>
+          
+    <a class="toc-link toc-link-level-2" href="#run-a-raw-query">
+      Run a raw query
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#use-a-template-string">
+      Use a template string
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#use-when-you-need-a-literal-question-mark">
+      Use `??` when you need a literal question mark
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#wrap-work-in-a-transaction">
+      Wrap work in a transaction
+    </a>
+  
+    <a class="toc-link toc-link-level-2" href="#add-request-hooks">
+      Add request hooks
+    </a>
+  
+        </aside>
+      </div>
+    </div>
+
+    <script defer src="../../assets/site.js"></script>
+  </body>
+</html>

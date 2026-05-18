@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html class="theme-auto" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1"
+      name="viewport"
+    />
+    <title>Inquire Documentation</title>
+    <meta content="Inquire is a lightweight TypeScript SQL builder. It helps you define schemas, build SQL queries, and execute them through a connection wrapper. It does not model records, relationships, or unit-of-work behavior for you." name="description" />
+    <link href="https://stackpress.github.io/inquire/" rel="canonical" />
+    <meta content="Inquire Documentation" property="og:title" />
+    <meta content="Inquire is a lightweight TypeScript SQL builder. It helps you define schemas, build SQL queries, and execute them through a connection wrapper. It does not model records, relationships, or unit-of-work behavior for you." property="og:description" />
+    <meta content="website" property="og:type" />
+    <meta content="https://stackpress.github.io/inquire/" property="og:url" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" property="og:image" />
+    <meta content="Inquire Documentation" property="og:site_name" />
+    <meta content="summary" name="twitter:card" />
+    <meta content="Inquire Documentation" name="twitter:title" />
+    <meta content="Inquire is a lightweight TypeScript SQL builder. It helps you define schemas, build SQL queries, and execute them through a connection wrapper. It does not model records, relationships, or unit-of-work behavior for you." name="twitter:description" />
+    <meta content="https://stackpress.github.io/inquire/assets/logo.png" name="twitter:image" />
+    <link href="./assets/favicon.ico" rel="icon" />
+    <link href="./assets/site.css" rel="stylesheet" />
+  </head>
+  <body class="page-home">
+    <div class="page-home-shell">
+      <header class="page-home-header">
+        <a class="brandmark" href="./index.html" title="Inquire home">
+          <img
+            alt="Inquire logo"
+            height="72"
+            src="./assets/logo.png"
+            width="72"
+          />
+          <span class="brandmark-copy">
+            <h1>Inquire</h1>
+            <span>TypeScript SQL builder</span>
+          </span>
+        </a>
+        <div class="page-home-header-actions">
+          <a
+            class="page-home-link"
+            href="./tutorials/quick-start/index.html"
+            title="Start with the quick start"
+          >
+            Quick Start
+          </a>
+          <button
+            aria-label="Toggle theme"
+            class="theme-toggle"
+            data-theme-toggle="true"
+            type="button"
+          >
+            <span>Light / Dark</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="page-home-main">
+        <section class="page-home-hero">
+          <div class="page-home-hero-copy">
+            <p class="page-home-eyebrow">
+              Query Builder. Schema Builder. No ORM.
+            </p>
+            <p class="page-home-hero-lede">
+              Inquire is a lightweight TypeScript SQL builder for schema work,
+              typed queries, and multi-dialect execution. It stays close to SQL
+              so you can evaluate it quickly and keep control.
+            </p>
+            <div class="page-home-hero-actions">
+              <a
+                class="page-home-button page-home-button-primary"
+                href="./tutorials/quick-start/index.html"
+                title="Open the quick start"
+              >
+                Try the Quick Start
+              </a>
+              <a
+                class="page-home-button page-home-button-secondary"
+                href="./api/index.html"
+                title="Browse the API reference"
+              >
+                Learn More
+              </a>
+            </div>
+            <div class="page-home-surface-list">
+              <span class="page-home-surface-pill">Engine</span><span class="page-home-surface-pill">Create / Alter</span><span class="page-home-surface-pill">Select / Insert / Update / Delete</span><span class="page-home-surface-pill">Mysql / Pgsql / Sqlite</span><span class="page-home-surface-pill">Connection wrappers</span>
+            </div>
+          </div>
+          <div class="page-home-hero-example">
+            
+    <div class="code-shell">
+      <div class="code-toolbar">
+        <span class="code-language">ts</span>
+        <button class="copy-button" type="button">
+          Copy example
+        </button>
+      </div>
+      <pre class="code-block" data-language="ts"><code class="language-ts"><span class="token token-keyword">const</span> engine = connect<span class="token token-operator">(</span>resource<span class="token token-operator">)</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">await</span> engine<span class="token token-operator">.</span>create<span class="token token-operator">(</span><span class="token token-string">'users'</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>addField<span class="token token-operator">(</span><span class="token token-string">'id'</span><span class="token token-operator">,</span> <span class="token token-operator">{</span> <span class="token token-keyword">type</span><span class="token token-operator">:</span> <span class="token token-string">'integer'</span><span class="token token-operator">,</span> autoIncrement<span class="token token-operator">:</span> <span class="token token-keyword">true</span> <span class="token token-operator">}</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>addField<span class="token token-operator">(</span><span class="token token-string">'email'</span><span class="token token-operator">,</span> <span class="token token-operator">{</span> <span class="token token-keyword">type</span><span class="token token-operator">:</span> <span class="token token-string">'string'</span><span class="token token-operator">,</span> length<span class="token token-operator">:</span> <span class="token token-number">255</span><span class="token token-operator">,</span> nullable<span class="token token-operator">:</span> <span class="token token-keyword">false</span> <span class="token token-operator">}</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span>addPrimaryKey<span class="token token-operator">(</span><span class="token token-string">'id'</span><span class="token token-operator">)</span><span class="token token-operator">;</span>
+
+<span class="token token-keyword">const</span> users = <span class="token token-keyword">await</span> engine
+  <span class="token token-operator">.</span>select<span class="token token-operator">&lt;</span><span class="token token-operator">{</span> id<span class="token token-operator">:</span> number<span class="token token-operator">;</span> email<span class="token token-operator">:</span> string <span class="token token-operator">}</span><span class="token token-operator">&gt;</span><span class="token token-operator">(</span><span class="token token-operator">[</span><span class="token token-string">'id'</span><span class="token token-operator">,</span> <span class="token token-string">'email'</span><span class="token token-operator">]</span><span class="token token-operator">)</span>
+  <span class="token token-operator">.</span><span class="token token-keyword">from</span><span class="token token-operator">(</span><span class="token token-string">'users'</span><span class="token token-operator">)</span><span class="token token-operator">;</span></code></pre>
+    </div>
+  
+          </div>
+        </section>
+
+        <section class="page-home-fit-grid">
+          <article class="page-home-fit-card">
+            <p class="page-home-fit-card-eyebrow">Good fit</p>
+            <h2>Use Inquire when you want</h2>
+            <ul class="page-home-fit-list">
+              <li>Simply schema and query building</li><li>Same DX across MySQL, Postgred, and SQLite</li><li>Easy connection interface for database libraries</li><li>Building your own ORM, migration tools and generators</li>
+            </ul>
+          </article>
+          <article class="page-home-fit-card page-home-fit-card-quiet">
+            <p class="page-home-fit-card-eyebrow">Not trying to be</p>
+            <h2>Choose something else if you need</h2>
+            <ul class="page-home-fit-list">
+              <li>An object relational mapper and strong type mapping</li><li>Automatic boilerplate CRUD operations</li><li>Deterministic relationship management</li><li>Expressive code patterns over performance</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="page-home-next">
+          <div class="page-home-next-header">
+            <p class="page-home-eyebrow">Start evaluating</p>
+            <h2>Pick the next page based on how you work</h2>
+          </div>
+          <div class="page-home-next-grid">
+            <a
+                class="page-home-next-card"
+                href="./tutorials/quick-start/index.html"
+                title="Quick Start"
+              >
+                <span class="page-home-next-label">Start here</span>
+                <strong>Quick Start</strong>
+                <span>Build a table, insert rows, and run a typed query in one pass.</span>
+              </a><a
+                class="page-home-next-card"
+                href="./explanation/mental-model/index.html"
+                title="Mental Model"
+              >
+                <span class="page-home-next-label">Understand the shape</span>
+                <strong>Mental Model</strong>
+                <span>See how engines, builders, dialects, and connections fit together.</span>
+              </a><a
+                class="page-home-next-card"
+                href="./api/index.html"
+                title="API Reference"
+              >
+                <span class="page-home-next-label">Reference lookup</span>
+                <strong>API Reference</strong>
+                <span>Inspect the exact class and method surface when you need details.</span>
+              </a>
+          </div>
+        </section>
+      </main>
+
+      <script defer src="./assets/site.js"></script>
+    </div>
+  </body>
+</html>
