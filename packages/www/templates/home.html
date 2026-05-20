@@ -67,6 +67,23 @@
               typed queries, and multi-dialect execution. It stays close to SQL
               so you can evaluate it quickly and keep control.
             </p>
+            <div class="badges">
+              <a title="NPM Package" href="https://www.npmjs.com/package/@stackpress/inquire" target="_blank">
+                <img src="https://img.shields.io/npm/v/@stackpress/inquire.svg?style=flat" alt="NPM version badge" />
+              </a>
+              <a title="Tests Status" href="https://github.com/stackpress/inquire/actions" target="_blank">
+                <img src="https://img.shields.io/github/actions/workflow/status/stackpress/inquire/test.yml" alt="GitHub Actions workflow status badge" />
+              </a>
+              <a title="Coverage Status" href="https://coveralls.io/github/stackpress/inquire?branch=main" target="_blank">
+                <img src="https://coveralls.io/repos/github/stackpress/inquire/badge.svg?branch=main" alt="Coverage status badge" />
+              </a>
+              <a title="Commits" href="https://github.com/stackpress/inquire/commits/main/" target="_blank">
+                <img src="https://img.shields.io/github/last-commit/stackpress/inquire" alt="GitHub last commit badge" />
+              </a>
+              <a title="License" href="https://github.com/stackpress/inquire/blob/main/LICENSE" target="_blank">
+                <img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat" alt="License badge" />
+              </a>
+            </div>
             <div class="page-home-hero-actions">
               <a
                 class="page-home-button page-home-button-primary"
@@ -82,11 +99,6 @@
               >
                 Learn More
               </a>
-            </div>
-            <div class="page-home-surface-list">
-              {{#@:surfaces item}}
-                <span class="page-home-surface-pill">{{item}}</span>
-              {{/@:surfaces}}
             </div>
           </div>
           <div class="page-home-hero-example">
@@ -135,6 +147,13 @@
           </div>
         </section>
       </main>
+      <footer class="footer">
+        <p>By the stackpress team</p>
+        <div class="footer-links">
+          <a href="https://stackpress.io" target="_blank" rel="noreferrer">stackpress.io</a>
+          <a href="https://github.com/stackpress/inquire" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+      </footer>
 
       <script defer src="{{assetRoot}}/site.js"></script>
     </div>

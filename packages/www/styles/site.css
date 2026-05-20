@@ -307,6 +307,18 @@ pre {
   max-width: 11ch;
 }
 
+.page-home-hero-copy .badges {
+  padding-top: 20px;
+}
+
+.page-home-hero-copy .badges a {
+  text-decoration: none;
+}
+
+.page-home-hero-copy .badges a img {
+  display: inline-block;
+}
+
 .page-home-hero-lede {
   color: var(--ink-soft);
   font-size: 1.08rem;
@@ -901,6 +913,24 @@ pre {
 
 .pager-link-empty {
   opacity: 0.6;
+}
+
+.footer {
+  color: var(--muted);
+  padding: 32px 0 18px;
+  text-align: center;
+}
+
+.footer p {
+  margin: 0;
+}
+
+.footer-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 10px;
 }
 
 /* Responsive */

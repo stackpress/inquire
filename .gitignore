@@ -137,3 +137,4 @@ esm/
 
 # AI
 .clinerules
+.playwright
