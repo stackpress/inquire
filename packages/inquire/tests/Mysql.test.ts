@@ -8,7 +8,7 @@ import Delete from '../src/builder/Delete';
 import Insert from '../src/builder/Insert';
 import Select from '../src/builder/Select';
 import Update from '../src/builder/Update';
-import Mysql from '../src/dialect/Mysql';
+import Mysql, { MysqlDialect } from '../src/dialect/Mysql';
 
 describe('Mysql Dialect Tests', () => {
   it('Should translate alter', async () => {
@@ -398,5 +398,65 @@ describe('Mysql Dialect Tests', () => {
     );
 
     expect(query[0].values).to.be.empty;
+  });
+
+  it('Should translate JSON selectors in select queries', () => {
+    //Use a fresh dialect instance so selector mutations stay local.
+    const dialect = new MysqlDialect();
+    const select = new Select([
+      { column: 'profile.data:info.name', alias: 'displayName' },
+      { column: 'profile.data:tags.0' }
+    ]);
+
+    //Build a query that touches selector, where, JSON where, contains, and sort.
+    select.from({ name: 'users', alias: 'u' });
+    select.where('profile.data:info.name = ?', [ 'Ada' ]);
+    select.whereJson(
+      '__json__ = ?',
+      [ 'profile.data:info.name', '__json__' ],
+      'Ada'
+    );
+    select.whereJsonContains('profile.data:tags', [ 'admin', 'owner' ]);
+    select.order({ name: 'profile.data:info.name' }, 'desc');
+
+    //Confirm the dialect rewrote JSON selectors consistently.
+    const query = dialect.select(select);
+    expect(query.query).to.contain('JSON_UNQUOTE(JSON_EXTRACT(`profile`.`data`,');
+    expect(query.query).to.contain('$."info"."name"');
+    expect(query.query).to.contain('$."tags"[0]');
+    expect(query.query).to.contain(
+      "JSON_CONTAINS(`profile`.`data`, '$.\"tags\"')"
+    );
+    expect(query.query).to.contain('ORDER BY');
+    expect(query.values).to.deep.equal([
+      'Ada',
+      'Ada',
+      '"admin"',
+      '"owner"'
+    ]);
+  });
+
+  it('Should expose configurable JSON dialect helpers', () => {
+    //Read and write the shared JsonTrait configuration through Mysql.
+    const dialect = new MysqlDialect();
+    dialect.separator = '/';
+    dialect.splitter = '->';
+
+    //Create helpers through both overloads so parse branches are covered.
+    const parsed = dialect.json('profile.data->info/name', '->', '/');
+    const direct = dialect.json('profile.data', [ 'tags', '0' ]);
+
+    //Confirm the helper metadata matches the expected MySQL JSON syntax.
+    expect(dialect.separator).to.equal('/');
+    expect(dialect.splitter).to.equal('->');
+    expect(parsed.extract).to.equal(
+      "JSON_UNQUOTE(JSON_EXTRACT(`profile`.`data`, '$.\"info\".\"name\"'))"
+    );
+    expect(parsed.where('__json__ = ?', '__json__')).to.equal(
+      "JSON_UNQUOTE(JSON_EXTRACT(`profile`.`data`, '$.\"info\".\"name\"')) = ?"
+    );
+    expect(direct.contains).to.equal(
+      "JSON_CONTAINS(`profile`.`data`, '$.\"tags\"[0]')"
+    );
   });
 });

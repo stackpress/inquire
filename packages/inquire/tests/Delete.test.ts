@@ -65,4 +65,34 @@ describe('Delete Builder Tests', () => {
     expect(build.filters).to.deep.equal([['', []]]);
   });
 
+  it('Should store JSON filters and custom selector settings', () => {
+    //Configure the builder to use a custom JSON path notation.
+    const del = new Delete('table');
+    del.selector = '->';
+    del.separator = '/';
+
+    //Add both equality and contains-style JSON filters.
+    del.whereJson('__json__ = ?', [ 'meta->status', '__json__' ], 'active');
+    del.whereJsonContains('meta->roles', [ 'admin', 'owner' ]);
+
+    //Confirm the builder preserved the JSON metadata for the dialect.
+    const build = del.build();
+    expect(build.selector).to.equal('->');
+    expect(build.separator).to.equal('/');
+    expect(build.json).to.deep.equal([
+      {
+        selector: 'meta->status',
+        query: '__json__ = ?',
+        replace: '__json__',
+        values: [ 'active' ]
+      },
+      {
+        selector: 'meta->roles',
+        query: 'contains',
+        replace: '',
+        values: [ 'admin', 'owner' ]
+      }
+    ]);
+  });
+
 });

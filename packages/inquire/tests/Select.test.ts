@@ -104,7 +104,37 @@ describe('Select Builder Tests', () => {
     expect(filters[0].clause).to.equal('');
     expect(filters[0].values).to.deep.equal([]);
   });
- 
+
+  it('Should split comma-separated selectors and preserve JSON filter metadata', () => {
+    //Start with a raw selector string so the split-and-trim branch runs.
+    const select = new Select(' id, profile.data:info.name , , count(*) ');
+
+    //Add JSON filters to exercise the builder-only storage logic.
+    select.whereJson('__json__ = ?', [ 'profile.data:info.name', '__json__' ], 'Ada');
+    select.whereJsonContains('profile.data:tags', 'admin');
+
+    //Confirm blank selectors were removed and JSON filters were stored.
+    const build = select.build();
+    expect(build.selectors).to.deep.equal([
+      'id',
+      'profile.data:info.name',
+      'count(*)'
+    ]);
+    expect(build.json).to.deep.equal([
+      {
+        selector: 'profile.data:info.name',
+        query: '__json__ = ?',
+        replace: '__json__',
+        values: [ 'Ada' ]
+      },
+      {
+        selector: 'profile.data:tags',
+        query: 'contains',
+        replace: '',
+        values: [ 'admin' ]
+      }
+    ]);
+  });
 
 
 });

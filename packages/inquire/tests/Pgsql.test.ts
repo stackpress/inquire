@@ -8,7 +8,7 @@ import Delete from '../src/builder/Delete';
 import Insert from '../src/builder/Insert';
 import Select from '../src/builder/Select';
 import Update from '../src/builder/Update';
-import Pgsql from '../src/dialect/Pgsql';
+import Pgsql, { PgsqlDialect } from '../src/dialect/Pgsql';
 
 describe('Pgsql Dialect Tests', () => {
   it('Should translate alter', async () => {
@@ -435,5 +435,52 @@ describe('Pgsql Dialect Tests', () => {
     );
 
     expect(query[0].values).to.be.empty;
+  });
+
+  it('Should translate JSON selectors in select queries', () => {
+    //Keep JSON trait mutations isolated to this test instance.
+    const dialect = new PgsqlDialect();
+    const select = new Select([
+      { column: 'profile.data:info.name', alias: 'displayName' },
+      { column: 'profile.data:tags.0' }
+    ]);
+
+    //Exercise raw where clauses, JSON equality filters, contains filters, and sort.
+    select.from({ name: 'users', alias: 'u' });
+    select.where('profile.data:info.name = ?', [ 'Ada' ]);
+    select.whereJson(
+      '__json__ = ?',
+      [ 'profile.data:info.name', '__json__' ],
+      'Ada'
+    );
+    select.whereJsonContains('profile.data:tags', [ 'admin', 'owner' ]);
+    select.order({ name: 'profile.data:info.name' }, 'desc');
+
+    //Confirm the PostgreSQL dialect rewrote the JSON selectors.
+    const query = dialect.select(select);
+    expect(query.query).to.contain('"profile"."data"->$$info$$->>$$name$$');
+    expect(query.query).to.contain('"profile"."data"->$$tags$$->>0');
+    expect(query.query).to.contain('"profile"."data"->$$tags$$ ?? ?');
+    expect(query.query).to.contain('ORDER BY');
+    expect(query.values).to.deep.equal([ 'Ada', 'Ada', 'admin', 'owner' ]);
+  });
+
+  it('Should expose configurable JSON dialect helpers', () => {
+    //Change both JsonTrait delimiters and resolve helper objects through both overloads.
+    const dialect = new PgsqlDialect();
+    dialect.separator = '/';
+    dialect.splitter = '->';
+
+    const parsed = dialect.json('profile.data->info/name', '->', '/');
+    const direct = dialect.json('profile.data', [ 'tags', '0' ]);
+
+    //Confirm the helper API produces the PostgreSQL-specific expressions.
+    expect(dialect.separator).to.equal('/');
+    expect(dialect.splitter).to.equal('->');
+    expect(parsed.extract).to.equal('"profile"."data"->$$info$$->>$$name$$');
+    expect(parsed.where('__json__ = ?', '__json__')).to.equal(
+      '"profile"."data"->$$info$$->>$$name$$ = ?'
+    );
+    expect(direct.contains).to.equal('"profile"."data"->$$tags$$->0 ?? ?');
   });
 });

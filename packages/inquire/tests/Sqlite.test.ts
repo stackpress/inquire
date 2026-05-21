@@ -8,7 +8,7 @@ import Delete from '../src/builder/Delete';
 import Insert from '../src/builder/Insert';
 import Select from '../src/builder/Select';
 import Update from '../src/builder/Update';
-import Sqlite from '../src/dialect/Sqlite';
+import Sqlite, { SqliteDialect } from '../src/dialect/Sqlite';
 import Exception from '../src/Exception';
 
 describe('Sqlite Dialect Tests', () => {
@@ -506,5 +506,62 @@ describe('Sqlite Dialect Tests', () => {
     );
 
     expect(query[0].values).to.be.empty;
+  });
+
+  it('Should translate JSON selectors in select queries', () => {
+    //Use a fresh dialect instance so JsonTrait changes do not leak.
+    const dialect = new SqliteDialect();
+    const select = new Select([
+      { column: 'profile.data:info.name', alias: 'displayName' },
+      { column: 'profile.data:tags.0' }
+    ]);
+
+    //Exercise JSON selector replacement in every select-stage branch.
+    select.from({ name: 'users', alias: 'u' });
+    select.where('profile.data:info.name = ?', [ 'Ada' ]);
+    select.whereJson(
+      '__json__ = ?',
+      [ 'profile.data:info.name', '__json__' ],
+      'Ada'
+    );
+    select.whereJsonContains('profile.data:tags', [ 'admin', 'owner' ]);
+    select.order({ name: 'profile.data:info.name' }, 'desc');
+
+    //Confirm the SQLite JSON syntax appears in the rendered query.
+    const query = dialect.select(select);
+    expect(query.query).to.contain(
+      "json_extract(`profile`.`data`, '$.info.name')"
+    );
+    expect(query.query).to.contain(
+      "json_extract(`profile`.`data`, '$.tags[0]')"
+    );
+    expect(query.query).to.contain(
+      "EXISTS (SELECT 1 FROM json_each(`profile`.`data`, '$.tags') WHERE value = ?)"
+    );
+    expect(query.query).to.contain('ORDER BY');
+    expect(query.values).to.deep.equal([ 'Ada', 'Ada', 'admin', 'owner' ]);
+  });
+
+  it('Should expose configurable JSON dialect helpers', () => {
+    //Adjust the shared JsonTrait delimiters and resolve helper objects.
+    const dialect = new SqliteDialect();
+    dialect.separator = '/';
+    dialect.splitter = '->';
+
+    const parsed = dialect.json('profile.data->info/name', '->', '/');
+    const direct = dialect.json('profile.data', [ 'tags', '0' ]);
+
+    //Confirm the helper API returns the SQLite JSON expressions.
+    expect(dialect.separator).to.equal('/');
+    expect(dialect.splitter).to.equal('->');
+    expect(parsed.extract).to.equal(
+      "json_extract(`profile`.`data`, '$.info.name')"
+    );
+    expect(parsed.where('__json__ = ?', '__json__')).to.equal(
+      "json_extract(`profile`.`data`, '$.info.name') = ?"
+    );
+    expect(direct.contains).to.equal(
+      "EXISTS (SELECT 1 FROM json_each(`profile`.`data`, '$.tags[0]') WHERE value = ?)"
+    );
   });
 });

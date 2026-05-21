@@ -69,8 +69,36 @@ describe('Update Builder Tests', () => {
     expect(filters[0][0]).to.equal('');
     expect(filters[0][1]).to.deep.equal([]);
   });
- 
 
+  it('Should store JSON filters and selector overrides on the builder', () => {
+    //Set the alternate JSON selector syntax before adding filters.
+    const update = new Update('table');
+    update.selector = '->';
+    update.separator = '/';
+
+    //Record both comparison and contains filters for dialect use later.
+    update.whereJson('__json__ = ?', [ 'meta->status', '__json__' ], 'active');
+    update.whereJsonContains('meta->roles', [ 'admin', 'owner' ]);
+
+    //Confirm the build output preserved both JSON filter variants.
+    const build = update.build();
+    expect(build.selector).to.equal('->');
+    expect(build.separator).to.equal('/');
+    expect(build.json).to.deep.equal([
+      {
+        selector: 'meta->status',
+        query: '__json__ = ?',
+        replace: '__json__',
+        values: [ 'active' ]
+      },
+      {
+        selector: 'meta->roles',
+        query: 'contains',
+        replace: '',
+        values: [ 'admin', 'owner' ]
+      }
+    ]);
+  });
 
 
 });

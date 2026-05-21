@@ -335,11 +335,63 @@ describe('Engine Tests', () => {
     expect(result).to.be.an('array').that.is.empty;
   });
 
+  it('Should allow the before hook to short-circuit the database query', async () => {
+    //Use a resource that records whether the connection layer ran.
+    const resource = new MockConnection();
+    const engine = new Engine(resource);
+    const rows = [ { id: 7 } ];
+
+    //Install a before hook that returns rows immediately.
+    engine.before = async request => {
+      expect(request.query).to.equal('SELECT 1');
+      return rows;
+    };
+
+    //Run the query through the public engine method.
+    const result = await engine.query('SELECT 1');
+
+    //Confirm the hook result is returned and the connection is skipped.
+    expect(engine.before).to.be.a('function');
+    expect(result).to.equal(rows);
+    expect(resource.queries).to.have.lengthOf(0);
+  });
+
+  it('Should format template string queries with the dialect quote character', async () => {
+    //Use the mock resource so the test can inspect the emitted request.
+    const resource = new MockConnection();
+    const engine = new Engine(resource);
+
+    //Run the tagged template API with backtick-quoted identifiers.
+    await engine.sql`SELECT \`id\` FROM \`users\` WHERE id = ${1}`;
+
+    //Confirm the template was flattened into the final query object.
+    expect(resource.queries[0]).to.deep.equal({
+      query: 'SELECT "id" FROM "users" WHERE id = ?',
+      values: [ 1 ]
+    });
+  });
+
+  it('Should pass the cascade flag through truncate queries', async () => {
+    //Use the resource recorder to inspect the generated truncate request.
+    const resource = new MockConnection();
+    const engine = new Engine(resource);
+
+    //Run the public truncate helper with cascade enabled.
+    await engine.truncate('sessions', true);
+
+    //Confirm the dialect-generated query preserved the cascade suffix.
+    expect(resource.queries[0]).to.deep.equal({
+      query: 'TRUNCATE TABLE "sessions" CASCADE',
+      values: []
+    });
+  });
+
 });
 
 class MockConnection implements Connection {
   public dialect = Pgsql;
   public resource = {} as any;
+  public queries: QueryObject[] = [];
 
   lastId: string | number | undefined;
 
@@ -382,6 +434,7 @@ class MockConnection implements Connection {
    * library should not care about the kind of database.
    */
   public async query<R = unknown>(request: QueryObject) {
+    this.queries.push(request);
     return [];
   }
 
