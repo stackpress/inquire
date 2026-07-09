@@ -112,16 +112,16 @@ describe('Pgsql Dialect Tests', () => {
       'ALTER TABLE "table" ADD PRIMARY KEY ("id")'
     );
     expect(query[11].query).to.equal(
-      'ALTER TABLE "table" DROP UNIQUE "name"'
+      'ALTER TABLE "table" DROP CONSTRAINT "name"'
     );
     expect(query[12].query).to.equal(
-      'ALTER TABLE "table" ADD UNIQUE "name" ("name")'
+      'ALTER TABLE "table" ADD CONSTRAINT "name" UNIQUE ("name")'
     );
     expect(query[13].query).to.equal(
-      'ALTER TABLE "table" DROP INDEX "price"'
+      'DROP INDEX "price"'
     );
     expect(query[14].query).to.equal(
-      'ALTER TABLE "table" ADD INDEX "price" ("name")'
+      'CREATE INDEX "price" ON "table"("name")'
     );
     expect(query[15].query).to.equal(
       'ALTER TABLE "table" DROP CONSTRAINT "profileId"'

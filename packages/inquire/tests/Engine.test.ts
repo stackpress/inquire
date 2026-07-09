@@ -68,7 +68,7 @@ describe('Engine Tests', () => {
       `ALTER TABLE "profile" ALTER COLUMN "active" SET DEFAULT TRUE`
     );
     expect(queries[5].query).to.equal(
-      `ALTER TABLE "profile" DROP INDEX "active"`
+      `DROP INDEX "active"`
     );
 
     try {
@@ -127,7 +127,7 @@ describe('Engine Tests', () => {
       .addField('id', { type: 'INTEGER', length: 11, autoIncrement: true })
       .addField('name', { type: 'varchar', length: 255 });
     const alter = engine.diff(from, to);
-    expect(alter.query()[0].query).to.include('ALTER TABLE "profile" DROP UNIQUE');
+    expect(alter.query()[0].query).to.include('ALTER TABLE "profile" DROP CONSTRAINT');
   });
 
   // Line 100 - 101
@@ -143,7 +143,7 @@ describe('Engine Tests', () => {
       .addField('email', { type: 'varchar', length: 255 })
       .addUniqueKey('email', ['email', 'id']);
     const alter = engine.diff(from, to);
-    expect(alter.query()[0].query).to.include('ALTER TABLE "profile" DROP UNIQUE');
+    expect(alter.query()[0].query).to.include('ALTER TABLE "profile" DROP CONSTRAINT');
   });
 
   // Line 111 - 113
@@ -158,7 +158,7 @@ describe('Engine Tests', () => {
       .addKey('name', ['name', 'id']);
     const alter = engine.diff(from, to);
     const query = alter.query()[0].query;
-    expect(query).to.include('ALTER TABLE "profile" DROP INDEX');
+    expect(query).to.include('DROP INDEX "name"');
   });
 
   // Line 118 - 120
@@ -231,7 +231,7 @@ describe('Engine Tests', () => {
       .addField('id', { type: 'INTEGER', length: 11, autoIncrement: true })
       .addKey('name', ['name']);
     const alter = engine.diff(from, to);
-    expect(alter.query()[0].query).to.include('ALTER TABLE "profile" ADD INDEX');
+    expect(alter.query()[0].query).to.include('CREATE INDEX "name" ON "profile"');
   });
 
   // Line 154 - 155

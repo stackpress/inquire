@@ -183,24 +183,24 @@ export class PgsqlDialect extends JsonTrait implements Dialect {
     //----------------------------------------------------------------//
     // Drop unique keys
     // 
-    // DROP UNIQUE `name`
+    // DROP CONSTRAINT `name`
 
     build.unique.remove.forEach(name => {
       query.push(
         `ALTER TABLE ${this.q}${build.table}${this.q} `
-        + `DROP UNIQUE ${this.q}${name}${this.q}`
+        + `DROP CONSTRAINT ${this.q}${name}${this.q}`
       );
     });
 
     //----------------------------------------------------------------//
     // Add unique keys
     //
-    // ADD UNIQUE `name` (`name`, `name`)
+    // ADD CONSTRAINT `name` UNIQUE (`name`, `name`)
 
     Object.keys(build.unique.add).forEach(key => {
       query.push(
         `ALTER TABLE ${this.q}${build.table}${this.q} `
-        + `ADD UNIQUE ${this.q}${key}${this.q} (${this.q}${build.unique.add[key].join(`${this.q}, ${this.q}`)}${this.q})`
+        + `ADD CONSTRAINT ${this.q}${key}${this.q} UNIQUE (${this.q}${build.unique.add[key].join(`${this.q}, ${this.q}`)}${this.q})`
       );
     });
 
@@ -210,20 +210,18 @@ export class PgsqlDialect extends JsonTrait implements Dialect {
     // DROP INDEX `name`
 
     build.keys.remove.forEach(name => {
-      query.push(
-        `ALTER TABLE ${this.q}${build.table}${this.q} `
-        + `DROP INDEX ${this.q}${name}${this.q}`);
+      query.push(`DROP INDEX ${this.q}${name}${this.q}`);
     });
 
     //----------------------------------------------------------------//
     // Add keys
     //
-    // ADD INDEX `name` (`name`, `name`)
+    // CREATE INDEX `name` ON `table`(`name`, `name`)
 
     Object.keys(build.keys.add).forEach(key => {
       query.push(
-        `ALTER TABLE ${this.q}${build.table}${this.q} `
-        + `ADD INDEX ${this.q}${key}${this.q} (${this.q}${build.keys.add[key].join(`${this.q}, ${this.q}`)}${this.q})`
+        `CREATE INDEX ${this.q}${key}${this.q} `
+        + `ON ${this.q}${build.table}${this.q}(${this.q}${build.keys.add[key].join(`${this.q}, ${this.q}`)}${this.q})`
       );
     });
 
