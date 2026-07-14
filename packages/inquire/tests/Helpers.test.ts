@@ -8,6 +8,7 @@ import {
   doubleQuotes,
   escapeBackSlashes,
   escapeDoubleQuotes,
+  fieldCompare,
   isIndex,
   joinTypes,
   jsonCompare,
@@ -44,6 +45,17 @@ describe('Helper Tests', () => {
     expect(jsonCompare({ id: 1, tags: [ 'a' ] }, { id: 1, tags: [ 'a' ] }))
       .to.equal(true);
     expect(jsonCompare({ id: 1 }, { id: 2 })).to.equal(false);
+  });
+
+  it('Should compare field definitions by their schema properties', () => {
+    expect(fieldCompare(
+      { type: 'varchar', length: 255, nullable: true },
+      { nullable: true, length: 255, type: 'varchar' }
+    )).to.equal(true);
+    expect(fieldCompare(
+      { type: 'varchar', length: 255 },
+      { type: 'text' }
+    )).to.equal(false);
   });
 
   it('Should expose the custom exception class', () => {

@@ -115,6 +115,17 @@ describe('Sqlite Dialect Tests', () => {
     expect(query[11].values).to.be.empty;
   });
 
+  it('Should translate a field rename', () => {
+    const alter = new Alter('table');
+    alter.renameField('full_name', 'name');
+
+    const query = Sqlite.alter(alter);
+    expect(query[0].query).to.equal(
+      'ALTER TABLE `table` RENAME COLUMN `full_name` TO `name`'
+    );
+    expect(query[0].values).to.be.empty;
+  });
+
   it('Should translate create', async () => {
     const create = new Create('table');
     create.addField('id', {

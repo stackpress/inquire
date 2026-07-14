@@ -35,6 +35,7 @@ export type ForeignKey = {
 
 export type AlterFields = {
   add: Record<string, Field>,
+  rename?: Record<string, string>,
   update: Record<string, Field>,
   remove: string[]
 };

@@ -78,6 +78,76 @@ describe('Engine Tests', () => {
     }
   });
 
+  it('Should replace a diffed remove and add with a field rename', () => {
+    const resource = new MockConnection();
+    const engine = new Engine(resource);
+    const from = engine.create('profile')
+      .addField('full_name', { type: 'varchar', length: 255 });
+    const to = engine.create('profile')
+      .addField('name', { type: 'varchar', length: 255 });
+
+    const queries = engine.diff(from, to)
+      .renameField('full_name', 'name')
+      .query();
+
+    expect(queries).to.have.length(1);
+    expect(queries[0].query).to.equal(
+      'ALTER TABLE "profile" RENAME COLUMN "full_name" TO "name"'
+    );
+  });
+
+  it('Should change a renamed field when its definition also changes', () => {
+    const resource = new MockConnection();
+    const engine = new Engine(resource);
+    const from = engine.create('profile')
+      .addField('full_name', { type: 'varchar', length: 255 });
+    const to = engine.create('profile')
+      .addField('name', { type: 'text' });
+
+    const queries = engine.diff(from, to)
+      .renameField('full_name', 'name')
+      .query();
+
+    expect(queries).to.have.length(2);
+    expect(queries[0].query).to.equal(
+      'ALTER TABLE "profile" RENAME COLUMN "full_name" TO "name"'
+    );
+    expect(queries[1].query).to.equal(
+      'ALTER TABLE "profile" ALTER COLUMN "name" TYPE TEXT'
+    );
+  });
+
+  it('Should reject a diffed field rename when the target is absent', () => {
+    const resource = new MockConnection();
+    const engine = new Engine(resource);
+    const from = engine.create('profile')
+      .addField('full_name', { type: 'varchar', length: 255 });
+    const to = engine.create('profile');
+
+    expect(() => engine.diff(from, to).renameField('full_name', 'name'))
+      .to.throw(
+        Exception,
+        'Cannot reconcile field rename from "full_name" to "name".'
+      );
+  });
+
+  it('Should reject a diffed rename with no pending field changes', () => {
+    const resource = new MockConnection();
+    const engine = new Engine(resource);
+    const from = engine.create('profile')
+      .addField('full_name', { type: 'varchar', length: 255 })
+      .addField('name', { type: 'varchar', length: 255 });
+    const to = engine.create('profile')
+      .addField('full_name', { type: 'varchar', length: 255 })
+      .addField('name', { type: 'varchar', length: 255 });
+
+    expect(() => engine.diff(from, to).renameField('full_name', 'name'))
+      .to.throw(
+        Exception,
+        'Cannot reconcile field rename from "full_name" to "name".'
+      );
+  });
+
   // Line 50
   it('Should create a new Delete instance when delete method is called with a valid table name', () => {
     const resource = new MockConnection();

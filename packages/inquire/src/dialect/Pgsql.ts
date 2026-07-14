@@ -67,6 +67,18 @@ export class PgsqlDialect extends JsonTrait implements Dialect {
     });
 
     //----------------------------------------------------------------//
+    // Rename fields
+    //
+    // ALTER TABLE table_name RENAME COLUMN old_name TO new_name
+
+    Object.entries(build.fields.rename).forEach(([ from, to ]) => {
+      query.push(
+        `ALTER TABLE ${this.q}${build.table}${this.q} `
+        + `RENAME COLUMN ${this.q}${from}${this.q} TO ${this.q}${to}${this.q}`
+      );
+    });
+
+    //----------------------------------------------------------------//
     // Add field
     //
     // ADD COLUMN `name` `type` (`length`) `attribute` `unsigned` `nullable` `autoIncrement` `default`

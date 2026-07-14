@@ -91,6 +91,68 @@ describe('Alter Builder Tests', () => {
     expect(build.foreign.remove[0]).to.equal('profileId');
   });
 
+  it('Should rename a field directly', () => {
+    const alter = new Alter('table');
+    alter.renameField('full_name', 'name');
+
+    expect(alter.build().fields.rename.full_name).to.equal('name');
+  });
+
+  it('Should replace matching remove and add operations with a rename', () => {
+    const alter = new Alter('table');
+    alter.removeField('full_name');
+    alter.addField('name', { type: 'varchar', length: 255 });
+    alter.renameField('full_name', 'name');
+
+    const fields = alter.build().fields;
+    expect(fields.remove).to.not.include('full_name');
+    expect(fields.add).to.not.have.property('name');
+    expect(fields.rename.full_name).to.equal('name');
+    expect(fields.update.name).to.deep.equal({
+      type: 'varchar',
+      length: 255
+    });
+  });
+
+  it('Should reject a field rename with the same source and target', () => {
+    const alter = new Alter('table');
+
+    expect(() => alter.renameField('name', 'name')).to.throw(
+      Exception,
+      'Cannot rename field from "name" to "name".'
+    );
+  });
+
+  it('Should reject field renames that share a target', () => {
+    const alter = new Alter('table');
+    alter.renameField('full_name', 'name');
+
+    expect(() => alter.renameField('display_name', 'name')).to.throw(
+      Exception,
+      'Cannot rename field from "display_name" to "name".'
+    );
+  });
+
+  it('Should reject a field rename with only a pending removal', () => {
+    const alter = new Alter('table');
+    alter.removeField('full_name');
+
+    expect(() => alter.renameField('full_name', 'name')).to.throw(
+      Exception,
+      'Cannot reconcile field rename from "full_name" to "name".'
+    );
+  });
+
+  it('Should reject a field rename with only a pending addition', () => {
+    const alter = new Alter('table');
+    alter.addField('name', { type: 'varchar', length: 255 });
+
+    expect(() => alter.renameField('full_name', 'name')).to.throw(
+      Exception,
+      'Cannot reconcile field rename from "full_name" to "name".'
+    );
+  });
+
   // Line 56 - 63
   it('Should handle setting and getting the engine', () => {
     const alter = new Alter('table');

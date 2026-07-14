@@ -1,3 +1,6 @@
+//client
+import type { Field } from './types.js';
+
 export const joinTypes = {
   inner: 'INNER',
   left: 'LEFT',
@@ -12,6 +15,20 @@ export const joinTypes = {
 export const isIndex = /^\d+$/;
 export const backSlashes = /\\/g;
 export const doubleQuotes = /"/g;
+
+/**
+ * Returns true if two field definitions are the same.
+ */
+export function fieldCompare(from: Field, to: Field) {
+  return from.type === to.type
+    && from.length === to.length
+    && from.nullable === to.nullable
+    && from.default === to.default
+    && from.autoIncrement === to.autoIncrement
+    && from.attribute === to.attribute
+    && from.comment === to.comment
+    && from.unsigned === to.unsigned;
+};
 
 /**
  * Escapes backslashes in a string by 

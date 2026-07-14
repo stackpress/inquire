@@ -54,6 +54,7 @@ export {
   doubleQuotes,
   escapeBackSlashes,
   escapeDoubleQuotes,
+  fieldCompare,
   safeJsonValue,
   jsonCompare
 } from './helpers.js';

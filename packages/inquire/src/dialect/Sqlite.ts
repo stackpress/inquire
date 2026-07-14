@@ -85,6 +85,20 @@ export class SqliteDialect extends JsonTrait implements Dialect {
     });
 
     //----------------------------------------------------------------//
+    // Rename columns
+    //
+    // ALTER TABLE table_name RENAME COLUMN old_name TO new_name;
+
+    Object.entries(build.fields.rename).forEach(([ from, to ]) => {
+      transactions.push({
+        query: `ALTER TABLE ${this.q}${build.table}${this.q} `
+          + `RENAME COLUMN ${this.q}${from}${this.q} `
+          + `TO ${this.q}${to}${this.q}`,
+        values: []
+      });
+    });
+
+    //----------------------------------------------------------------//
     // Add columns
     //
     // ALTER TABLE table_name ADD COLUMN column_name data_type [column_constraint];

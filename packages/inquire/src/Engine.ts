@@ -13,7 +13,7 @@ import type {
   QueryObject, 
   Transaction 
 } from './types.js';
-import { jsonCompare } from './helpers.js';
+import { fieldCompare, jsonCompare } from './helpers.js';
 
 export default class Engine<R = unknown> {
   //database connection
@@ -85,7 +85,7 @@ export default class Engine<R = unknown> {
       from: from.build(),
       to: to.build()
     };
-    const alter = this.alter(build.from.table);
+    const alter = new Alter(build.from.table, this, build.from.fields);
     //remove column if not in the new table
     //find fields that exists in both tables
     //and check if they are different
@@ -97,15 +97,7 @@ export default class Engine<R = unknown> {
       const from = build.from.fields[name];
       const to = build.to.fields[name];
       //check for differences
-      if (from.type !== to.type
-        || from.length !== to.length
-        || from.nullable !== to.nullable
-        || from.default !== to.default
-        || from.autoIncrement !== to.autoIncrement
-        || from.attribute !== to.attribute
-        || from.comment !== to.comment
-        || from.unsigned !== to.unsigned
-      ) {
+      if (!fieldCompare(from, to)) {
         alter.changeField(name, to)
       }
     }

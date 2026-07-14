@@ -66,6 +66,20 @@ export class MysqlDialect extends JsonTrait implements Dialect {
     );
 
     //----------------------------------------------------------------//
+    // Rename field
+    //
+    // RENAME COLUMN old_name TO new_name
+
+    const renameFields = Object.entries(build.fields.rename).map(
+      ([ from, to ]) => ({
+        query: `ALTER TABLE ${this.q}${build.table}${this.q} `
+          + `RENAME COLUMN ${this.q}${from}${this.q} `
+          + `TO ${this.q}${to}${this.q}`,
+        values: []
+      })
+    );
+
+    //----------------------------------------------------------------//
     // Add field
     //
     // ADD COLUMN column1_name data_type(length) [column_constraint]
@@ -218,6 +232,7 @@ export class MysqlDialect extends JsonTrait implements Dialect {
     });
 
     if (!removeFields.length
+      && !renameFields.length
       && !addFields.length
       && !changeFields.length
       && !removePrimaries.length
@@ -245,12 +260,14 @@ export class MysqlDialect extends JsonTrait implements Dialect {
       ...removeForeignKeys,
       ...addForeignKeys
     );
-    return [
-      { 
-        query: `ALTER TABLE ${this.q}${build.table}${this.q} (${query.join(', ')})`, 
-        values: [] 
-      }
-    ];
+    if (query.length) {
+      renameFields.push({
+        query: `ALTER TABLE ${this.q}${build.table}${this.q} `
+          + `(${query.join(', ')})`,
+        values: []
+      });
+    }
+    return renameFields;
   }
 
   /**
