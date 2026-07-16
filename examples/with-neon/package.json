@@ -8,7 +8,7 @@
     "start": "ts-node ./src/index.ts"
   },
   "dependencies": {
-    "@stackpress/inquire-pg": "0.10.7",
+    "@stackpress/inquire-pg": "0.10.8",
     "pg": "8.16.3"
   },
   "devDependencies": {
