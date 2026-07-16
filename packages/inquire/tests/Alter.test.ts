@@ -91,6 +91,32 @@ describe('Alter Builder Tests', () => {
     expect(build.foreign.remove[0]).to.equal('profileId');
   });
 
+  it('Should replace an added index with a same-named unique key', () => {
+    //Define the weaker index first, then promote the alteration to unique.
+    const alter = new Alter('table')
+      .addKey('identity', 'username')
+      .addUniqueKey('identity', 'email');
+
+    const build = alter.build();
+
+    //Only the unique addition should remain in the alteration plan.
+    expect(build.keys.add).to.not.have.property('identity');
+    expect(build.unique.add.identity).to.deep.equal([ 'email' ]);
+  });
+
+  it('Should preserve an added unique key over a same-named index', () => {
+    //Define the unique addition first and attempt to add a weaker index later.
+    const alter = new Alter('table')
+      .addUniqueKey('identity', 'email')
+      .addKey('identity', 'username');
+
+    const build = alter.build();
+
+    //Call order must not change the unique-over-index precedence rule.
+    expect(build.keys.add).to.not.have.property('identity');
+    expect(build.unique.add.identity).to.deep.equal([ 'email' ]);
+  });
+
   it('Should rename a field directly', () => {
     const alter = new Alter('table');
     alter.renameField('full_name', 'name');

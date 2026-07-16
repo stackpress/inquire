@@ -44,6 +44,35 @@ describe('Sqlite3 Tests', () => {
     expect(actual).to.be.empty;
   }).timeout(20000);
 
+  it('Should safely replay creation of a table with indexes', async () => {
+    //Build the same indexed table twice to exercise the generated statements
+    //against SQLite instead of only checking their rendered SQL.
+    const first = await engine.create('replayable')
+      .addField('id', { type: 'int', autoIncrement: true })
+      .addField('email', { type: 'string', length: 255 })
+      .addField('name', { type: 'string', length: 255 })
+      .addPrimaryKey('id')
+      .addUniqueKey('replayable_email', 'email')
+      .addKey('replayable_name', 'name');
+    const second = await engine.create('replayable')
+      .addField('id', { type: 'int', autoIncrement: true })
+      .addField('email', { type: 'string', length: 255 })
+      .addField('name', { type: 'string', length: 255 })
+      .addPrimaryKey('id')
+      .addUniqueKey('replayable_email', 'email')
+      .addKey('replayable_name', 'name');
+
+    //Both executions should complete, and SQLite should retain exactly the
+    //requested unique and regular indexes after the replay.
+    const indexes = resource.prepare(
+      `SELECT name FROM sqlite_master
+      WHERE type = 'index' AND tbl_name = 'replayable'`
+    ).all();
+    expect(first).to.be.empty;
+    expect(second).to.be.empty;
+    expect(indexes).to.have.length(2);
+  }).timeout(20000);
+
   it('Should alter profile table', async () => {
     const actual = await engine.alter('profile')
       .addField('age', { type: 'int', unsigned: true })

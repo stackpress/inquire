@@ -195,13 +195,47 @@ describe('Sqlite Dialect Tests', () => {
     );
     expect(query[0].values).to.be.empty;
     expect(query[1].query).to.equal(
-      'CREATE UNIQUE INDEX `name` ON `table`(`name`)'
+      'CREATE UNIQUE INDEX IF NOT EXISTS `name` ON `table`(`name`)'
     );
     expect(query[1].values).to.be.empty;
     expect(query[2].query).to.equal(
-      'CREATE INDEX `price` ON `table`(`name`)'
+      'CREATE INDEX IF NOT EXISTS `price` ON `table`(`name`)'
     );
     expect(query[2].values).to.be.empty;
+  });
+
+  it('Should make create indexes idempotent without changing alter indexes', () => {
+    //SQLite emits unique and regular indexes separately from CREATE TABLE, so
+    //both statements need to be safe when the create builder is replayed.
+    const create = new Create('table')
+      .addField('email', { type: 'string' })
+      .addField('name', { type: 'string' })
+      .addUniqueKey('email_uidx', 'email')
+      .addKey('name_idx', 'name');
+
+    const createQueries = Sqlite.create(create);
+
+    expect(createQueries[1].query).to.equal(
+      'CREATE UNIQUE INDEX IF NOT EXISTS `email_uidx` '
+      + 'ON `table`(`email`)'
+    );
+    expect(createQueries[2].query).to.equal(
+      'CREATE INDEX IF NOT EXISTS `name_idx` ON `table`(`name`)'
+    );
+
+    //Alter statements should still surface unexpected duplicate indexes
+    //instead of silently accepting a failed schema change.
+    const alter = new Alter('table')
+      .addUniqueKey('email_uidx', 'email')
+      .addKey('name_idx', 'name');
+    const alterQueries = Sqlite.alter(alter);
+
+    expect(alterQueries[0].query).to.equal(
+      'CREATE UNIQUE INDEX `email_uidx` ON `table`(`email`)'
+    );
+    expect(alterQueries[1].query).to.equal(
+      'CREATE INDEX `name_idx` ON `table`(`name`)'
+    );
   });
 
   it('Should translate delete', async () => {
@@ -475,8 +509,8 @@ describe('Sqlite Dialect Tests', () => {
       nullable: true,
       comment: 'Foobar'
     });
-    create.addKey('foo', [ 'bar', 'zoo' ]);
-    create.addKey('bar', [ 'zoo', 'foo' ]);
+    create.addKey('foo_idx', [ 'bar', 'zoo' ]);
+    create.addKey('bar_idx', [ 'zoo', 'foo' ]);
     create.addUniqueKey('foo', [ 'bar', 'zoo' ]);
     create.addUniqueKey('bar', [ 'zoo', 'foo' ]);
     create.addForeignKey('foo', {
@@ -504,16 +538,16 @@ describe('Sqlite Dialect Tests', () => {
       + ')'
     );
     expect(query[1].query).to.equal(
-      'CREATE UNIQUE INDEX `foo` ON `table`(`bar`, `zoo`)'
+      'CREATE UNIQUE INDEX IF NOT EXISTS `foo` ON `table`(`bar`, `zoo`)'
     );
     expect(query[2].query).to.equal(
-      'CREATE UNIQUE INDEX `bar` ON `table`(`zoo`, `foo`)'
+      'CREATE UNIQUE INDEX IF NOT EXISTS `bar` ON `table`(`zoo`, `foo`)'
     );
     expect(query[3].query).to.equal(
-      'CREATE INDEX `foo` ON `table`(`bar`, `zoo`)'
+      'CREATE INDEX IF NOT EXISTS `foo_idx` ON `table`(`bar`, `zoo`)'
     );
     expect(query[4].query).to.equal(
-      'CREATE INDEX `bar` ON `table`(`zoo`, `foo`)'
+      'CREATE INDEX IF NOT EXISTS `bar_idx` ON `table`(`zoo`, `foo`)'
     );
 
     expect(query[0].values).to.be.empty;

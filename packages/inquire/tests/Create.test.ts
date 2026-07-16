@@ -70,6 +70,32 @@ describe('Create Builder Tests', () => {
     expect(build.foreign.profileId.local).to.equal('profileId');
   });
 
+  it('Should replace a regular index with a same-named unique key', () => {
+    //Define the weaker regular index first, then promote the name to unique.
+    const create = new Create('table')
+      .addKey('identity', 'username')
+      .addUniqueKey('identity', 'email');
+
+    const build = create.build();
+
+    //Only the unique definition should remain, including its chosen field.
+    expect(build.keys).to.not.have.property('identity');
+    expect(build.unique.identity).to.deep.equal([ 'email' ]);
+  });
+
+  it('Should preserve a unique key over a later same-named index', () => {
+    //Define the unique key first and attempt to weaken it with a regular index.
+    const create = new Create('table')
+      .addUniqueKey('identity', 'email')
+      .addKey('identity', 'username');
+
+    const build = create.build();
+
+    //Call order must not change the unique-over-index precedence rule.
+    expect(build.keys).to.not.have.property('identity');
+    expect(build.unique.identity).to.deep.equal([ 'email' ]);
+  });
+
   // Line 46 - 53
   it('Should handle setting and getting the engine', () => {
     const create = new Create('table');

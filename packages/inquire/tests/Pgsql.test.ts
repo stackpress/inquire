@@ -212,9 +212,32 @@ describe('Pgsql Dialect Tests', () => {
     );
     expect(query[0].values).to.be.empty;
     expect(query[1].query).to.equal(
-      'CREATE INDEX "price" ON "table"("name")'
+      'CREATE INDEX IF NOT EXISTS "price" ON "table"("name")'
     );
     expect(query[1].values).to.be.empty;
+  });
+
+  it('Should make create indexes idempotent without changing alter indexes', () => {
+    //Create paths can be replayed because their table statement already uses
+    //IF NOT EXISTS, so separately emitted indexes need the same protection.
+    const create = new Create('table')
+      .addField('name', { type: 'string' })
+      .addKey('name_idx', 'name');
+
+    const createQueries = Pgsql.create(create);
+
+    expect(createQueries[1].query).to.equal(
+      'CREATE INDEX IF NOT EXISTS "name_idx" ON "table"("name")'
+    );
+
+    //Alter paths intentionally remain strict because they represent a schema
+    //change rather than replaying an idempotent table definition.
+    const alter = new Alter('table').addKey('name_idx', 'name');
+    const alterQueries = Pgsql.alter(alter);
+
+    expect(alterQueries[0].query).to.equal(
+      'CREATE INDEX "name_idx" ON "table"("name")'
+    );
   });
 
   it('Should translate delete', async () => {
@@ -408,8 +431,8 @@ describe('Pgsql Dialect Tests', () => {
       nullable: true,
       comment: 'Foobar'
     });
-    create.addKey('foo', [ 'bar', 'zoo' ]);
-    create.addKey('bar', [ 'zoo', 'foo' ]);
+    create.addKey('foo_idx', [ 'bar', 'zoo' ]);
+    create.addKey('bar_idx', [ 'zoo', 'foo' ]);
     create.addUniqueKey('foo', [ 'bar', 'zoo' ]);
     create.addUniqueKey('bar', [ 'zoo', 'foo' ]);
     create.addForeignKey('foo', {
@@ -439,10 +462,10 @@ describe('Pgsql Dialect Tests', () => {
       + ')'
     );
     expect(query[1].query).to.equal(
-      'CREATE INDEX "foo" ON "table"("bar", "zoo")'
+      'CREATE INDEX IF NOT EXISTS "foo_idx" ON "table"("bar", "zoo")'
     );
     expect(query[2].query).to.equal(
-      'CREATE INDEX "bar" ON "table"("zoo", "foo")'
+      'CREATE INDEX IF NOT EXISTS "bar_idx" ON "table"("zoo", "foo")'
     );
 
     expect(query[0].values).to.be.empty;

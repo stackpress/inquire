@@ -116,6 +116,12 @@ export default class Alter<R = unknown> {
     if (!Array.isArray(field)) {
       field = [field];
     }
+
+    //A unique key already provides an index, so keep it as the stronger
+    //definition when both key types use the same name.
+    if (Object.prototype.hasOwnProperty.call(this._unique.add, name)) {
+      return this;
+    }
     this._keys.add[name] = field;
     return this;
   }
@@ -135,6 +141,10 @@ export default class Alter<R = unknown> {
     if (!Array.isArray(field)) {
       field = [field];
     }
+
+    //Replace a same-named regular index so unique keys win regardless of the
+    //order in which callers define the alteration.
+    delete this._keys.add[name];
     this._unique.add[name] = field;
     return this;
   }

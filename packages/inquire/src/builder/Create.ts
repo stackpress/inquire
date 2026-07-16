@@ -91,6 +91,12 @@ export default class Create<R = unknown> {
     if (!Array.isArray(field)) {
       field = [field];
     }
+
+    //A unique key already provides an index, so keep it as the stronger
+    //definition when both key types use the same name.
+    if (Object.prototype.hasOwnProperty.call(this._unique, name)) {
+      return this;
+    }
     this._keys[name] = field;
     return this;
   }
@@ -110,6 +116,10 @@ export default class Create<R = unknown> {
     if (!Array.isArray(field)) {
       field = [field];
     }
+
+    //Replace a same-named regular index so unique keys win regardless of the
+    //order in which callers define the schema.
+    delete this._keys[name];
     this._unique[name] = field;
     return this;
   }

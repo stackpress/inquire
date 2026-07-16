@@ -46,6 +46,24 @@ describe('Connection Tests', () => {
     expect(actual).to.be.empty;
   }).timeout(20000);
 
+  it('Should safely replay creation of a table with an index', async () => {
+    //Execute the PostgreSQL create path twice so this regression test proves
+    //the emitted index syntax is accepted by a real PostgreSQL-compatible DB.
+    const first = await engine.create('replayable')
+      .addField('id', { type: 'int', autoIncrement: true })
+      .addField('name', { type: 'string', length: 255 })
+      .addPrimaryKey('id')
+      .addKey('replayable_name', 'name');
+    const second = await engine.create('replayable')
+      .addField('id', { type: 'int', autoIncrement: true })
+      .addField('name', { type: 'string', length: 255 })
+      .addPrimaryKey('id')
+      .addKey('replayable_name', 'name');
+
+    expect(first).to.be.empty;
+    expect(second).to.be.empty;
+  }).timeout(20000);
+
   it('Should alter profile table', async () => {
     const actual = await engine.alter('profile')
       .addField('age', { type: 'int', unsigned: true })

@@ -375,8 +375,8 @@ describe('Mysql Dialect Tests', () => {
       nullable: true,
       comment: 'Foobar'
     });
-    create.addKey('foo', [ 'bar', 'zoo' ]);
-    create.addKey('bar', [ 'zoo', 'foo' ]);
+    create.addKey('foo_idx', [ 'bar', 'zoo' ]);
+    create.addKey('bar_idx', [ 'zoo', 'foo' ]);
     create.addUniqueKey('foo', [ 'bar', 'zoo' ]);
     create.addUniqueKey('bar', [ 'zoo', 'foo' ]);
     create.addForeignKey('foo', {
@@ -399,8 +399,8 @@ describe('Mysql Dialect Tests', () => {
         + '`name` VARCHAR(255) DEFAULT NULL , '
         + 'UNIQUE KEY `foo` (`bar`, `zoo`), '
         + 'UNIQUE KEY `bar` (`zoo`, `foo`) , '
-        + 'KEY `foo` (`bar`, `zoo`), '
-        + 'KEY `bar` (`zoo`, `foo`) , '
+        + 'KEY `foo_idx` (`bar`, `zoo`), '
+        + 'KEY `bar_idx` (`zoo`, `foo`) , '
         + 'CONSTRAINT `foo` FOREIGN KEY (`bar`) REFERENCES `foo`(`zoo`) '
         + 'ON DELETE CASCADE ON UPDATE RESTRICT, '
         + 'CONSTRAINT `bar` FOREIGN KEY (`zoo`) REFERENCES `bar`(`foo`) '

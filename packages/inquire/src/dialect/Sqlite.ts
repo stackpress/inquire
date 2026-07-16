@@ -312,7 +312,7 @@ export class SqliteDialect extends JsonTrait implements Dialect {
 
     Object.entries(build.unique).forEach(([name, values]) => {
       transactions.push({ 
-        query: `CREATE UNIQUE INDEX ${this.q}${name}${this.q} ON ${this.q}${build.table}${this.q}(${this.q}${values.join(`${this.q}, ${this.q}`)}${this.q})`, 
+        query: `CREATE UNIQUE INDEX IF NOT EXISTS ${this.q}${name}${this.q} ON ${this.q}${build.table}${this.q}(${this.q}${values.join(`${this.q}, ${this.q}`)}${this.q})`,
         values: [] 
       });
     });
@@ -324,7 +324,7 @@ export class SqliteDialect extends JsonTrait implements Dialect {
 
     Object.entries(build.keys).forEach(([name, values]) => {
       transactions.push({ 
-        query: `CREATE INDEX ${this.q}${name}${this.q} ON ${this.q}${build.table}${this.q}(${this.q}${values.join(`${this.q}, ${this.q}`)}${this.q})`, 
+        query: `CREATE INDEX IF NOT EXISTS ${this.q}${name}${this.q} ON ${this.q}${build.table}${this.q}(${this.q}${values.join(`${this.q}, ${this.q}`)}${this.q})`,
         values: [] 
       });
     });

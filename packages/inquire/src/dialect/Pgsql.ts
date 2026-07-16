@@ -372,7 +372,7 @@ export class PgsqlDialect extends JsonTrait implements Dialect {
     if (Object.keys(build.keys).length) {
       Object.keys(build.keys).forEach(key => {
         transactions.push({
-          query: `CREATE INDEX ${this.q}${key}${this.q} ON ${this.q}${build.table}${this.q}(${this.q}${build.keys[key].join(`${this.q}, ${this.q}`)}${this.q})`,
+          query: `CREATE INDEX IF NOT EXISTS ${this.q}${key}${this.q} ON ${this.q}${build.table}${this.q}(${this.q}${build.keys[key].join(`${this.q}, ${this.q}`)}${this.q})`,
           values: []
         });
       });
